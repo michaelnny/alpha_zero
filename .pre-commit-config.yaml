@@ -1,0 +1,33 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-docstring-first
+    -   id: check-json
+        exclude: ^(.vscode)
+    -   id: check-yaml
+    -   id: debug-statements
+    -   id: name-tests-test
+    -   id: double-quote-string-fixer
+    -   id: check-merge-conflict
+-   repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+    -   id: black
+-   repo: https://github.com/pycqa/flake8
+    rev: 4.0.1
+    hooks:
+    -   id: flake8
+        additional_dependencies:
+          - flake8-black
+-   repo: local
+    hooks:
+    -   id: run-unit-tests
+        name: run unit tests script
+        entry: /Users/michael/alpha_zero/run_unit_tests.sh
+        language: script
+        always_run: true
+        verbose: true
+        pass_filenames: false
