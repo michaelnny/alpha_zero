@@ -166,7 +166,7 @@ def run_training(
     create_checkpoint(state_to_save, ckpt_file)
 
     stop_event.set()
-    time.sleep(30)
+    time.sleep(60)
     data_queue.put('STOP')
 
 

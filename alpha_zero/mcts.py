@@ -120,8 +120,8 @@ class Node:
         ucb_results = np.where(actions_mask, ucb_results, -1000)
 
         # Break ties when have multiple 'max' value.
-        best_action = np.random.choice(np.where(ucb_results == ucb_results.max())[0])
-        best_child = self.children[best_action]
+        deterministic = np.random.choice(np.where(ucb_results == ucb_results.max())[0])
+        best_child = self.children[deterministic]
 
         return best_child
 
@@ -246,7 +246,7 @@ def uct_search(
     temperature: float,
     num_simulations: int = 800,
     root_prior_noise: bool = False,
-    best_action: bool = False,
+    deterministic: bool = False,
 ) -> Tuple[int, np.ndarray, Node]:
     """Single-threaded Upper Confidence Bound (UCB) for Trees (UCT) search without any rollout.
 
@@ -276,7 +276,8 @@ def uct_search(
         num_simulations: number of simulations to run, default 800.
         root_prior_noise: whether add dirichlet noise to root node action priorities to encourage exploration,
             default off.
-        best_action: choose the node with most visits number instead of sample through a probability distribution, default off.
+        deterministic: after the MCTS search, choose the child node with most visits number to play in the real environment,
+            instead of sample through a probability distribution, default off.
 
     Returns:
         tuple contains:
@@ -347,13 +348,12 @@ def uct_search(
         score = {simulation_env.current_player: value, simulation_env.opponent_player: -value}
         node.backup(score)
 
+    # Play - generate action probability from the root node.
     # Maskout illegal actions.
     child_visits = np.where(env.actions_mask, root_node.child_N, 0)
-
-    # Play - generate action probability from the root node.
     pi_prob = generate_play_policy(child_visits, temperature)
 
-    if best_action:
+    if deterministic:
         # Choose the action with most visit number.
         action_index = np.argmax(child_visits)
     else:

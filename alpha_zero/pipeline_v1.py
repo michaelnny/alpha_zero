@@ -249,7 +249,7 @@ def run_training(
     create_checkpoint(state_to_save, ckpt_file)
 
     stop_event.set()
-    time.sleep(30)
+    time.sleep(60)
     data_queue.put('STOP')
 
 
@@ -472,21 +472,21 @@ def create_mcts_player(
         temp: float,
         num_simulations: int,
         root_noise: bool = False,
-        best_action: bool = False,
+        deterministic: bool = False,
     ):
-        return uct_search(env, evaluate_func, root_node, c_puct, temp, num_simulations, root_noise, best_action)
+        return uct_search(env, evaluate_func, root_node, c_puct, temp, num_simulations, root_noise, deterministic)
 
     return act
 
 
-def process_episode_trajectory(player_id: int, reward: float, episode_trajectory: List[Transition]) -> None:
+def process_episode_trajectory(final_player_id: int, final_reward: float, episode_trajectory: List[Transition]) -> None:
     """Update the final reward for the transitions, note this operation is in-place."""
     for i in range(len(episode_trajectory)):
         transition = episode_trajectory[i]
-        if transition.player_id == player_id:
-            value = reward
+        if transition.player_id == final_player_id:
+            value = final_reward
         else:
-            value = -reward
+            value = -final_reward
         episode_trajectory[i] = transition._replace(value=value)
 
 
