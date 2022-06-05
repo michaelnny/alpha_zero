@@ -341,11 +341,11 @@ def uct_search(
 
     if best_action:
         # Choose the action with most visit number.
-        action = np.argmax(child_visits)
+        action_index = np.argmax(child_visits)
     else:
         # Sample a action.
-        action = np.random.choice(np.arange(pi_prob.shape[0]), p=pi_prob)
+        action_index = np.random.choice(np.arange(pi_prob.shape[0]), p=pi_prob)
 
     # Reuse sub-tree.
-    next_root_node = root_node.children[action]
-    return (action, pi_prob, next_root_node)
+    next_root_node = root_node.children[action_index]
+    return (next_root_node.move, pi_prob, next_root_node)

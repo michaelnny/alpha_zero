@@ -20,12 +20,12 @@ flags.DEFINE_integer(
 
 flags.DEFINE_string(
     'load_black_checkpoint_file',
-    'saved_checkpoints/tictactoe_train_steps_50000',
+    'checkpoints/tictactoe_v2/train_steps_xx40000',
     'Load the last checkpoint from file.',
 )
 flags.DEFINE_string(
     'load_white_checkpoint_file',
-    'saved_checkpoints/tictactoe_train_steps_1150000',
+    'checkpoints/tictactoe_v2/train_steps_30000',
     'Load the last checkpoint from file.',
 )
 

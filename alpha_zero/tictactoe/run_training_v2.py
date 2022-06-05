@@ -63,7 +63,7 @@ flags.DEFINE_float(
     'End (decayed) value of the temperature exploration rate after MCTS search to generate play policy.',
 )
 flags.DEFINE_integer(
-    'temp_decay_steps', 6, 'Number of environment steps to decay the temperture from begin_value to end_value.'
+    'temp_decay_steps', 7, 'Number of environment steps to decay the temperture from begin_value to end_value.'
 )
 
 flags.DEFINE_float('train_delay', 0.0, 'Delay (in seconds) before training on next batch samples.')
