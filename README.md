@@ -1,5 +1,5 @@
 # Alpha Zero
-## a PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku board game
+## A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku board game
 
 
 ## Environment and requirements
@@ -135,13 +135,19 @@ as the goal is not to make a strongest player but to study the algorithm.
 * [Deep RL Zoo](https://github.com/michaelnny/deep_rl_zoo)
 
 
+## License
+
+This project is licensed under the Apache License, Version 2.0 (the "License")
+see the LICENSE file for details
+
+
 ## Citing our work
 
 If you reference or use our project in your research, please cite:
 
 ```
 @software{alpha_zero2022github,
-  title = {{Alpha Zero}: a PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku board game},
+  title = {{Alpha Zero}: A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku board game},
   author = {Michael Hu},
   url = {https://github.com/michaelnny/alpha_zero},
   version = {1.0.0},
