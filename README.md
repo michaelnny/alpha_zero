@@ -22,6 +22,53 @@
 * `pipeline_v2.py` contains the functions to run training, and evaluation loops (following AlphaZero paper, evaluation is only used to monitoring performance)
 
 
+## Network Architecture and Training Experiments
+We follow the same architecture as mentioned in the AlphaGo Zero paper, but made the some changes,
+as the goal is not to make a strongest player but to study the algorithm.
+* To address the lack of access to powerfull machines and GPUs, we adapt the following changes:
+  - use board size 11 instead of 15 or 19
+  - stack most recent 4 board states instead of 8 board states for each player
+  - use 64 planes for the conv2d layers instead of 256
+  - use 6 res-blocks instead of 19
+  - use 400 instead of 800 simulations per MCTS search
+  - add delay to the training loop before training on next batch of samples (to avoid over-fitting)
+* We do not implement parallel MCTS search, or batched evaluation during MCTS search.
+* We do not apply rotation or reflection to the board state during MCTS search.
+
+IMPORTANT NOTE:
+Alghouth not directly mentioned in the ogirinal papers, we believe AlphaZero runs large amount of self-play actors (256 or more) to generate self-play samples,
+while training on multiple servers at the same time.
+
+In the case we run the pipeline on a single machine at home, training one batch with batch size 128 only take less than a second on GPU, few seconds on CPU,
+but self-play one game could take few minutes (in the early stage one game only lasts 30-50 steps).
+If we run training with 8-16 actors, the network could easily over-fitting to existing samples while fail to converge.
+
+One hack is to add some delay to the training loop, to wait for the self-play actors to generate more training samples.
+The downside is this will slow down the overall training progress, we also have to 'tune' the train delay hyper-parameters.
+
+We conducted the following experiments:
+* For training and self-play on CPU (M1 Mac Mini), we found use `--train_delay=0.25` yields one checkpoint every 10 minutes.
+  Took 90-120 minutes for the actors to generate 10k self-play samples.
+* For training and self-play on single RTX 2080 Ti GPU, we found use `--train_delay=0.5` yields one checkpoint every 10 minutes.
+  Took 80-100 minutes for the actors to generate 10k self-play samples.
+* We observed it takes around 400k training steps for the agent to reach a resonable 'strong' level that can beat a beginner human player, and sometimes beats a 'strong' human player (I'm really not good at this game but my partner is really good, she beats me every single time).
+
+The above experiments were conducted under the same condition (using `run_training_v2.py`) and hyper parameters:
+* `--board_size=11`
+* `--stack_history=4`
+* `--checkpoint_frequency=1000`
+* `--num_simulations=400`
+* `--num_actors=6`
+* `--batch_size=128`
+* `--replay_capacity=1000 * 50`
+* `--min_replay_size=1000 * 5`
+
+Based on above statistics and observation, it could take 400*10=4000 minutes, which is 66 hours (~3 days) for the agent to converge to a suboptimal policy.
+But you can tune the hyper parameters to suit your own environment. For example the number of actors, batch size, train delay.
+
+One additional note is that if we really want to train a strong player, we need to increse the neural network capacity by using larger number of planes in the Conv2d layers and more res-blocks.
+
+
 ## Quick start
 ### Install required packages on Mac
 ```
@@ -38,36 +85,13 @@ pip3 install -r requirements.txt
 ```
 
 
-### Start training
-
-IMPORTANT NOTE:
-Alghouth not directly mentioned in the ogirinal papers, we believe AlphaZero runs large amount of self-play actors (256 or more) to generate self-play samples,
-while training on multiple servers at the same time.
-
-In the case we run the pipeline on a single machine at home, training one batch with batch size 128 only take less than a second on GPU, few seconds on CPU,
-but self-play one game could take few minutes (in the early stage one game only lasts 30-50 steps).
-If we run training with 8-16 actors, the network could easily over-fitting to existing samples while fail to converge.
-
-One hack is to add some delay to the training loop, to wait for the self-play actors to generate more training samples.
-The downside is this will slow down the overall training progress, we also have to 'tune' the train delay hyper-parameters.
-
-We conducted the following experiments:
-For training and self-play on CPU, we found use `--train_delay=0.25` yields one checkpoint every 10 minutes, took 90-120 minutes to generate 10k self-play samples.
-For training and self-play on GPU, we found use `--train_delay=0.5` yields one checkpoint every 10 minutes, took 80-100 minutes to generate 10k self-play samples.
-
-The above experiments were conducted under the same condition and hyper parameters:
-`--board_size=11`
-`--stack_history=4`
-`--checkpoint_frequency=1000`
-`--num_simulations=400`
-`--num_actors=8`
-`--batch_size=128`
+## Start training
 
 ```
-# Training AlphaGo Zero method
+# Training using the AlphaGo Zero method
 python3 -m alpha_zero.gomoku.run_training_v1
 
-# Training AlphaZero method
+# Training using the AlphaZero method
 python3 -m alpha_zero.gomoku.run_training_v2
 ```
 
@@ -85,20 +109,6 @@ python3 -m alpha_zero.gomoku.human_vs_alpha_zero
 # AlphaZero vs. AlphaZero
 python3 -m alpha_zero.gomoku.alpha_zero_vs_alpha_zero
 ```
-
-
-### Additional notes
-We follow the same architecture as mentioned in the AlphaGo Zero paper, but made the some changes,
-as the goal is not to make a strongest player but to study the algorithm.
-* To address the lack of access to powerfull machines and GPUs, we adapt the following changes:
-  - use board size 11 instead of 15 or 19
-  - stack most recent 4 board states instead of 8 board states for each player
-  - use 64 planes for the conv2d layers instead of 256
-  - use 6 res-blocks instead of 19
-  - use 400 instead of 800 simulations per MCTS search
-  - add delay to the training loop before training on next batch of samples (to avoid over-fitting)
-* We do not implement parallel MCTS search, or batched evaluation during MCTS search.
-* We do not apply rotation or reflection to the board state during MCTS search.
 
 
 ### Screenshots Gomoku

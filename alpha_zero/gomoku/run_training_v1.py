@@ -65,7 +65,7 @@ flags.DEFINE_float('l2_decay', 0.0001, 'Adam L2 regularization.')
 flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
 flags.DEFINE_integer('num_eval_games', 10, 'Number of games to play during evaluation to select best player.')
 
-flags.DEFINE_integer('num_actors', 8, 'Number of self-play actor processes.')
+flags.DEFINE_integer('num_actors', 6, 'Number of self-play actor processes.')
 flags.DEFINE_integer('num_simulations', 400, 'Number of simulations per MCTS search, per agent environment time step.')  # 800
 
 flags.DEFINE_float('c_puct', 5.0, 'Puct constant of the UCB score.')
