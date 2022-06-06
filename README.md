@@ -35,7 +35,7 @@ as the goal is not to make a strongest player but to study the algorithm.
 * We do not implement parallel MCTS search, or batched evaluation during MCTS search.
 * We do not apply rotation or reflection to the board state during MCTS search.
 
-IMPORTANT NOTE:
+#### IMPORTANT NOTE:
 Alghouth not directly mentioned in the ogirinal papers, we believe AlphaZero runs large amount of self-play actors (256 or more) to generate self-play samples,
 while training on multiple servers at the same time.
 
@@ -51,7 +51,7 @@ We conducted the following experiments:
   Took 90-120 minutes for the actors to generate 10k self-play samples.
 * For training and self-play on single RTX 2080 Ti GPU, we found use `--train_delay=0.5` yields one checkpoint every 10 minutes.
   Took 80-100 minutes for the actors to generate 10k self-play samples.
-* We observed it takes around 400k training steps for the agent to reach a resonable 'strong' level that can beat a beginner human player, and sometimes beats a 'strong' human player (I'm really not good at this game but my partner is really good, she beats me every single time).
+* We observed it takes around 400k training steps for the agent to reach a reasonable 'strong' level that can beat a beginner human player, and sometimes beats a 'strong' human player (I'm really not good at this game but my partner is really good, she beats me every single time).
 
 The above experiments were conducted under the same condition (using `run_training_v2.py`) and hyper parameters:
 * `--board_size=11`
