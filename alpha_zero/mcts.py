@@ -120,8 +120,8 @@ class Node:
         ucb_results = np.where(actions_mask, ucb_results, -1000)
 
         # Break ties when have multiple 'max' value.
-        deterministic = np.random.choice(np.where(ucb_results == ucb_results.max())[0])
-        best_child = self.children[deterministic]
+        action_index = np.random.choice(np.where(ucb_results == ucb_results.max())[0])
+        best_child = self.children[action_index]
 
         return best_child
 
