@@ -25,10 +25,10 @@
 ## Network Architecture and Training Experiments
 We follow the same architecture as mentioned in the AlphaGo Zero paper, but made the some changes,
 as the goal is not to make a strongest player but to study the algorithm.
-* To address the lack of access to powerfull machines and GPUs, we adapt the following changes:
+* To address the lack of access to powerful machines and GPUs, we adapt the following changes:
   - use board size 11 instead of 15 or 19
   - stack most recent 4 board states instead of 8 board states for each player
-  - use 64 planes for the conv2d layers instead of 256
+  - use 64 planes for the Conv2d layers instead of 256
   - use 6 res-blocks instead of 19
   - use 400 instead of 800 simulations per MCTS search
   - add delay to the training loop before training on next batch of samples (to avoid over-fitting)
@@ -112,7 +112,7 @@ python3 -m alpha_zero.gomoku.alpha_zero_vs_alpha_zero
 
 
 ### Screenshots Gomoku
-* Training performance measured in elo rating
+* Training performance measured in Elo rating
 ![Training performance](../main/screenshots/gomoku_performance.png)
 
 * Evaluation
@@ -124,7 +124,7 @@ python3 -m alpha_zero.gomoku.alpha_zero_vs_alpha_zero
 
 
 ### Screenshots Tic-Tac-Toe
-* Training performance measured in elo rating
+* Training performance measured in Elo rating
 ![Training performance](../main/screenshots/tictactoe_performance.png)
 
 
