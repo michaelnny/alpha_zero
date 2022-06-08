@@ -15,8 +15,8 @@
 * `gomoku` contains the modules to train and play the game
   - `run_training_v1.py` trains the agent following AlphaGo Zero paper
   - `run_training_v2.py` trains the agent following AlphaZero paper (without using evaluation to select 'best' player)
-  - `alpha_zero_vs_alpha_zero.py` launchs a GUI programe to play in Gomoku AlphaZero vs. AlphaZero mode
-  - `human_vs_alpha_zero.py` launchs a GUI programe to play Gomoku in Human vs. AlphaZero mode
+  - `alpha_zero_vs_alpha_zero.py` launch a GUI program to play in Gomoku AlphaZero vs. AlphaZero mode
+  - `human_vs_alpha_zero.py` launch a GUI program to play Gomoku in Human vs. AlphaZero mode
 * `mcts.py` contains the MCTS node and UCT tree-search algorithm.
 * `pipeline_v1.py` contains the functions to run self-play, training, and evaluation loops (following AlphaGo Zero paper, evaluation is used to select best player to generate self-play samples)
 * `pipeline_v2.py` contains the functions to run training, and evaluation loops (following AlphaZero paper, evaluation is only used to monitoring performance)
@@ -36,7 +36,7 @@ as the goal is not to make a strongest player but to study the algorithm.
 * We do not apply rotation or reflection to the board state during MCTS search.
 
 #### IMPORTANT NOTE:
-Alghouth not directly mentioned in the ogirinal papers, we believe AlphaZero runs large amount of self-play actors (256 or more) to generate self-play samples,
+Although not directly mentioned in the original papers, we believe AlphaZero runs large amount of self-play actors (256 or more) to generate self-play samples,
 while training on multiple servers at the same time.
 
 In the case we run the pipeline on a single machine at home, training one batch with batch size 128 only take less than a second on GPU, few seconds on CPU,
@@ -66,7 +66,7 @@ The above experiments were conducted under the same condition (using `run_traini
 Based on above statistics and observation, it could take 400*10=4000 minutes, which is 66 hours (~3 days) for the agent to converge to a suboptimal policy.
 But you can tune the hyper parameters to suit your own environment. For example the number of actors, batch size, train delay.
 
-One additional note is that if we really want to train a strong player, we need to increse the neural network capacity by using larger number of planes in the Conv2d layers and more res-blocks.
+One additional note is that if we really want to train a strong player, we need to increase the neural network capacity by using larger number of planes in the Conv2d layers and more res-blocks.
 
 
 ## Quick start
@@ -129,7 +129,7 @@ python3 -m alpha_zero.gomoku.alpha_zero_vs_alpha_zero
 
 
 ### TODO
-* Finish grpc module (adapte SEED RL architecture) to minimize GPU resource when running self-play on GPUs,
+* Finish grpc module (adapt SEED RL architecture) to minimize GPU resource when running self-play on GPUs,
   as there are some minimum PyTorch resource allocation (we found about 1GB GPU RAM per process)
 
 
