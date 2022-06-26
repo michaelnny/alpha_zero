@@ -10,6 +10,11 @@
 * numpy         1.21.6
 
 
+## Supported games
+* Free-style Gomoku
+* Tic-Tac-Toe
+
+
 ## Code structure
 * `games` directory contains the custom Gomoku board game env implemented with openAI Gym.
 * `gomoku` contains the modules to train and play the game
@@ -35,7 +40,7 @@ as the goal is not to make a strongest player but to study the algorithm.
 * We do not implement parallel MCTS search, or batched evaluation during MCTS search.
 * We do not apply rotation or reflection to the board state during MCTS search.
 
-#### IMPORTANT NOTE:
+### Important note
 Although not directly mentioned in the original papers, we believe AlphaZero runs large amount of self-play actors (256 or more) to generate self-play samples,
 while training on multiple servers at the same time.
 
@@ -46,6 +51,7 @@ If we run training with 8-16 actors, the network could easily over-fitting to ex
 One hack is to add some delay to the training loop, to wait for the self-play actors to generate more training samples.
 The downside is this will slow down the overall training progress, we also have to 'tune' the train delay hyper-parameters.
 
+### Training experiments
 We conducted the following experiments:
 * For training and self-play on CPU (M1 Mac Mini), we found use `--train_delay=0.25` yields one checkpoint every 10 minutes.
   Took 90-120 minutes for the actors to generate 10k self-play samples.
@@ -87,17 +93,37 @@ pip3 install -r requirements.txt
 
 ## Start training
 
+### Gomoku game
+
+Training using the AlphaGo Zero method, which may be much slower depending how number of games to play for evaluation to select the new 'best' player.
 ```
-# Training using the AlphaGo Zero method
 python3 -m alpha_zero.gomoku.run_training_v1
 
-# Training using the AlphaZero method
+# check training performance
+python3 -m alpha_zero.plot --train_csv_file=logs/train_gomoku_v1.csv --eval_csv_file=logs/eval_gomoku_v1.csv
+```
+
+Training using the AlphaZero method.
+```
 python3 -m alpha_zero.gomoku.run_training_v2
+
+# check training performance
+python3 -m alpha_zero.plot --train_csv_file=logs/train_gomoku_v2.csv --eval_csv_file=logs/eval_gomoku_v2.csv
+```
+
+
+### Tic-Tac-Toe
+
+```
+python3 -m alpha_zero.tictactoe.run_training_v2
+
+# check training performance
+python3 -m alpha_zero.plot --train_csv_file=logs/train_tictactoe_v2.csv --eval_csv_file=logs/eval_tictactoe_v2.csv
 ```
 
 
 ### Start playing games
-We have a very basic GUI program, which supports
+We have a very basic GUI program for Gomoku, which supports
 * Human vs. AlphaZero
 * AlphaZero vs. AlphaZero
 
