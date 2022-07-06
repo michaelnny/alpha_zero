@@ -117,19 +117,19 @@ python3 -m alpha_zero.gomoku.alpha_zero_vs_alpha_zero
 # Training Progress and Performance
 ## Screenshots Gomoku
 * Training performance measured in Elo rating
-![Training performance](../main/screenshots/gomoku_performance.png)
+![Training performance](/screenshots/gomoku_performance.png)
 
 * Evaluation
-![Train steps 501000](../main/screenshots/gomoku_train_steps_501000.png)
-![Train steps 502000](../main/screenshots/gomoku_train_steps_502000.png)
+![Train steps 501000](/screenshots/gomoku_train_steps_501000.png)
+![Train steps 502000](/screenshots/gomoku_train_steps_502000.png)
 
 * The agent failed to do well in 'edge' case
-![Edge case](../main/screenshots/gomoku_edge_case.png)
+![Edge case](/screenshots/gomoku_edge_case.png)
 
 
 ## Screenshots Tic-Tac-Toe
 * Training performance measured in Elo rating
-![Training performance](../main/screenshots/tictactoe_performance.png)
+![Training performance](/screenshots/tictactoe_performance.png)
 
 
 # Training Experiments
