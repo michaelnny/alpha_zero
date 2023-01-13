@@ -12,8 +12,6 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
 - [Train Agents](#train-agents)
 - [Evaluate Agents](#evaluate-agents)
 - [Training Progress and Performance](#training-progress-and-performance)
-- [Training Experiments](#training-experiments)
-- [TODO](#todo)
 - [Reference Papers](#reference-papers)
 - [Reference Code](#reference-code)
 - [License](#license)
@@ -22,15 +20,15 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
 
 # Environment and Requirements
 * Python        3.9.12
-* pip           22.0.3
-* PyTorch       1.11.0
-* gym           0.23.1
-* numpy         1.21.6
+* pip           22.3.1
+* PyTorch       1.13.1
+* gym           0.25.2
+* numpy         1.23.4
 
 
 # Supported Games
-* Free-style Gomoku
 * Tic-Tac-Toe
+* Free-style Gomoku
 
 
 # Code Structure
@@ -38,21 +36,17 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
 * `gomoku` contains the modules to train and play the game
   - `run_training_v1.py` trains the agent following AlphaGo Zero paper
   - `run_training_v2.py` trains the agent following AlphaZero paper (without using evaluation to select 'best' player)
-  - `alpha_zero_vs_alpha_zero.py` launch a GUI program to play in Gomoku AlphaZero vs. AlphaZero mode
-  - `human_vs_alpha_zero.py` launch a GUI program to play Gomoku in Human vs. AlphaZero mode
+  - `eval_agent.py` evaluate the agents by playing the Gomoku game in terminal mode, only supports AlphaZero vs. AlphaZero mode
+  - `eval_agent_gui.py` evaluate the agents by launching a simple GUI program to play Gomoku, supports AlphaZero vs. AlphaZero mode, and Human vs. AlphaZero mode
 * `mcts.py` contains the MCTS node and UCT tree-search algorithm.
 * `pipeline_v1.py` contains the functions to run self-play, training, and evaluation loops (following AlphaGo Zero paper, evaluation is used to select best player to generate self-play samples)
 * `pipeline_v2.py` contains the functions to run training, and evaluation loops (following AlphaZero paper, evaluation is only used to monitoring performance)
 
 
 # Author's Notes
-* The goal is not to make a strongest player but to study the algorithm
-* We follow the same architecture as mentioned in the AlphaGo Zero paper, use 64 planes and 6 res-blocks
-* We use 400 instead of 800 simulations per MCTS search
-* We stack most recent 4 board states instead of 8 board states for each player
-* We do not implement parallel MCTS search, or batched evaluation during MCTS search
-* We do not apply rotation or reflection to the board state during MCTS search
-* We stop training once the agent have made some progress
+* The goal is not to make a strongest player but to study the algorithm, as we stopped the training once the agent have made some progress
+* We use scaled down configuration for the training, like using a smaller neural network, lesser simulations per MCTS search, and smaller batch size etc.
+* The elo ratings should not taken too seriously, since we don't set the agent to play against some existing (strong) agent
 
 
 # Quick start
@@ -66,6 +60,17 @@ python3 -m pip install --upgrade pip setuptools
 
 # Python3 tkinter for GUI
 brew install python-tk
+
+pip3 install -r requirements.txt
+```
+
+## Install required packages on Ubuntu linux
+```
+# upgrade pip
+python3 -m pip install --upgrade pip setuptools
+
+# Python3 tkinter for GUI
+sudo apt-get install python3-tk
 
 pip3 install -r requirements.txt
 ```
@@ -84,7 +89,20 @@ python3 -m alpha_zero.plot --train_csv_file=logs/train_tictactoe_v2.csv --eval_c
 
 ## Gomoku Game
 
-Training using the AlphaGo Zero method, which may be much slower depending how number of games to play for evaluation to select the new 'best' player.
+Trains the agent using the AlphaZero method, which is highly recommended.
+```
+python3 -m alpha_zero.gomoku.run_training_v2
+
+
+# resume training
+python3 -m alpha_zero.gomoku.run_training_v2 --load_samples_file=./samples/gomoku_v2/replay_200000_20230112_102835 --load_checkpoint_file=./checkpoints/gomoku_v2/train_steps_64000 --initial_elo=-2064
+
+
+# check training performance
+python3 -m alpha_zero.plot --train_csv_file=logs/train_gomoku_v2.csv --eval_csv_file=logs/eval_gomoku_v2.csv
+```
+
+Trains the agent the AlphaGo Zero method, which may be much slower depending on thr number of evaluation games to play to select the new best player.
 ```
 python3 -m alpha_zero.gomoku.run_training_v1
 
@@ -92,27 +110,47 @@ python3 -m alpha_zero.gomoku.run_training_v1
 python3 -m alpha_zero.plot --train_csv_file=logs/train_gomoku_v1.csv --eval_csv_file=logs/eval_gomoku_v1.csv
 ```
 
-Training using the AlphaZero method.
-```
-python3 -m alpha_zero.gomoku.run_training_v2
 
-# check training performance
-python3 -m alpha_zero.plot --train_csv_file=logs/train_gomoku_v2.csv --eval_csv_file=logs/eval_gomoku_v2.csv
-```
+
+## MCTS performance
+
+We have to implementation of the MCTS search algorithm: `mcts_v1` and `mcts_v2`.
+The first one is very basic and easy to understand, however it's very slow due to the nature of massive amount of computations needed to complete the search. The second one is an optimized version, which we use numpy.arrays to store the statistics for the nodes in the search tree.
+
+The following table shows the mean search time (in second) per search for these different MCTS implementations.
+We run the experiment with a single thread for 100 search steps on a single RTX 3090 GPU, we use the 400 simulations per MCTS,  for the leaf-parallel search we use a parallel number of 8.
+| Module       | Single thread    | Leaf-parallel    |
+| ------------ | ---------------- | ---------------- |
+| `mcts_v1`    | 0.92             | 1.1              |
+| `mcts_v2`    | 0.67             | 0.15             |
+
+
+## Training on a single machine
+
+Although not directly mentioned in the original papers, we believe AlphaZero runs large amount of self-play actors (5000 TPUs) to generate self-play samples, while training on separate server (16 TPUs) at the same time.
+
+In the case we run the pipeline on a single machine, training one batch of 256 samples (on GPU) takes lesser than a second,
+but it could takes much longer time for self-play to generate the same amount of samples. This means the neural network may suffer from the over-fitting issue while fail to converge to an optimal policy.
+
+One solution to mitigate this issue is to add some delay to the learner's training loop. The ideal situation is we want the actors to generate a batch of new samples before starting training on next batch. However, if we delay for too long, more bad samples are generated because the actors are still using the old parameters for neural network. The right value for the train delay parameter would depend on the setup, for example how many actors, what kind of hardware etc.
+
+In our experiment, running 3 actors and a single learner on a single RTX 3090 GPU, using 400 simulations and 8 parallel leaves for MCTS search, it takes ~20 minutes to generate 10000 sample positions. For the learner's training loop, we use batch size 256, and a 0.5 seconds delay per training step, it takes ~10 minutes to run 1000 training steps. This means every 10 minutes, a new checkpoint will be created and the actors will start using the new checkpoint to generate new samples.
+
 
 # Evaluate Agents
-We have a very basic GUI program for Gomoku, which supports
+You can evaluate the agent by running the `eval_agent` script. In addition for the Gomoku game, We also have a very basic GUI program, which supports
 * Human vs. AlphaZero
 * AlphaZero vs. AlphaZero
 
 To start play the game, make sure you have a valid checkpoint file and run the following command
 ```
 # Human vs. AlphaZero
-python3 -m alpha_zero.gomoku.human_vs_alpha_zero
+python3 -m alpha_zero.gomoku.eval_agent_gui
 
 # AlphaZero vs. AlphaZero
-python3 -m alpha_zero.gomoku.alpha_zero_vs_alpha_zero
+python3 -m alpha_zero.gomoku.eval_agent_gui --nohuman_vs_ai
 ```
+
 
 # Training Progress and Performance
 ## Screenshots Gomoku
@@ -127,51 +165,6 @@ python3 -m alpha_zero.gomoku.alpha_zero_vs_alpha_zero
 ![Edge case](/screenshots/gomoku_edge_case.png)
 
 
-## Screenshots Tic-Tac-Toe
-* Training performance measured in Elo rating
-![Training performance](/screenshots/tictactoe_performance.png)
-
-
-# Training Experiments
-
-Although not directly mentioned in the original papers, we believe AlphaZero runs large amount of self-play actors (256 or more) to generate self-play samples,
-while training on multiple servers at the same time.
-
-In the case we run the pipeline on a single machine at home, training one batch with batch size 128 only take less than a second on GPU, few seconds on CPU,
-but self-play one game could take few minutes (in the early stage one game only lasts 30-50 steps).
-If we run training with 8-16 actors, the network could easily over-fitting to existing samples while fail to converge.
-
-One hack is to add some delay to the training loop, to wait for the self-play actors to generate more training samples.
-The downside is this will slow down the overall training progress, we also have to 'tune' the train delay hyper-parameters.
-
-We conducted the following experiments:
-* For training and self-play on CPU (M1 Mac Mini), we found use `--train_delay=0.25` yields one checkpoint every 10 minutes.
-  Took 90-120 minutes for the actors to generate 10k self-play samples.
-* For training and self-play on single RTX 2080 Ti GPU, we found use `--train_delay=0.5` yields one checkpoint every 10 minutes.
-  Took 80-100 minutes for the actors to generate 10k self-play samples.
-* We observed it takes around 400k training steps for the agent to reach a reasonable 'strong' level that can beat a beginner human player, and sometimes beats a 'strong' human player (I'm really not good at this game but my partner is really good, she beats me every single time).
-
-The above experiments were conducted under the same condition (using `run_training_v2.py`) and hyper parameters:
-* `--board_size=11`
-* `--stack_history=4`
-* `--checkpoint_frequency=1000`
-* `--num_simulations=400`
-* `--num_actors=6`
-* `--batch_size=128`
-* `--replay_capacity=1000 * 50`
-* `--min_replay_size=1000 * 5`
-
-Based on above statistics and observation, it could take 400*10=4000 minutes, which is 66 hours (~3 days) for the agent to converge to a suboptimal policy.
-But you can tune the hyper parameters to suit your own environment. For example the number of actors, batch size, train delay.
-
-One additional note is that if we really want to train a strong player, we need to increase the neural network capacity by using larger number of planes in the Conv2d layers and more res-blocks.
-
-
-# TODO
-* Finish grpc module (adapt SEED RL architecture) to minimize GPU resource when running self-play on GPUs,
-  as there are some minimum PyTorch resource allocation (we found about 1GB GPU RAM per process)
-
-
 # Reference Papers
 * [Mastering the game of Go without human knowledge](https://www.nature.com/articles/nature24270/)
 * [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs//1712.01815)
@@ -180,7 +173,6 @@ One additional note is that if we really want to train a strong player, we need 
 # Reference Code
 * [A Deep Dive into Monte Carlo Tree Search](https://www.moderndescartes.com/essays/deep_dive_mcts/)
 * [MCTS basic code](https://github.com/brilee/python_uct)
-* [AlphaZeroSimple on MCTS node statistics backup and UCT score](https://github.com/JoshVarty/AlphaZeroSimple)
 * [Deep RL Zoo](https://github.com/michaelnny/deep_rl_zoo)
 
 

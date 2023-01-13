@@ -17,13 +17,7 @@ from absl.testing import absltest
 from absl.testing import parameterized
 import numpy as np
 
-from alpha_zero.games.gomoku import (
-    GomokuEnv,
-    check_openness,
-    check_open_and_semiopen_seq,
-    full_scan_for_open_and_semiopen_seq,
-    evaluate_and_score,
-)
+from alpha_zero.games.gomoku import GomokuEnv
 
 
 class GomokuEnvTest(parameterized.TestCase):
@@ -130,9 +124,9 @@ class GomokuEnvTest(parameterized.TestCase):
                 action = win_actions[winner_steps]
                 winner_steps += 1
             else:
-                # Opponent should not take win_actions and resign action
+                # Opponent should not take win_actions
                 legit_actions = np.flatnonzero(env.actions_mask)
-                opponent_actions = list(set(legit_actions) - set(win_actions) - set([env.resign_action]))
+                opponent_actions = list(set(legit_actions) - set(win_actions))
 
                 action = np.random.choice(opponent_actions, 1).item()
 
@@ -162,9 +156,9 @@ class GomokuEnvTest(parameterized.TestCase):
                 action = win_actions[winner_steps]
                 winner_steps += 1
             else:
-                # Opponent should not take win_actions and resign action
+                # Opponent should not take win_actions
                 legit_actions = np.flatnonzero(env.actions_mask)
-                opponent_actions = list(set(legit_actions) - set(win_actions) - set([env.resign_action]))
+                opponent_actions = list(set(legit_actions) - set(win_actions))
 
                 action = np.random.choice(opponent_actions, 1).item()
                 opponent_steps += 1
@@ -174,288 +168,6 @@ class GomokuEnvTest(parameterized.TestCase):
         self.assertEqual(winner_steps, num_to_win)
         self.assertEqual(env.winner, winner_id)
         self.assertEqual(reward, 1.0)
-
-
-class GomokuEvaluationFunctionsTest(parameterized.TestCase):
-    def setUp(self):
-        super().setUp()
-        self.env = GomokuEnv(board_size=9)
-        self.env.reset()
-        self.board = self.env.board
-
-        self.black_color = self.env.black_color
-        self.white_color = self.env.white_color
-
-        # Row 1
-        self.board[0, 1] = self.white_color
-        self.board[0, 2] = self.white_color
-        self.board[0, 3] = self.white_color
-        self.board[0, 5] = self.white_color
-        self.board[0, 6] = self.white_color
-
-        # Row 2
-        self.board[1, 2] = self.white_color
-        self.board[1, 3] = self.white_color
-        self.board[1, 4] = self.white_color
-        self.board[1, 6] = self.white_color
-        self.board[1, 7] = self.white_color
-
-        # Row 3
-        self.board[2, 3] = self.white_color
-
-        # Row 4
-        self.board[3, 2] = self.black_color
-        self.board[3, 3] = self.black_color
-        self.board[3, 4] = self.black_color
-        self.board[3, 5] = self.black_color
-        self.board[3, 6] = self.black_color
-
-        # Row 5
-        self.board[4, 5] = self.black_color
-        self.board[4, 6] = self.black_color
-
-        # Row 6
-        self.board[5, 2] = self.white_color
-        self.board[5, 3] = self.white_color
-
-        # Row 7
-        self.board[6, 2] = self.white_color
-        self.board[6, 3] = self.white_color
-
-        # Row 8
-        self.board[7, 2] = self.white_color
-
-        # Expected board:
-        # [
-        # [0 1 1 1 0 1 1 0 0]
-        # [0 0 1 1 1 0 1 1 0]
-        # [0 0 0 1 0 0 0 0 0]
-        # [0 0 2 2 2 2 2 0 0]
-        # [0 0 0 0 0 2 2 0 0]
-        # [0 0 1 1 0 0 0 0 0]
-        # [0 0 1 1 0 0 0 0 0]
-        # [0 0 1 0 0 0 0 0 0]
-        # [0 0 0 0 0 0 0 0 0]
-        # ]
-
-    def test_check_openness_horizontal(self):
-        status_1 = check_openness(self.board, 0, 1, 0, 3, 0, 1)
-        status_2 = check_openness(self.board, 0, 2, 0, 3, 0, 1)
-        status_3 = check_openness(self.board, 0, 3, 0, 5, 0, 1)
-
-        self.assertEqual(status_1, 'OPEN')
-        self.assertEqual(status_2, 'SEMIOPEN')
-        self.assertEqual(status_3, 'CLOSED')
-
-    def test_check_openness_vertical(self):
-        status_1 = check_openness(self.board, 0, 3, 2, 3, 1, 0)
-        status_2 = check_openness(self.board, 2, 5, 5, 5, 1, 0)
-        status_3 = check_openness(self.board, 6, 2, 7, 2, 1, 0)
-
-        self.assertEqual(status_1, 'CLOSED')
-        self.assertEqual(status_2, 'OPEN')
-        self.assertEqual(status_3, 'SEMIOPEN')
-
-    def test_check_openness_digonal_top_left_to_bottom_right(self):
-        status_1 = check_openness(self.board, 0, 1, 3, 4, 1, 1)
-        status_2 = check_openness(self.board, 0, 3, 1, 4, 1, 1)
-        status_3 = check_openness(self.board, 3, 5, 5, 7, 1, 1)
-        status_4 = check_openness(self.board, 0, 5, 2, 7, 1, 1)
-
-        self.assertEqual(status_1, 'CLOSED')
-        self.assertEqual(status_2, 'SEMIOPEN')
-        self.assertEqual(status_3, 'OPEN')
-        self.assertEqual(status_4, 'SEMIOPEN')
-
-    def test_check_openness_digonal_top_right_to_bottom_left(self):
-        status_1 = check_openness(self.board, 0, 5, 2, 3, 1, -1)
-        status_2 = check_openness(self.board, 0, 3, 1, 2, 1, -1)
-        status_3 = check_openness(self.board, 2, 7, 4, 5, 1, -1)
-
-        self.assertEqual(status_1, 'CLOSED')
-        self.assertEqual(status_2, 'SEMIOPEN')
-        self.assertEqual(status_3, 'OPEN')
-
-    def test_check_openness_off_board(self):
-        status_1 = check_openness(self.board, -1, -2, 55, 66, -1, -1)
-        self.assertEqual(status_1, 'CLOSED')
-
-    def test_check_open_and_semiopen_sequence_horizontal(self):
-        # White stones
-        open_count_w_1, semi_count_w_1 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 0, 3, 0, 1)
-        self.assertEqual(open_count_w_1, 1)
-        self.assertEqual(semi_count_w_1, 0)
-
-        open_count_w_2, semi_count_w_2 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 0, 2, 0, 1)
-        self.assertEqual(open_count_w_2, 1)
-        self.assertEqual(semi_count_w_2, 0)
-
-        # Black stones
-        open_count_b_1, semi_count_b_1 = check_open_and_semiopen_seq(self.board, self.black_color, 3, 0, 5, 0, 1)
-        self.assertEqual(open_count_b_1, 1)
-        self.assertEqual(semi_count_b_1, 0)
-
-        open_count_b_2, semi_count_b_2 = check_open_and_semiopen_seq(self.board, self.black_color, 4, 0, 2, 0, 1)
-        self.assertEqual(open_count_b_2, 1)
-        self.assertEqual(semi_count_b_2, 0)
-
-    def test_check_open_and_semiopen_sequence_vertical(self):
-        # White stones
-        open_count_w_1, semi_count_w_1 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 2, 3, 1, 0)
-        self.assertEqual(open_count_w_1, 1)
-        self.assertEqual(semi_count_w_1, 0)
-
-        open_count_w_2, semi_count_w_2 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 2, 2, 1, 0)
-        self.assertEqual(open_count_w_2, 0)
-        self.assertEqual(semi_count_w_2, 1)
-
-        # Black stones
-        open_count_b_1, semi_count_b_1 = check_open_and_semiopen_seq(self.board, self.black_color, 0, 5, 2, 1, 0)
-        self.assertEqual(open_count_b_1, 1)
-        self.assertEqual(semi_count_b_1, 0)
-
-    def test_check_open_and_semiopen_sequence_diagonal_top_left_to_bottom_right(self):
-        # White stones
-        open_count_w_1, semi_count_w_1 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 1, 2, 1, 1)
-        self.assertEqual(open_count_w_1, 0)
-        self.assertEqual(semi_count_w_1, 0)
-
-        open_count_w_2, semi_count_w_2 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 2, 2, 1, 1)
-        self.assertEqual(open_count_w_2, 0)
-        self.assertEqual(semi_count_w_2, 1)
-
-        open_count_w_3, semi_count_w_3 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 3, 2, 1, 1)
-        self.assertEqual(open_count_w_3, 0)
-        self.assertEqual(semi_count_w_3, 1)
-
-        # Black stones
-        open_count_b_1, semi_count_b_1 = check_open_and_semiopen_seq(self.board, self.black_color, 0, 1, 2, 1, 1)
-        self.assertEqual(open_count_b_1, 0)
-        self.assertEqual(semi_count_b_1, 1)
-
-        open_count_b_2, semi_count_b_2 = check_open_and_semiopen_seq(self.board, self.black_color, 0, 2, 2, 1, 1)
-        self.assertEqual(open_count_b_2, 1)
-        self.assertEqual(semi_count_b_2, 0)
-
-    def test_check_open_and_semiopen_sequence_diagonal_top_right_to_bottom_left(self):
-        # White stones
-        open_count_w_1, semi_count_w_1 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 5, 3, 1, -1)
-        self.assertEqual(open_count_w_1, 0)
-        self.assertEqual(semi_count_w_1, 0)
-
-        open_count_w_2, semi_count_w_2 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 8, 2, 1, -1)
-        self.assertEqual(open_count_w_2, 1)
-        self.assertEqual(semi_count_w_2, 0)
-
-        open_count_w_3, semi_count_w_3 = check_open_and_semiopen_seq(self.board, self.white_color, 0, 3, 2, 1, -1)
-        self.assertEqual(open_count_w_3, 0)
-        self.assertEqual(semi_count_w_3, 1)
-
-        # Black stones
-        open_count_b_1, semi_count_b_1 = check_open_and_semiopen_seq(self.board, self.black_color, 1, 8, 2, 1, -1)
-        self.assertEqual(open_count_b_1, 1)
-        self.assertEqual(semi_count_b_1, 0)
-
-    def test_check_special_open_seq(self):
-        # White stones
-        count_w_1, _ = check_open_and_semiopen_seq(self.board, self.white_color, 0, 0, 4, 0, 1, True, 1)
-        self.assertEqual(count_w_1, 1)
-
-        count_w_2, _ = check_open_and_semiopen_seq(self.board, self.white_color, 1, 0, 4, 0, 1, True, 1)
-        self.assertEqual(count_w_2, 1)
-
-        # Black stones
-        self.board[3, 4] = 0
-        self.board[6, 5] = self.black_color
-        self.board[7, 5] = self.black_color
-
-        count_b_1, _ = check_open_and_semiopen_seq(self.board, self.black_color, 3, 0, 4, 0, 1, True, 1)
-        self.assertEqual(count_b_1, 1)
-
-        count_b_2, _ = check_open_and_semiopen_seq(self.board, self.black_color, 0, 5, 4, 1, 0, True, 1)
-        self.assertEqual(count_b_2, 1)
-
-    def test_full_scan_for_open_and_semiopen_seq(self):
-        # White stones
-        open_count_w_1, semi_count_w_1 = full_scan_for_open_and_semiopen_seq(self.board, self.white_color, 2)
-        self.assertEqual(open_count_w_1, 8)
-        self.assertEqual(semi_count_w_1, 7)
-
-        open_count_w_2, semi_count_w_2 = full_scan_for_open_and_semiopen_seq(self.board, self.white_color, 3)
-        self.assertEqual(open_count_w_2, 3)
-        self.assertEqual(semi_count_w_2, 0)
-
-        # Black stones
-        open_count_b_1, semi_count_b_1 = full_scan_for_open_and_semiopen_seq(self.board, self.black_color, 2)
-        self.assertEqual(open_count_b_1, 5)
-        self.assertEqual(semi_count_b_1, 1)
-
-        open_count_b_2, semi_count_b_2 = full_scan_for_open_and_semiopen_seq(self.board, self.black_color, 5)
-        self.assertEqual(open_count_b_2, 1)
-        self.assertEqual(semi_count_b_2, 0)
-
-    def test_full_scan_for_open_and_semiopen_seq_special_case(self):
-        # White stones
-        open_count_w_1, _ = full_scan_for_open_and_semiopen_seq(self.board, self.white_color, 5, True, 1)
-        self.assertEqual(open_count_w_1, 2)
-
-        # Black stones
-        self.board[3, 4] = 0
-        open_count_b_1, _ = full_scan_for_open_and_semiopen_seq(self.board, self.black_color, 4, True, 1)
-        self.assertEqual(open_count_b_1, 1)
-
-    def test_evaluate_and_score_black_win(self):
-        black_score = evaluate_and_score(self.board, self.black_color, self.white_color, self.black_color, max_score=1)
-        white_score = evaluate_and_score(self.board, self.black_color, self.white_color, self.white_color, max_score=1)
-        self.assertEqual(black_score, 1)
-        self.assertEqual(white_score, -1)
-
-    def test_evaluate_and_score_white_win(self):
-        self.board[3, 2] = self.white_color
-        self.board[4, 2] = self.white_color
-
-        white_score = evaluate_and_score(self.board, self.black_color, self.white_color, self.white_color, max_score=1)
-        black_score = evaluate_and_score(self.board, self.black_color, self.white_color, self.black_color, max_score=1)
-        self.assertEqual(white_score, 1)
-        self.assertEqual(black_score, -1)
-
-    def test_evaluate_and_score_white_has_upper_hand(self):
-        self.board[3, 3] = 0
-        score = evaluate_and_score(self.board, self.black_color, self.white_color, self.white_color)
-        self.assertGreater(score, 0)
-
-    def test_evaluate_and_score_black_has_upper_hand(self):
-        self.board[0, 3] = 0
-        self.board[1, 4] = 0
-        self.board[7, 2] = 0
-
-        self.board[3, 2] = 0
-
-        score = evaluate_and_score(self.board, self.black_color, self.white_color, self.black_color)
-        self.assertGreater(score, 0)
-
-    def test_evaluate_position_current_player_black(self):
-
-        self.board[0, 3] = 0
-        self.board[1, 4] = 0
-        self.board[7, 2] = 0
-
-        self.board[3, 2] = 0
-
-        score = self.env.evaluate_position()
-        self.assertGreater(score, 0)
-
-    def test_evaluate_position_current_player_white(self):
-        self.env.current_player = self.env.opponent_player
-
-        self.board[0, 3] = 0
-        self.board[1, 4] = 0
-        self.board[7, 2] = 0
-
-        self.board[3, 2] = 0
-
-        score = self.env.evaluate_position()
-        self.assertLess(score, 0)
 
 
 class GomokuStackHistoryTest(parameterized.TestCase):
@@ -472,7 +184,7 @@ class GomokuStackHistoryTest(parameterized.TestCase):
         obs = env.reset()
 
         while env.steps < env.stack_history * 2:
-            if env.current_player == env.black_player_id:
+            if env.current_player == env.black_player:
                 action = black_actions[env.steps // 2]
             else:
                 action = white_actions[env.steps // 2]
@@ -504,7 +216,7 @@ class GomokuStackHistoryTest(parameterized.TestCase):
         expected_black_planes.reverse()
         expected_white_planes.reverse()
 
-        if env.current_player == env.black_player_id:
+        if env.current_player == env.black_player:
             planes = []
             for t in range(env.stack_history):
                 planes.append(expected_black_planes[t])

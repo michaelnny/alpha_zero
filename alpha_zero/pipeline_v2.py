@@ -29,12 +29,11 @@ from alpha_zero.games.env import BoardGameEnv
 from alpha_zero.replay import UniformReplay
 from alpha_zero.log import CsvWriter, write_to_csv
 from alpha_zero.rating import compute_elo_rating
-
+from alpha_zero.mcts_player import create_mcts_player
 from alpha_zero.pipeline_v1 import (
     calc_loss,
     run_self_play,
     run_data_collector,
-    create_mcts_player,
     init_absl_logging,
     get_time_stamp,
     create_checkpoint,
@@ -161,10 +160,6 @@ def run_training(
         if delay is not None and delay > 0 and train_steps > 1:
             time.sleep(delay)
 
-    state_to_save = get_state_to_save()
-    ckpt_file = ckpt_dir / f'train_steps_{train_steps}_final'
-    create_checkpoint(state_to_save, ckpt_file)
-
     stop_event.set()
     time.sleep(60)
     data_queue.put('STOP')
@@ -175,9 +170,11 @@ def run_evaluation(
     new_checkpoint_network: torch.nn.Module,
     device: torch.device,
     env: BoardGameEnv,
-    c_puct: float,
+    c_puct_base: float,
+    c_puct_init: float,
     temperature: float,
     num_simulations: int,
+    parallel_leaves: int,
     checkpoint_files: List,
     csv_file: str,
     stop_event: multiprocessing.Event,
@@ -194,6 +191,7 @@ def run_evaluation(
         temperature: the temperature exploration rate after MCTS search
             to generate play policy.
         num_simulations: number of simulations for each MCTS search.
+        parallel_leaves: Number of parallel leaves for MCTS search.
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint.
         csv_file: a csv file contains the statistics for the best checkpoint.
         stop_event: a multiprocessing.Event signaling to stop running pipeline.
@@ -237,23 +235,39 @@ def run_evaluation(
         old_checkpoint_network.eval()
 
         # Black is the new checkpoint, white is last checkpoint.
-        black_player = create_mcts_player(new_checkpoint_network, device)
-        white_player = create_mcts_player(old_checkpoint_network, device)
+        black_player = create_mcts_player(
+            network=new_checkpoint_network,
+            device=device,
+            num_simulations=num_simulations,
+            parallel_leaves=parallel_leaves,
+            root_noise=False,
+            deterministic=True,
+        )
+        white_player = create_mcts_player(
+            network=old_checkpoint_network,
+            device=device,
+            num_simulations=num_simulations,
+            parallel_leaves=parallel_leaves,
+            root_noise=False,
+            deterministic=True,
+        )
 
         env.reset()
         root_node = None
         done = False
+        steps = 0
 
         while not done:
-            if env.current_player == env.black_player_id:
-                action, _, root_node = black_player(env, root_node, c_puct, temperature, num_simulations, False, True)
+            if env.current_player == env.black_player:
+                action, _, root_node = black_player(env, root_node, c_puct_base, c_puct_init, temperature)
             else:
-                action, _, root_node = white_player(env, root_node, c_puct, temperature, num_simulations, False, True)
+                action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
             _, _, done, _ = env.step(action)
+            steps += 1
 
-        if env.winner == env.black_player_id:
+        if env.winner == env.black_player:
             black_elo, _ = compute_elo_rating(0, black_elo, white_elo)
-        elif env.winner == env.white_player_id:
+        elif env.winner == env.white_player:
             black_elo, _ = compute_elo_rating(1, black_elo, white_elo)
         white_elo = black_elo
 
@@ -262,6 +276,7 @@ def run_evaluation(
             ('train_steps', train_steps, '%3d'),
             ('checkpoint', ckpt_file, '%3s'),
             ('elo_rating', black_elo, '%1d'),
+            ('episode_steps', steps, '%1d'),
         ]
         write_to_csv(writer, log_output)
 

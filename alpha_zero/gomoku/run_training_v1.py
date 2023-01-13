@@ -42,33 +42,35 @@ from alpha_zero.pipeline_v1 import (
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 11, 'Board size for Gomoku.')
-flags.DEFINE_integer('stack_history', 4, 'Stack previous states.')
-
-flags.DEFINE_integer('num_res_blocks', 6, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_planes', 64, 'Number of planes for the conv2d layer in the neural network.')
+flags.DEFINE_integer('board_size', 15, 'Board size for Gomoku.')
+flags.DEFINE_integer('stack_history', 8, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
+flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
-    'num_fc_units', 64, 'Number of hidden units for the fully connected layer in value head of the neural network.'
+    'num_planes',
+    128,
+    'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 1000 * 50, 'Maximum replay size, approximately most recent 1000 games.')
+flags.DEFINE_integer('replay_capacity', 200000, 'Maximum replay size, use most recent N positions for training.')
 flags.DEFINE_integer('min_replay_size', 5000, 'Minimum replay size before learning starts.')
-flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
+flags.DEFINE_integer('batch_size', 512, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('learning_rate_decay', 0.1, 'Adam learning rate decay rate.')
-flags.DEFINE_multi_integer(
-    'lr_milestones', [200000, 400000, 600000], 'The number of steps at which the learning rate will decay.'
-)
+flags.DEFINE_multi_integer('lr_milestones', [200000, 400000], 'The number of steps at which the learning rate will decay.')
 flags.DEFINE_float('l2_decay', 0.0001, 'Adam L2 regularization.')
 
 flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
 flags.DEFINE_integer('num_eval_games', 10, 'Number of games to play during evaluation to select best player.')
 
-flags.DEFINE_integer('num_actors', 6, 'Number of self-play actor processes.')
-flags.DEFINE_integer('num_simulations', 400, 'Number of simulations per MCTS search, per agent environment time step.')  # 800
+flags.DEFINE_integer('num_actors', 3, 'Number of self-play actor processes.')
+flags.DEFINE_integer(
+    'num_simulations', 400, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+)
+flags.DEFINE_integer('parallel_leaves', 8, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
 
-flags.DEFINE_float('c_puct', 5.0, 'Puct constant of the UCB score.')
+flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
+flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
 
 flags.DEFINE_float(
     'temp_begin_value', 1.0, 'Begin value of the temperature exploration rate after MCTS search to generate play policy.'
@@ -79,77 +81,75 @@ flags.DEFINE_float(
     'End (decayed) value of the temperature exploration rate after MCTS search to generate play policy.',
 )
 flags.DEFINE_integer(
-    'temp_decay_steps', 30, 'Number of environment steps to decay the temperture from begin_value to end_value.'
+    'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
+flags.DEFINE_float('train_delay', 0.5, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
-    'train_delay',
-    0.25,
-    'Delay (in seconds) before training on next batch samples, if training on GPU, using large value (like 0.75, 1.0, 1.5).',
+    'initial_elo', -2000, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
-flags.DEFINE_float(
-    'initial_elo', -2000, 'Initial elo rating, in case resume training, this should be the elo form last checkpoint.'
-)
-flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_v1', 'Path for checkpoint file.')
-flags.DEFINE_string(
-    'load_checkpoint_file',
-    '',
-    'Load the checkpoint from file.',
-)
+flags.DEFINE_string('load_checkpoint_file', '', 'Load the checkpoint from file to resume training.')
 
 flags.DEFINE_integer(
     'samples_save_frequency',
-    10000,
-    'The frequency (measured in number added in replay) to save self-play samples in replay.',
+    20000,
+    'The frequency (measured in number added in replay) to save self-play samples to file.',
 )
-flags.DEFINE_string('samples_save_dir', 'samples/gomoku_v1', 'Path for save self-play samples in replay to file.')
-flags.DEFINE_string('load_samples_file', '', 'Load the replay samples from file.')
+flags.DEFINE_string('samples_save_dir', 'samples/gomoku_v1', 'Path for save self-play samples file.')
+flags.DEFINE_string('load_samples_file', '', 'Load the replay samples from file to resume training.')
+
 flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_v1.csv', 'A csv file contains training statistics.')
-flags.DEFINE_string(
-    'eval_csv_file', 'logs/eval_gomoku_v1.csv', 'A csv file contains evaluation statistics for new checkpoint.'
-)
+flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_v1.csv', 'A csv file contains evaluation statistics.')
+
+flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 
 def main(argv):
-    device = 'cpu'
-    if torch.cuda.is_available():
-        device = 'cuda'
-    runtime_device = torch.device(device)
+    
+    torch.manual_seed(FLAGS.seed)
+    random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
 
-    self_play_envs = [
-        GomokuEnv(board_size=FLAGS.board_size, stack_history=FLAGS.stack_history) for i in range(FLAGS.num_actors)
-    ]
-    evaluation_env = GomokuEnv(board_size=FLAGS.board_size, stack_history=FLAGS.stack_history)
+    runtime_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    input_shape = self_play_envs[0].observation_space.shape
+    def environment_builder():
+        return GomokuEnv(board_size=FLAGS.board_size, stack_history=FLAGS.stack_history)
+
+    evaluation_env = environment_builder()
+
+    input_shape = evaluation_env.observation_space.shape
     num_actions = evaluation_env.action_space.n
 
-    network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_fc_units)
+    def network_builder():
+        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_planes)
+
+    network = network_builder()
     optimizer = torch.optim.Adam(network.parameters(), lr=FLAGS.learning_rate, weight_decay=FLAGS.l2_decay)
     lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_milestones, gamma=FLAGS.learning_rate_decay)
 
-    actor_network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_fc_units)
+    actor_network = network_builder()
     actor_network.share_memory()
-    new_checkpoint_network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_fc_units)
 
-    random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
+    new_checkpoint_network = network_builder()
+
     replay = UniformReplay(FLAGS.replay_capacity, random_state)
 
     train_steps = None
     # Load states from checkpoint to resume training.
     if FLAGS.load_checkpoint_file is not None and os.path.isfile(FLAGS.load_checkpoint_file):
-        loaded_state = load_checkpoint(FLAGS.load_checkpoint_file, 'cpu')
+        network.to(device=runtime_device)
+        loaded_state = load_checkpoint(FLAGS.load_checkpoint_file, runtime_device)
         network.load_state_dict(loaded_state['network'])
         optimizer.load_state_dict(loaded_state['optimizer'])
         lr_scheduler.load_state_dict(loaded_state['lr_scheduler'])
         train_steps = loaded_state['train_steps']
 
         actor_network.load_state_dict(loaded_state['network'])
+        new_checkpoint_network.load_state_dict(loaded_state['network'])
 
         logging.info(f'Loaded state from checkpoint {FLAGS.load_checkpoint_file}')
-        logging.info(f'Current state: train steps {train_steps}, learing rate {lr_scheduler.get_last_lr()}')
+        logging.info(f'Current state: train steps {train_steps}, learning rate {lr_scheduler.get_last_lr()}')
 
     # Load replay samples
     if FLAGS.load_samples_file is not None and os.path.isfile(FLAGS.load_samples_file):
@@ -207,18 +207,20 @@ def main(argv):
     )
     learner.start()
 
-    # Start evaluation loop on a seperate process.
+    # Start evaluation loop on a separate process.
     evaluator = multiprocessing.Process(
         target=run_evaluation,
         args=(
             actor_network,
             new_checkpoint_network,
-            runtime_device,
+            'cpu',
             evaluation_env,
             FLAGS.num_eval_games,
-            FLAGS.c_puct,
+            FLAGS.c_puct_base,
+            FLAGS.c_puct_init,
             FLAGS.temp_end_value,
             FLAGS.num_simulations,
+            FLAGS.parallel_leaves,
             checkpoint_files,
             FLAGS.eval_csv_file,
             stop_event,
@@ -236,13 +238,15 @@ def main(argv):
                 i,
                 actor_network,
                 runtime_device,
-                self_play_envs[i],
+                environment_builder(),
                 data_queue,
-                FLAGS.c_puct,
+                FLAGS.c_puct_base,
+                FLAGS.c_puct_init,
                 FLAGS.temp_begin_value,
                 FLAGS.temp_end_value,
                 FLAGS.temp_decay_steps,
                 FLAGS.num_simulations,
+                FLAGS.parallel_leaves,
                 stop_event,
             ),
         )

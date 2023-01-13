@@ -12,7 +12,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""A simple GUI for board game."""
+"""A simple GUI for board game, there's no plan to optimize this messy code."""
+from sys import platform
 import tkinter as tk
 import itertools
 from typing import Callable, Any
@@ -50,8 +51,6 @@ class BoardGameGui:
         env: BoardGameEnv,
         black_player: Callable[[Any], int],
         white_player: Callable[[Any], int],
-        cell_size: int = 46,
-        piece_size: int = 38,
         show_step: bool = True,
         caption: str = 'Free-style Gomoku',
     ) -> None:
@@ -60,8 +59,6 @@ class BoardGameGui:
             env: the board bame environment.
             black_player: a callable function which should return a valid action, or 'human' in the case human vs. AlphaZero.
             white_player: a callable function which should return a valid action, or 'human' in the case human vs. AlphaZero.
-            cell_size: board cell size.
-            piece_size: stone size.
             show_step: if true, show step number of pieces, default on.
             caption: the caption on the GUI window.
         """
@@ -81,21 +78,28 @@ class BoardGameGui:
         elif self.white_player == 'human':
             self.human_player = 'white'
 
-        self.cell_size = cell_size
-        self.piece_size = piece_size
-        self.half_size = cell_size // 2
+        # Linux
+        if platform == "linux":
+            self.cell_size = 80
+            self.piece_size = 68
+            self.panel_width = 640
+        elif platform == "darwin":
+            self.cell_size = 46
+            self.piece_size = 38
+            self.panel_width = 340
+
+        self.half_size = self.cell_size // 2
+        self.padding = 30
         self.dot_size = 8
         self.num_rows = self.env.board_size
         self.num_cols = self.env.board_size
-        self.padding = 30
 
         self.board_size = self.env.board_size * self.cell_size
 
-        self.panel_width = 340
         self.panel_height = self.board_size + self.padding * 2
 
-        self.window_w = self.board_size + self.panel_width + self.padding * 2 + 8
-        self.window_h = self.board_size + self.padding * 2
+        self.window_w = self.board_size + self.panel_width + self.padding * 4 + 8
+        self.window_h = self.board_size + self.padding * 4
 
         self.window = tk.Tk()
         self.window.title(caption)
@@ -107,8 +111,8 @@ class BoardGameGui:
         # We add column and row labels on main canvas.
         self.main = tk.Canvas(
             self.canvas,
-            width=self.board_size + self.padding * 2,
-            height=self.board_size + self.padding * 2,
+            width=self.board_size + self.padding * 4,
+            height=self.board_size + self.padding * 4,
             bg=Colors.BOARD,
             # highlightthickness=0,
         )
@@ -118,9 +122,9 @@ class BoardGameGui:
             self.canvas, width=self.panel_width, height=self.board_size, bg=Colors.BACKGROUND, highlightthickness=0
         )
 
-        self.main.create_window(self.padding, self.padding, anchor=tk.NW, window=self.board)
+        self.main.create_window(self.padding * 2, self.padding, anchor=tk.NW, window=self.board)
         self.canvas.create_window(0, 0, anchor=tk.NW, window=self.main)
-        self.canvas.create_window(self.padding * 2 + self.board_size + 8, self.padding, anchor=tk.NW, window=self.panel)
+        self.canvas.create_window(self.padding * 4 + self.board_size + 8, self.padding, anchor=tk.NW, window=self.panel)
 
         if self.human_player is not None:
             self.board.bind('<Button-1>', self.click_on_board)
@@ -194,6 +198,12 @@ class BoardGameGui:
         return guide_dots
 
     def initialize_board(self):
+
+        # Column and row labels.
+        if not self.added_board_label:
+            self.draw_board_label()
+            self.added_board_label = True
+
         # Grid lines.
         lines = itertools.chain(self.get_col_lines(), self.get_row_lines())
 
@@ -207,24 +217,8 @@ class BoardGameGui:
             pos = self.env_coords_to_board_position(dot)
             self.draw_dot_on_board(pos, Colors.LINE, self.dot_size)
 
-        # Column and row labels.
-        if not self.added_board_label:
-            self.draw_board_label()
-            self.added_board_label = True
-
     def draw_board_label(self):
         font_size = 16
-        for i in range(self.num_cols):
-            label = tk.Label(
-                self.main,
-                font=('Helvetica', font_size, 'bold'),
-                text=self.col_labels[i],
-                background=Colors.BOARD,
-                foreground=Colors.LABEL,
-            )
-            x = i * self.cell_size + self.half_size - 8 + self.padding
-            y = self.padding * 0.25
-            label.place(x=x, y=y, anchor='nw')
 
         for j in range(self.num_rows):
             label = tk.Label(
@@ -234,16 +228,28 @@ class BoardGameGui:
                 background=Colors.BOARD,
                 foreground=Colors.LABEL,
             )
-            x = self.padding * 0.25
-            y = j * self.cell_size + self.half_size - 15 + self.padding
+            x = self.padding
+            y = j * self.cell_size + self.half_size - font_size + self.padding
+            label.place(x=x, y=y, anchor='nw')
+
+        for i in range(self.num_cols):
+            label = tk.Label(
+                self.main,
+                font=('Helvetica', font_size, 'bold'),
+                text=self.col_labels[i],
+                background=Colors.BOARD,
+                foreground=Colors.LABEL,
+            )
+            x = i * self.cell_size + self.half_size - font_size / 2 + self.padding * 2
+            y = self.board_size + self.cell_size
             label.place(x=x, y=y, anchor='nw')
 
     def initialize_panel(self):
         box_w = int(self.panel_width * 0.85)
-        box_h = 140
+        box_h = 280
         offset_x = (self.panel_width - box_w) // 2
         offset_y = offset_x
-        padding = 15
+        padding = 40
 
         # Black player info
         self.create_player_info_box(
@@ -285,10 +291,10 @@ class BoardGameGui:
             font=('Helvetica', button_font_size),
             background=Colors.BUTTON,
             foreground=Colors.BLACK,
-            padx=12,
-            pady=2,
+            padx=16,
+            pady=16,
         )
-        new_game_btn.place(relx=0.5, y=15, anchor='center')
+        new_game_btn.place(relx=0.5, y=60, anchor='center')
 
         exit_btn = tk.Label(
             buttons_canvas,
@@ -296,10 +302,10 @@ class BoardGameGui:
             font=('Helvetica', button_font_size),
             background=Colors.BUTTON,
             foreground=Colors.BLACK,
-            padx=12,
-            pady=2,
+            padx=16,
+            pady=16,
         )
-        exit_btn.place(relx=0.5, y=60, anchor='center')
+        exit_btn.place(relx=0.5, y=180, anchor='center')
 
         new_game_btn.bind('<Button-1>', self.click_on_new_game)
         exit_btn.bind('<Button-1>', self.click_on_exit)
@@ -319,25 +325,25 @@ class BoardGameGui:
         player_box.create_oval(start_x, start_y, end_x, end_y, fill=piece_color, width=0)
 
         # Title
-        title = tk.Label(player_box, font=('Helvetica', 28, 'bold'), text=title, background=Colors.BOX, foreground=Colors.TEXT)
+        title = tk.Label(player_box, font=('Helvetica', 22, 'bold'), text=title, background=Colors.BOX, foreground=Colors.TEXT)
         title.place(x=padding * 2 + self.piece_size, y=padding * 0.95, anchor='nw')
 
         # Win counter
         counter = tk.Label(
-            player_box, font=('Helvetica', 17, 'bold'), textvariable=win_var, background=Colors.BOX, foreground=Colors.TEXT
+            player_box, font=('Helvetica', 16, 'bold'), textvariable=win_var, background=Colors.BOX, foreground=Colors.TEXT
         )
-        counter.place(x=padding * 2 + self.piece_size, y=padding * 2 + 30, anchor='nw')
+        counter.place(x=padding * 2 + self.piece_size, y=padding * 2 + 50, anchor='nw')
 
         # Additional info
         last_move = tk.Label(
-            player_box, font=('Helvetica', 17), textvariable=last_move_var, background=Colors.BOX, foreground=Colors.TEXT
+            player_box, font=('Helvetica', 16), textvariable=last_move_var, background=Colors.BOX, foreground=Colors.TEXT
         )
-        last_move.place(x=padding * 2 + self.piece_size, y=padding * 2 + 55, anchor='nw')
+        last_move.place(x=padding * 2 + self.piece_size, y=padding * 2 + 100, anchor='nw')
 
         info = tk.Label(
-            player_box, font=('Helvetica', 17), textvariable=info_var, background=Colors.BOX, foreground=Colors.RED
+            player_box, font=('Helvetica', 16), textvariable=info_var, background=Colors.BOX, foreground=Colors.RED
         )
-        info.place(x=padding * 2 + self.piece_size, y=padding * 2 + 80, anchor='nw')
+        info.place(x=padding * 2 + self.piece_size, y=padding * 2 + 150, anchor='nw')
 
     def env_coords_to_board_position(self, coords):
         row, col = coords
@@ -428,17 +434,17 @@ class BoardGameGui:
 
     def update_info(self):
         if self.env.is_game_over:
-            if self.env.winner == self.env.black_player_id:
+            if self.env.winner == self.env.black_player:
                 self.black_info_var.set('Won')
                 self.white_info_var.set('Loss')
-            elif self.env.winner == self.env.white_player_id:
+            elif self.env.winner == self.env.white_player:
                 self.black_info_var.set('Loss')
                 self.white_info_var.set('Won')
             else:
                 self.black_info_var.set('Draw')
                 self.white_info_var.set('Draw')
         else:
-            if self.env.current_player == self.env.black_player_id:
+            if self.env.current_player == self.env.black_player:
                 self.black_info_var.set('To move')
                 self.white_info_var.set('')
             else:
@@ -446,12 +452,10 @@ class BoardGameGui:
                 self.white_info_var.set('To move')
 
     def update_last_move(self, action):
-        if action == self.env.resign_action:
-            label = 'resign'
-        else:
-            coords = self.env.action_to_coords(action)
-            label = self.env_coords_to_human_label(coords)
-        if self.env.current_player == self.env.black_player_id:
+
+        coords = self.env.action_to_coords(action)
+        label = self.env_coords_to_human_label(coords)
+        if self.env.current_player == self.env.black_player:
             self.black_last_move_var.set(f'Last move: {label}')
         else:
             self.white_last_move_var.set(f'Last move: {label}')

@@ -79,7 +79,7 @@ class ResNetBlock(nn.Module):
 
 
 class AlphaZeroNet(nn.Module):
-    """Policy network with additional value head for Alpha Zero agent."""
+    """Policy network for AlphaZero agent."""
 
     def __init__(
         self,
@@ -148,16 +148,16 @@ class AlphaZeroNet(nn.Module):
         )
 
     def forward(self, x: torch.Tensor) -> NetworkOutputs:
-        """Given raw state x, predict the action probability distribution
-        and the winning probability for current player's perspective."""
+        """Given raw state x, predict the raw logits probability distribution for all actions,
+        and the evaluated value, all from current player's perspective."""
 
         conv_block_out = self.conv_block(x)
         features = self.res_blocks(conv_block_out)
 
-        # Predict action distributions wrt policy
+        # Predict raw logits distributions wrt policy
         pi_logits = self.policy_head(features)
 
-        # Predict winning probability for current player's perspective.
+        # Predict evaluated value from current player's perspective.
         value = self.value_head(features)
 
         return NetworkOutputs(pi_logits=pi_logits, value=value)

@@ -19,7 +19,7 @@ https://www.nature.com/articles/nature24270/
 
 """
 from absl import logging
-from typing import List, Tuple, Mapping, Text, Any
+from typing import List, Tuple, Mapping, Union, Text, Any
 from pathlib import Path
 import os
 import sys
@@ -36,9 +36,9 @@ import torch.nn.functional as F
 from alpha_zero.games.env import BoardGameEnv
 from alpha_zero.replay import Transition, UniformReplay
 from alpha_zero.log import CsvWriter, write_to_csv
-from alpha_zero.mcts import Node, uct_search
 from alpha_zero.data_processing import random_rotation_and_reflection
 from alpha_zero.rating import compute_elo_rating
+from alpha_zero.mcts_player import create_mcts_player
 
 
 def run_self_play(
@@ -47,11 +47,13 @@ def run_self_play(
     device: torch.device,
     env: BoardGameEnv,
     data_queue: multiprocessing.Queue,
-    c_puct: float,
+    c_puct_base: float,
+    c_puct_init: float,
     temp_begin_value: float,
     temp_end_value: float,
     temp_decay_steps: int,
     num_simulations: int,
+    parallel_leaves: int,
     stop_event: multiprocessing.Event,
 ) -> None:
     """Run self-play loop to generate training samples.
@@ -69,8 +71,9 @@ def run_self_play(
             after MCTS search to generate play policy.
         temp_end_value: end value of the temperature exploration rate
             after MCTS search to generate play policy.
-        temp_decay_steps: number of environment steps to decay the temperture from begin_value to end_value
+        temp_decay_steps: number of environment steps to decay the temperature from begin_value to end_value
         num_simulations: number of simulations for each MCTS search.
+        parallel_leaves: Number of parallel leaves for MCTS search.
         stop_event: a multiprocessing.Event that will signal the end of training.
 
     Raises:
@@ -88,7 +91,14 @@ def run_self_play(
     network.eval()
 
     game = 0
-    actor_player = create_mcts_player(network, device)
+    actor_player = create_mcts_player(
+        network=network,
+        device=device,
+        num_simulations=num_simulations,
+        parallel_leaves=parallel_leaves,
+        root_noise=True,
+        deterministic=False,
+    )
 
     while not stop_event.is_set():
         # For each new game.
@@ -103,7 +113,7 @@ def run_self_play(
         while not done:
             if env.steps >= temp_decay_steps:
                 temp = temp_end_value
-            action, pi_prob, root_node = actor_player(env, root_node, c_puct, temp, num_simulations, True)
+            action, pi_prob, root_node = actor_player(env, root_node, c_puct_base, c_puct_init, temp)
             transition = Transition(
                 state=obs,
                 pi_prob=pi_prob,
@@ -244,10 +254,6 @@ def run_training(
         if delay is not None and delay > 0 and train_steps > 1:
             time.sleep(delay)
 
-    state_to_save = get_state_to_save()
-    ckpt_file = ckpt_dir / f'train_steps_{train_steps}_final'
-    create_checkpoint(state_to_save, ckpt_file)
-
     stop_event.set()
     time.sleep(60)
     data_queue.put('STOP')
@@ -259,9 +265,11 @@ def run_evaluation(
     device: torch.device,
     env: BoardGameEnv,
     num_games: int,
-    c_puct: float,
+    c_puct_base: float,
+    c_puct_init: float,
     temperature: float,
     num_simulations: int,
+    parallel_leaves: int,
     checkpoint_files: List,
     load_checkpoint_file: str,
     csv_file: str,
@@ -283,6 +291,7 @@ def run_evaluation(
         temperature: the temperature exploration rate after MCTS search
             to generate play policy.
         num_simulations: number of simulations for each MCTS search.
+        parallel_leaves: Number of parallel leaves for MCTS search.
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint.
         load_checkpoint_file: resume training by load from checkpoint file.
         csv_file: a csv file contains the statistics for the best checkpoint.
@@ -315,8 +324,23 @@ def run_evaluation(
     new_checkpoint_network = new_checkpoint_network.to(device=device)
 
     # Black is the new checkpoint, white is current best player.
-    black_player = create_mcts_player(new_checkpoint_network, device)
-    white_player = create_mcts_player(best_network, device)
+    black_player = create_mcts_player(
+        network=new_checkpoint_network,
+        device=device,
+        num_simulations=num_simulations,
+        parallel_leaves=parallel_leaves,
+        root_noise=False,
+        deterministic=True,
+    )
+
+    white_player = create_mcts_player(
+        network=best_network,
+        device=device,
+        num_simulations=num_simulations,
+        parallel_leaves=parallel_leaves,
+        root_noise=False,
+        deterministic=True,
+    )
 
     # Set initial elo ratings
     black_elo = initial_elo
@@ -341,21 +365,24 @@ def run_evaluation(
         is_new_best_player = False
         should_delete_ckpt_file = False
 
+        steps = 0
+
         for _ in range(num_games):
             env.reset()
             root_node = None
             done = False
 
             while not done:
-                if env.current_player == env.black_player_id:
-                    action, _, root_node = black_player(env, root_node, c_puct, temperature, num_simulations, False, True)
+                if env.current_player == env.black_player:
+                    action, _, root_node = black_player(env, root_node, c_puct_base, c_puct_init, temperature)
                 else:
-                    action, _, root_node = white_player(env, root_node, c_puct, temperature, num_simulations, False, True)
+                    action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
                 _, _, done, _ = env.step(action)
+                steps += 1
 
             if env.winner is None:
                 draw_games += 1
-            elif env.winner == env.black_player_id:
+            elif env.winner == env.black_player:
                 won_games += 1
             else:
                 loss_games += 1
@@ -391,6 +418,7 @@ def run_evaluation(
             ('train_steps', train_steps, '%3d'),
             ('checkpoint', ckpt_file, '%3s'),
             ('elo_rating', black_elo, '%1d'),
+            ('episode_steps', steps / num_games, '%1d'),  # mean episode steps
             ('won_games', won_games, '%1d'),
             ('loss_games', loss_games, '%1d'),
             ('draw_games', draw_games, '%1d'),
@@ -439,44 +467,6 @@ def run_data_collector(
             pass
         except EOFError:
             pass
-
-
-def create_mcts_player(
-    network: torch.nn.Module,
-    device: torch.device,
-):
-    """Give a network and device, returns a 'act' function to act on the specific environment timestep."""
-
-    @torch.no_grad()
-    def evaluate_func(state_tensor: np.ndarray) -> Tuple[np.ndarray, float]:
-        """Give a game state tensor, returns the action probabilities
-        and estimated winning probability from current player's perspective."""
-        state = torch.from_numpy(state_tensor[None, ...]).to(device=device, dtype=torch.float32, non_blocking=True)
-        output = network(state)
-        pi_prob = F.softmax(output.pi_logits, dim=-1).cpu().numpy()
-        value = torch.detach(output.value).cpu().numpy()
-
-        # Remove batch dimensions
-        pi_prob = np.squeeze(pi_prob, axis=0)
-        value = np.squeeze(value, axis=0)
-
-        # Convert value into float.
-        value = value.item()
-
-        return (pi_prob, value)
-
-    def act(
-        env: BoardGameEnv,
-        root_node: Node,
-        c_puct: float,
-        temp: float,
-        num_simulations: int,
-        root_noise: bool = False,
-        deterministic: bool = False,
-    ):
-        return uct_search(env, evaluate_func, root_node, c_puct, temp, num_simulations, root_noise, deterministic)
-
-    return act
 
 
 def process_episode_trajectory(final_player_id: int, final_reward: float, episode_trajectory: List[Transition]) -> None:

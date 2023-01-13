@@ -64,9 +64,9 @@ class TicTacToeEnvTest(parameterized.TestCase):
                 action = win_actions[winner_steps]
                 winner_steps += 1
             else:
-                # Opponent should not take win_actions and resign action
+                # Opponent should not take win_actions
                 legit_actions = np.flatnonzero(env.actions_mask)
-                opponent_actions = list(set(legit_actions) - set(win_actions) - set([env.resign_action]))
+                opponent_actions = list(set(legit_actions) - set(win_actions))
 
                 action = np.random.choice(opponent_actions, 1).item()
 

@@ -13,6 +13,7 @@
 # limitations under the License.
 # ==============================================================================
 """Functions to plot statistics csv file."""
+
 from absl import app
 from absl import flags
 import math
@@ -25,9 +26,9 @@ from matplotlib.ticker import FormatStrFormatter
 FLAGS = flags.FLAGS
 flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_v2.csv', 'A csv file contains training statistics.')
 flags.DEFINE_string(
-    'eval_csv_file', 'logs/eval_gomoku_v2.csv', 'A csv file contains evaluation statistics for new checkpoint.'
+    'eval_csv_file', 'logs/eval_gomoku_v2.csv', 'A csv file contains evaluation statistics.'
 )
-flags.DEFINE_integer('update_frequency', 15, 'The frequency (in minutes) to update plots.')
+flags.DEFINE_integer('update_frequency', 10, 'The frequency (in minutes) to update plots.')
 
 
 # code from
@@ -40,13 +41,13 @@ def label_format_func(value, tick_number=None):
 
 def main(argv):
     train_columns = ['train_steps', 'loss']
-    eval_columns = ['train_steps', 'elo_rating']
+    eval_columns = ['train_steps', 'elo_rating', 'episode_steps']
 
     train_csv_file = FLAGS.train_csv_file
     eval_csv_file = FLAGS.eval_csv_file
     update_frequency = FLAGS.update_frequency
 
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(16, 8))
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 8))
     plt.tight_layout(pad=5, w_pad=4)
 
     ax1.set_title('Training Loss', fontsize=14)
@@ -62,8 +63,14 @@ def main(argv):
     # ax2.yaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
     # ax2.yaxis.set_ticks(np.arange(-3000, 6000, 1000))
 
-    (line1,) = ax1.plot([], [], '-', color='#123597', label='Loss')
-    (line2,) = ax2.plot([], [], '-', color='#0396FF', label='AlphaZero')
+    ax3.set_title('Evaluation Episode Steps', fontsize=14)
+    ax3.set_xlabel('Train steps', fontsize=11)
+    ax3.set_ylabel('Evaluation episode steps', fontsize=11)
+    ax3.xaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
+
+    (line1,) = ax1.plot([], [], '-', color='blue', label='Loss')
+    (line2,) = ax2.plot([], [], '-', color='orange', label='AlphaZero')
+    (line3,) = ax3.plot([], [], '-', color='green', label='AlphaZero')
 
     # ax1.legend(loc='upper right')
     # ax2.legend(loc='upper right')
@@ -79,19 +86,22 @@ def main(argv):
         if os.path.exists(eval_csv_file):
             eval_data = pd.read_csv(eval_csv_file, usecols=eval_columns)
             line2.set_data(eval_data.train_steps, eval_data.elo_rating)
-
             ax2.relim()
             ax2.autoscale()
+
+            line3.set_data(eval_data.train_steps, eval_data.episode_steps)
+            ax3.relim()
+            ax3.autoscale()
 
     plot_lines()
 
     def init_function():
-        return (line1, line2)
+        return (line1, line2, line3)
 
     def update_function(frame):
         plot_lines()
 
-        return (line1, line2)
+        return (line1, line2, line3)
 
     animated = FuncAnimation(
         fig,

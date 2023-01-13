@@ -37,8 +37,8 @@ class TicTacToeEnv(BoardGameEnv):
         if self.steps < (self.num_to_win - 1) * 2:
             return False
 
-        x_last, y_last = self.action_to_coords(self.last_actions[self.current_player])
-        color = self.current_player_color
+        x_last, y_last = self.action_to_coords(self.last_action)
+        color = self.current_player
 
         board = self.board.copy()
 

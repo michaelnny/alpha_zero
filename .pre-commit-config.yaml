@@ -1,6 +1,6 @@
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.3.0
     hooks:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
@@ -13,11 +13,11 @@ repos:
     -   id: double-quote-string-fixer
     -   id: check-merge-conflict
 -   repo: https://github.com/psf/black
-    rev: 22.3.0
+    rev: 22.10.0
     hooks:
     -   id: black
 -   repo: https://github.com/pycqa/flake8
-    rev: 4.0.1
+    rev: 5.0.4
     hooks:
     -   id: flake8
         additional_dependencies:
@@ -26,7 +26,7 @@ repos:
     hooks:
     -   id: run-unit-tests
         name: run unit tests script
-        entry: /Users/michael/alpha_zero/run_unit_tests.sh
+        entry: ./run_unit_tests.sh
         language: script
         always_run: true
         verbose: true

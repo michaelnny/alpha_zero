@@ -39,129 +39,91 @@ from alpha_zero.pipeline_v2 import (
     run_training,
     run_evaluation,
     run_data_collector,
-    load_checkpoint,
-    load_from_file,
 )
 
 
 FLAGS = flags.FLAGS
 
 flags.DEFINE_integer('num_res_blocks', 2, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_planes', 16, 'Number of planes for the conv2d layer in the neural network.')
 flags.DEFINE_integer(
-    'num_fc_units', 16, 'Number of hidden units for the fully connected layer in value head of the neural network.'
+    'num_planes',
+    16,
+    'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 2000 * 9, 'Maximum replay size, approximately most recent 2000 games.')
-flags.DEFINE_integer('min_replay_size', 1000, 'Minimum replay size before learning starts.')
-flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
+flags.DEFINE_integer('replay_capacity', 50000, 'Maximum replay size, use most recent N positions for training.')
+flags.DEFINE_integer('min_replay_size', 2000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('batch_size', 512, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.002, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('learning_rate_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer('lr_milestones', [20000], 'The number of steps at which the learning rate will decay.')
 flags.DEFINE_float('l2_decay', 0.0001, 'Adam L2 regularization.')
 
 flags.DEFINE_integer('num_train_steps', 50000, 'Number of training steps (measured in network updates).')
 
-flags.DEFINE_integer('num_actors', 2, 'Number of self-play actor processes.')
-flags.DEFINE_integer('num_simulations', 25, 'Number of simulations per MCTS search, per agent environment time step.')
+flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
+flags.DEFINE_integer(
+    'num_simulations', 24, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+)
+flags.DEFINE_integer('parallel_leaves', 4, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
 
-flags.DEFINE_float('c_puct', 5.0, 'Puct constant of the UCB score.')
+flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
+flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
 
 flags.DEFINE_float(
     'temp_begin_value', 1.0, 'Begin value of the temperature exploration rate after MCTS search to generate play policy.'
 )
 flags.DEFINE_float(
-    'temp_end_value',
-    0.1,
-    'End (decayed) value of the temperature exploration rate after MCTS search to generate play policy.',
+    'temp_end_value', 0.1, 'End (decayed) value of the temperature exploration rate after MCTS search to generate play policy.'
 )
 flags.DEFINE_integer(
-    'temp_decay_steps', 7, 'Number of environment steps to decay the temperture from begin_value to end_value.'
+    'temp_decay_steps', 5, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
 flags.DEFINE_float('train_delay', 0.0, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
-    'initial_elo', 0.0, 'Initial elo rating, in case resume training, this should be the elo form last checkpoint.'
+    'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
-
-flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_string('checkpoint_dir', 'checkpoints/tictactoe_v2', 'Path for checkpoint file.')
-flags.DEFINE_string(
-    'load_checkpoint_file',
-    '',
-    'Load the checkpoint from file.',
-)
 
-flags.DEFINE_integer(
-    'samples_save_frequency',
-    -1,
-    'The frequency (measured in number added in replay) to save self-play samples in replay.',
-)
-flags.DEFINE_string('samples_save_dir', 'samples/tictactoe_v2', 'Path for save self-play samples in replay to file.')
-flags.DEFINE_string('load_samples_file', '', 'Load the replay samples from file.')
 flags.DEFINE_string('train_csv_file', 'logs/train_tictactoe_v2.csv', 'A csv file contains training statistics.')
 flags.DEFINE_string('eval_csv_file', 'logs/eval_tictactoe_v2.csv', 'A csv file contains training statistics.')
 
+flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
+
 
 def main(argv):
-    device = 'cpu'
-    if torch.cuda.is_available():
-        device = 'cuda'
-    runtime_device = torch.device(device)
 
-    self_play_envs = [TicTacToeEnv() for i in range(FLAGS.num_actors)]
-    evaluation_env = TicTacToeEnv()
+    torch.manual_seed(FLAGS.seed)
+    random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
 
-    input_shape = self_play_envs[0].observation_space.shape
-    num_actions = self_play_envs[0].action_space.n
+    runtime_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-    network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_fc_units)
+    def environment_builder():
+        return TicTacToeEnv()
+
+    evaluation_env = environment_builder()
+
+    input_shape = evaluation_env.observation_space.shape
+    num_actions = evaluation_env.action_space.n
+
+    def network_builder():
+        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_planes)
+
+    network = network_builder()
     optimizer = torch.optim.Adam(network.parameters(), lr=FLAGS.learning_rate, weight_decay=FLAGS.l2_decay)
     lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_milestones, gamma=FLAGS.learning_rate_decay)
 
-    actor_network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_fc_units)
+    actor_network = network_builder()
     actor_network.share_memory()
 
-    old_checkpoint_network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_fc_units)
-    new_checkpoint_network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_fc_units)
+    old_checkpoint_network = network_builder()
+    new_checkpoint_network = network_builder()
 
-    random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
     replay = UniformReplay(FLAGS.replay_capacity, random_state)
-
-    train_steps = None
-    # Load states from checkpoint to resume training.
-    if FLAGS.load_checkpoint_file is not None and os.path.isfile(FLAGS.load_checkpoint_file):
-        loaded_state = load_checkpoint(FLAGS.load_checkpoint_file, 'cpu')
-        network.load_state_dict(loaded_state['network'])
-        optimizer.load_state_dict(loaded_state['optimizer'])
-        lr_scheduler.load_state_dict(loaded_state['lr_scheduler'])
-        train_steps = loaded_state['train_steps']
-
-        actor_network.load_state_dict(loaded_state['network'])
-        old_checkpoint_network.load_state_dict(loaded_state['network'])
-
-        logging.info(f'Loaded state from checkpoint {FLAGS.load_checkpoint_file}')
-        logging.info(f'Current state: train steps {train_steps}, learing rate {lr_scheduler.get_last_lr()}')
-
-    # Load replay samples
-    if FLAGS.load_samples_file is not None and os.path.isfile(FLAGS.load_samples_file):
-        try:
-            replay.reset()
-            replay_state = load_from_file(FLAGS.load_samples_file)
-            # replay.set_state(replay_state)
-            for item in replay_state['storage']:
-                if item is None:
-                    break
-                replay.add(item)
-
-                if replay.num_added >= replay.capacity:
-                    break
-            logging.info(f"Loaded replay samples from file '{FLAGS.load_samples_file}'")
-        except Exception:
-            pass
 
     # Use the stop_event to signaling actors to stop running.
     stop_event = multiprocessing.Event()
@@ -199,22 +161,23 @@ def main(argv):
             stop_event,
             FLAGS.train_delay,
             False,
-            train_steps,
         ),
     )
     learner.start()
 
-    # Start evaluation loop on a seperate process.
+    # Start evaluation loop on a separate process.
     evaluator = multiprocessing.Process(
         target=run_evaluation,
         args=(
             old_checkpoint_network,
             new_checkpoint_network,
-            runtime_device,
+            'cpu',
             evaluation_env,
-            FLAGS.c_puct,
+            FLAGS.c_puct_base,
+            FLAGS.c_puct_init,
             FLAGS.temp_end_value,
             FLAGS.num_simulations,
+            FLAGS.parallel_leaves,
             checkpoint_files,
             FLAGS.eval_csv_file,
             stop_event,
@@ -231,14 +194,16 @@ def main(argv):
             args=(
                 i,
                 actor_network,
-                'cpu',
-                self_play_envs[i],
+                runtime_device,
+                environment_builder(),
                 data_queue,
-                FLAGS.c_puct,
+                FLAGS.c_puct_base,
+                FLAGS.c_puct_init,
                 FLAGS.temp_begin_value,
                 FLAGS.temp_end_value,
                 FLAGS.temp_decay_steps,
                 FLAGS.num_simulations,
+                FLAGS.parallel_leaves,
                 stop_event,
             ),
         )
