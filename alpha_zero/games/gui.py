@@ -24,7 +24,7 @@ from alpha_zero.games.env import BoardGameEnv
 class Colors:
     BOARD_BG = '#DBA14B'
     PANEL_BG = '#ffffff'
-    INFO_BOX_BG = '#2f4f4f'
+    INFO_BOX_BG = '#367588'
     ACTIONS_BG = '#1b1b1b'
     BUTTON_BG = '#f2f3f4'
     BLACK = '#000000'
@@ -32,7 +32,7 @@ class Colors:
     LINE = '#1b1b1b'
     LABEL = '#121212'
     TEXT = '#EDEDED'
-    INFO = '#cf1020'
+    INFO = '#DBA14B'
 
 
 class BoardGameGui:
@@ -73,16 +73,31 @@ class BoardGameGui:
         self.white_player = white_player
         self.show_step = show_step
 
+        self.human_player = None
         if self.black_player == 'human':
             self.human_player = 'black'
         elif self.white_player == 'human':
             self.human_player = 'white'
-        else:
-            self.human_player = None
 
+        self.num_rows = self.env.board_size
+        self.num_cols = self.env.board_size
+
+        self.played_games = 0
+        self.black_won_games = 0
+        self.white_won_games = 0
+
+        self.last_move = None
+        self.game_loop = None
+        self.delay_time = 500  # delays 0.5 seconds per move
+
+        self.col_labels = 'ABCDEFGHIJKLMNOPQRS'
+        self.row_labels = [str(i) for i in range(1, self.num_rows + 1)]
+        self.stone_colors = {self.env.white_player: Colors.WHITE, self.env.black_player: Colors.BLACK}
+
+        # UI element sizes
         self.cell_size = 46
         self.piece_size = 38
-        self.panel_width = 380
+        self.panel_w = 380
         self.dot_size = 8
         self.padding = 40
 
@@ -95,7 +110,7 @@ class BoardGameGui:
             scale = 1.8
             self.cell_size *= scale
             self.piece_size *= scale
-            self.panel_width *= scale
+            self.panel_w *= scale
             self.dot_size *= scale
             self.padding *= scale
             self.font_size *= scale
@@ -103,18 +118,14 @@ class BoardGameGui:
             self.title_font_size *= scale
 
         self.half_size = self.cell_size // 2
-        self.num_rows = self.env.board_size
-        self.num_cols = self.env.board_size
-
         self.board_size = self.env.board_size * self.cell_size
-        self.window_w = self.board_size + self.panel_width + self.padding * 2
+        self.window_w = self.board_size + self.panel_w + self.padding * 2
         self.window_h = self.board_size + self.padding * 2
 
         self.root = tk.Tk()
         self.root.title(caption)
         self.root.resizable(0, 0)
 
-        # Main window
         self.canvas = tk.Canvas(self.root, width=self.window_w, height=self.window_h, bg=Colors.BOARD_BG)
         self.canvas.pack()
 
@@ -127,31 +138,28 @@ class BoardGameGui:
             highlightthickness=0,
         )
 
-        # Create right side panel
+        # Right side panel
         self.panel = tk.Canvas(
             self.root,
-            width=self.panel_width,
+            width=self.panel_w,
             height=self.window_h,
             bg=Colors.PANEL_BG,
             highlightthickness=0,
         )
 
         # We need to add column and row labels besides the board, so we create new canvas with some padding.
-        self.canvas.create_window(self.padding, self.padding, anchor=tk.NW, window=self.board)
-        self.canvas.create_window(self.window_w - self.panel_width, 0, anchor=tk.NW, window=self.panel)
-
-        self.col_labels = 'ABCDEFGHIJKLMNOPQRS'
-        self.row_labels = [str(i) for i in range(1, self.num_rows + 1)]
-
-        self.played_games = 0
-        self.black_won_games = 0
-        self.white_won_games = 0
-
-        self.player_colors = {'white': Colors.WHITE, 'black': Colors.BLACK}
-
-        self.last_move = None
-        self.game_loop = None
-        self.delay_time = 500  # delays 0.5 seconds per move
+        self.canvas.create_window(
+            self.padding,
+            self.padding,
+            anchor=tk.NW,
+            window=self.board,
+        )
+        self.canvas.create_window(
+            self.window_w - self.panel_w + 2,
+            2,
+            anchor=tk.NW,
+            window=self.panel,
+        )
 
         # Variables to update UI at runtime
         self.title_var = tk.StringVar(value=self.get_games_title())  # GAME N
@@ -159,7 +167,6 @@ class BoardGameGui:
         self.info_var = tk.StringVar()  # Who's move and who won
 
         self.env.reset()
-        self.current_player = self.env.current_player_name
 
         self.initialize()
 
@@ -174,7 +181,6 @@ class BoardGameGui:
         self.update_game_info()
 
     def initialize_board(self):
-
         def _row_lines():
             for y in range(self.half_size, self.board_size - self.half_size + self.cell_size, self.cell_size):
                 yield (self.half_size, y), (self.board_size - self.half_size, y)
@@ -203,7 +209,6 @@ class BoardGameGui:
                 )
 
             return guide_dots
-
 
         # Clean up
         self.board.delete('all')
@@ -248,7 +253,7 @@ class BoardGameGui:
     def initialize_panel(self):
         game_info_box = tk.Canvas(
             self.panel,
-            width=self.panel_width,
+            width=self.panel_w,
             height=self.window_h * 0.25 - 1,
             background=Colors.INFO_BOX_BG,
             highlightthickness=0,
@@ -257,7 +262,7 @@ class BoardGameGui:
 
         player_info_box = tk.Canvas(
             self.panel,
-            width=self.panel_width,
+            width=self.panel_w,
             height=self.window_h * 0.25 - 1,
             background=Colors.INFO_BOX_BG,
             highlightthickness=0,
@@ -266,7 +271,7 @@ class BoardGameGui:
 
         actions_box = tk.Canvas(
             self.panel,
-            width=self.panel_width,
+            width=self.panel_w,
             height=self.window_h * 0.5,
             background=Colors.ACTIONS_BG,
             highlightthickness=0,
@@ -297,10 +302,10 @@ class BoardGameGui:
             if i == 0:
                 offset_x = self.padding
             else:
-                offset_x = self.padding * 0.8 + self.panel_width * 0.5
+                offset_x = self.padding * 0.8 + self.panel_w * 0.5
             pos = (offset_x, self.padding)
-            start_x, start_y, end_x, end_y = self.get_circle_from_pos_and_size(pos, self.piece_size * 0.7)
-            player_info_box.create_oval(start_x, start_y, end_x, end_y, fill=c, width=0, state=tk.DISABLED)
+            x0, y0, x1, y1 = self.get_circle_from_pos_and_size(pos, self.piece_size * 0.7)
+            player_info_box.create_oval(x0, y0, x1, y1, fill=c, width=0, state=tk.DISABLED)
 
             # Title
             title = tk.Label(
@@ -356,10 +361,6 @@ class BoardGameGui:
         )
         return pos
 
-    def env_coords_to_human_label(self, coords):
-        x, y = coords
-        return self.col_labels[y] + self.row_labels[x]
-
     def pos_to_env_coords(self, pos):
         # Screen pos (x, y) is no the same as in row major numpy.array.
         x, y = pos
@@ -376,12 +377,12 @@ class BoardGameGui:
         return (x0, y0, x1, y1)
 
     def draw_dot(self, pos, color, size):
-        start_x, start_y, end_x, end_y = self.get_circle_from_pos_and_size(pos, size)
-        self.board.create_oval(start_x, start_y, end_x, end_y, fill=color, width=0, state=tk.DISABLED)
+        x0, y0, x1, y1 = self.get_circle_from_pos_and_size(pos, size)
+        self.board.create_oval(x0, y0, x1, y1, fill=color, width=0, state=tk.DISABLED)
 
     def draw_open_circle(self, pos, color, size):
-        start_x, start_y, end_x, end_y = self.get_circle_from_pos_and_size(pos, self.piece_size * 0.6)
-        self.board.create_oval(start_x, start_y, end_x, end_y, fill=None, width=2, outline=color, state=tk.DISABLED)
+        x0, y0, x1, y1 = self.get_circle_from_pos_and_size(pos, self.piece_size * 0.6)
+        self.board.create_oval(x0, y0, x1, y1, fill=None, width=2, outline=color, state=tk.DISABLED)
 
     def draw_stone(self, pos, color, text_color, text, show_indicator=False):
         self.draw_dot(pos, color, self.piece_size)
@@ -393,8 +394,8 @@ class BoardGameGui:
             self.board.create_text(pos[0], pos[1], text=text, fill=text_color)
 
     def draw_piece_on_board(self, coords):
-        color = self.player_colors[self.env.current_player_name]
-        text_color = self.player_colors[self.env.opponent_player_name]
+        color = self.stone_colors[self.env.current_player]
+        text_color = self.stone_colors[self.env.opponent_player]
 
         # Re-draw last move to remove border
         if self.last_move is not None:
@@ -421,9 +422,9 @@ class BoardGameGui:
         self.close()
 
     def get_current_player(self):
-        if self.env.current_player_name == 'black':
+        if self.env.current_player == self.env.black_player:
             return self.black_player
-        elif self.env.current_player_name == 'white':
+        elif self.env.current_player == self.env.white_player:
             return self.white_player
 
     def make_move(self, action):
@@ -435,16 +436,11 @@ class BoardGameGui:
         self.draw_piece_on_board(coords)
 
         self.env.step(action)
-        self.current_player = self.env.current_player_name
         self.update_game_info()
 
     def play(self):
         # Let AlphaZero make a move.
-        if (
-            not self.env.is_game_over
-            and self.current_player == self.env.current_player_name
-            and self.current_player != self.human_player
-        ):
+        if not self.env.is_game_over and self.env.current_player_name != self.human_player:
             player = self.get_current_player()
             action = player(self.env)
             self.make_move(action)
@@ -457,14 +453,14 @@ class BoardGameGui:
     def update_game_info(self):
         info_text = ''
         if self.env.is_game_over:
-            if self.env.winner == self.env.black_player_id:
+            if self.env.winner == self.env.black_player:
                 info_text = 'Black won'
-            elif self.env.winner == self.env.white_player_id:
+            elif self.env.winner == self.env.white_player:
                 info_text = 'White won'
             else:
                 info_text = 'Draw'
         else:
-            if self.env.current_player == self.env.black_player_id:
+            if self.env.current_player == self.env.black_player:
                 info_text = 'Black to move'
             else:
                 info_text = 'White to move'
@@ -510,7 +506,6 @@ class BoardGameGui:
 
         self.env.reset()
         self.last_move = None
-        self.current_player = self.env.current_player_name
         self.game_loop = None
 
         self.initialize_board()
