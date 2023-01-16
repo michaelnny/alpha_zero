@@ -130,11 +130,12 @@ class BoardGameEnv(Env):
             self.winner = self.current_player
 
         done = self.is_game_over
-        # Switch next player.
+        self.steps += 1
+        
+        # Only switch next player if game is not over.
         if not done:
             self.current_player = self.opponent_player
-
-        self.steps += 1
+        
         return self.observation(), reward, done, {}
 
     def render(self, mode='terminal'):
