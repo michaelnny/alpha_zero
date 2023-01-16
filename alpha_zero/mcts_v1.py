@@ -354,9 +354,9 @@ def uct_search(
 
         # Special case - If game is over, using the actual reward from the game to update statistics.
         if done:
-            # When game is over, the env stops switching the current player for timestep `t`.
-            # So the current player for timestep `t` is actually the player
-            # who made the move at timestep `t-1` and won/loss the game.
+            # Note when the game is over, the 'current_player' from the env 
+            # is the same 'current_player' who made the move at timestep 'T-1' and won/loss the game
+            # and the reward is also computed for (timestep 'T-1') 'current_player' perspective 
             assert node.parent.to_play == sim_env.current_player
             backup(node, reward, sim_env.current_player)
             continue
@@ -527,9 +527,9 @@ def parallel_uct_search(
 
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
-                # When game is over, the env stops switching the current player for timestep `t`.
-                # So the current player for timestep `t` is actually the player
-                # who made the move at timestep `t-1` and won/loss the game.
+                # Note when the game is over, the 'current_player' from the env 
+                # is the same 'current_player' who made the move at timestep 'T-1' and won/loss the game
+                # and the reward is also computed for (timestep 'T-1') 'current_player' perspective
                 assert node.parent.to_play == sim_env.current_player
                 backup(node, reward, sim_env.current_player)
                 continue
