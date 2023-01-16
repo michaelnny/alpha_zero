@@ -449,6 +449,7 @@ class BoardGameGui:
             self.set_loop()
         else:
             self.clear_loop()
+            self.update_match_results_info()
 
     def update_game_info(self):
         info_text = ''
@@ -467,13 +468,10 @@ class BoardGameGui:
         self.info_var.set(info_text)
 
     def update_match_results_info(self):
-        self.played_games += 1
         if self.env.winner_name == 'black':
             self.black_won_games += 1
         elif self.env.winner_name == 'white':
             self.white_won_games += 1
-
-        self.title_var.set(self.get_games_title())
         self.scores_var.set(self.get_match_scores())
 
     def get_games_title(self):
@@ -502,7 +500,9 @@ class BoardGameGui:
 
     def reset(self):
         self.clear_loop()
-        self.update_match_results_info()
+
+        self.played_games += 1
+        self.title_var.set(self.get_games_title())
 
         self.env.reset()
         self.last_move = None
