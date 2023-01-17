@@ -151,8 +151,8 @@ class BoardGameEnv(Env):
             else: # else screen will be cleared for windows
                 os.system('cls')
 
-        black_stone = 'x'
-        white_stone = 'o'
+        black_stone = 'X'
+        white_stone = 'O'
 
         # Head information
         outfile.write(f'{self.name} ({self.board_size}x{self.board_size})')
