@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Board game class."""
+"""Base board game class."""
 from typing import Union, Tuple, Mapping, Text
 from collections import deque
+import os
 import sys
 from six import StringIO
 import numpy as np
@@ -144,9 +145,11 @@ class BoardGameEnv(Env):
         outfile = StringIO() if mode == 'ansi' else sys.stdout
 
         if mode == 'human':
-            # Clear terminal screen
-            # https://stackoverflow.com/questions/517970/how-to-clear-the-interpreter-console
-            outfile.write('\033[H\033[J')
+            # Clearing the Screen
+            if(os.name == 'posix'): # posix is os name for Linux or mac
+                os.system('clear')
+            else: # else screen will be cleared for windows
+                os.system('cls')
 
         black_stone = 'x'
         white_stone = 'o'
