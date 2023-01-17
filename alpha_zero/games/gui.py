@@ -465,6 +465,7 @@ class BoardGameGui:
                 info_text = 'Black to move'
             else:
                 info_text = 'White to move'
+        info_text = f'Steps {self.env.steps+1}, {info_text}'
         self.info_var.set(info_text)
 
     def update_match_results_info(self):
