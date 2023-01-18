@@ -349,14 +349,13 @@ def uct_search(
             obs, reward, done, _ = sim_env.step(node.move)
             if done:
                 break
-
+        
+        assert node.to_play == sim_env.current_player
+        
         # Special case - If game is over, using the actual reward from the game to update statistics.
         if done:
-            assert node.to_play == sim_env.current_player
             backup(node, reward, sim_env.current_player)
             continue
-
-        assert node.to_play == sim_env.current_player
 
         # Phase 2 - Expand and evaluation
         prior_prob, value = eval_func(obs, False)
@@ -387,6 +386,7 @@ def add_virtual_loss(node: Node) -> None:
 
     Args:
         node: current leaf node in the search tree.
+        
     """
 
     vloss = +1
@@ -401,6 +401,7 @@ def revert_virtual_loss(node: Node) -> None:
 
     Args:
         node: current leaf node in the search tree.
+        
     """
 
     vloss = -1
@@ -515,14 +516,14 @@ def parallel_uct_search(
                 obs, reward, done, _ = sim_env.step(node.move)
                 if done:
                     break
-
+            
+            assert node.to_play == sim_env.current_player
+            
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
-                assert node.to_play == sim_env.current_player
                 backup(node, reward, sim_env.current_player)
                 continue
             else:
-                assert node.to_play == sim_env.current_player
                 add_virtual_loss(node)
                 leaves.append((node, obs, sim_env.current_player, sim_env.opponent_player))
 
