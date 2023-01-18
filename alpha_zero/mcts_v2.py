@@ -93,8 +93,7 @@ class DummyNode(object):
 
 def best_child(
     node: Node,
-    current_player: int,
-    opponent_player: int,
+    child_to_play: int,
     actions_mask: np.ndarray,
     c_puct_base: float,
     c_puct_init: float,
@@ -104,8 +103,7 @@ def best_child(
 
     Args:
         node: the current node in the search tree.
-        current_player: select best child from current_player's perspective.
-        opponent_player: the opponent player id, used to add new child to node.
+        child_to_play: the to move player id for potential new child node.
         actions_mask: a 1D bool numpy.array mask for all actions,
             where `True` represents legal move and `False` represents illegal move.
         c_puct_base: a float constant determining the level of exploration.
@@ -124,13 +122,12 @@ def best_child(
     if not isinstance(actions_mask, np.ndarray) or actions_mask.dtype != np.bool8 or len(actions_mask.shape) != 1:
         raise ValueError(f'Expect `actions_mask` to be a 1D bool numpy.array, got {actions_mask}')
 
-    # The child Q value is evaluated from opponent's perspective.
-    # If the parent node id matches current_player id, then we want to switch the sign of child Q values
-    # This is because we want to select the move that minimize the opponent's score, for example blocking their winning moves
-    if node.to_play == current_player:
-        ucb_scores = -1.0 * node.child_Q() + node.child_U(c_puct_base, c_puct_init)
-    else:
-        ucb_scores = node.child_Q() + node.child_U(c_puct_base, c_puct_init)
+    # The child Q value is evaluated from `node.to_play` opponent perspective.
+    # when we select the best child for `node`, we want to switch the sign of the child Q values, 
+    # this is because we want to select the move that minimize the opponent's score, 
+    # such as a move that leads to immediately win for player `node.to_play`,
+    # or a move to blocking `node.to_play` opponent's winning moves
+    ucb_scores = -node.child_Q() + node.child_U(c_puct_base, c_puct_init)
 
     # Exclude illegal actions, note in some cases, the max ucb_scores may be zero.
     ucb_scores = np.where(actions_mask, ucb_scores, -1000)
@@ -138,7 +135,7 @@ def best_child(
     # Break ties if we have multiple 'maximum' values.
     move = np.random.choice(np.where(ucb_scores == ucb_scores.max())[0])
     # Create the child node, note child node is 'owned' by opponent player
-    child = maybe_add_child(node, move, opponent_player)
+    child = maybe_add_child(node, move, child_to_play)
     return child
 
 
@@ -372,7 +369,7 @@ def uct_search(
         node = root_node
         while node.is_expanded:
             node = best_child(
-                node, sim_env.current_player, sim_env.opponent_player, sim_env.actions_mask, c_puct_base, c_puct_init
+                node, sim_env.opponent_player, sim_env.actions_mask, c_puct_base, c_puct_init
             )
 
             # Make move on the simulation environment.
@@ -415,36 +412,34 @@ def uct_search(
     return (next_root_node.move, pi_probs, next_root_node)
 
 
-def add_virtual_loss(node: Node, loss_player: int) -> None:
+def add_virtual_loss(node: Node) -> None:
     """Propagate a virtual loss to the traversed path.
 
     Args:
         node: current leaf node in the search tree.
-        loss_player: the player id to add virtual loss to,
-            for any node in the traversed path, if the id equals to the loss_player,
-            then it's a loss, otherwise it's a win,
-            then the parent node is just the opposite of the leaf node
-
+        
     """
 
+    vloss = +1
     while node.parent is not None:
         node.losses_applied += 1
-        node.total_value += -1.0 if node.to_play == loss_player else 1.0
+        node.total_value += vloss
         node = node.parent
 
 
-def revert_virtual_loss(node: Node, loss_player: int) -> None:
+def revert_virtual_loss(node: Node) -> None:
     """Undo virtual loss to the traversed path.
 
     Args:
         node: current leaf node in the search tree.
-        loss_player: the player id for revert virtual loss.
+        
     """
 
+    vloss = -1
     while node.parent is not None:
         if node.losses_applied > 0:
             node.losses_applied -= 1
-            node.total_value += 1.0 if node.to_play == loss_player else -1.0
+            node.total_value += vloss
         node = node.parent
 
 
@@ -548,24 +543,21 @@ def parallel_uct_search(
             node = root_node
             while node.is_expanded:
                 node = best_child(
-                    node, sim_env.current_player, sim_env.opponent_player, sim_env.actions_mask, c_puct_base, c_puct_init
+                    node, sim_env.opponent_player, sim_env.actions_mask, c_puct_base, c_puct_init
                 )
                 # Make move on the simulation environment.
                 obs, reward, done, _ = sim_env.step(node.move)
                 if done:
                     break
-
+            
+            assert node.to_play == sim_env.current_player
+            
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
-                # Note when the game is over, the 'current_player' from the env 
-                # is the same 'current_player' who made the move at timestep 'T-1' and won/loss the game
-                # and the reward is also computed for (timestep 'T-1') 'current_player' perspective
-                assert node.parent.to_play == sim_env.current_player
                 backup(node, reward, sim_env.current_player)
                 continue
             else:
-                assert node.to_play == sim_env.current_player
-                add_virtual_loss(node, root_node.to_play)
+                add_virtual_loss(node)
                 leaves.append((node, obs, sim_env.current_player, sim_env.opponent_player))
 
         if leaves:
@@ -576,7 +568,7 @@ def parallel_uct_search(
             for leaf, prior_prob, value, current_player, opponent_player in zip(
                 batched_nodes, prior_probs, values, batched_current_player, batched_opponent_player
             ):
-                revert_virtual_loss(leaf, root_node.to_play)
+                revert_virtual_loss(leaf)
 
                 # If a node was picked multiple times (despite virtual losses), we shouldn't
                 # expand it more than once.
