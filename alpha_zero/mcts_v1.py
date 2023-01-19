@@ -22,7 +22,7 @@ such that we evaluates the board from the 'to move' player's perspective.
 
     B       C       White to move
 
- D      E           Black to move
+  D   E             Black to move
 
 For example, in the above two-player, zero-sum games search tree. 'A' is the root node, 
 and when the game is in state corresponding to node 'A', it's black's turn to move. 
