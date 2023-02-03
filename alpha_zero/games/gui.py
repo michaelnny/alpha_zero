@@ -255,10 +255,14 @@ class BoardGameGui:
             label.place(x=x, y=y, anchor='nw')
 
     def initialize_panel(self):
+        block_h = self.window_h * 0.3
+        if self.is_os_linux:
+            block_h = self.window_h * 0.25
+
         players_box = tk.Canvas(
             self.panel,
             width=self.panel_w,
-            height=self.window_h * 0.25 - 1,
+            height=block_h - 1,
             background=Colors.INFO_BOX_BG,
             highlightthickness=0,
         )
@@ -267,11 +271,11 @@ class BoardGameGui:
         game_info_box = tk.Canvas(
             self.panel,
             width=self.panel_w,
-            height=self.window_h * 0.25 - 1,
+            height=block_h - 1,
             background=Colors.INFO_BOX_BG,
             highlightthickness=0,
         )
-        game_info_box.place(x=0, y=self.window_h * 0.25, anchor='nw')
+        game_info_box.place(x=0, y=block_h, anchor='nw')
 
         actions_box = tk.Canvas(
             self.panel,
@@ -280,7 +284,7 @@ class BoardGameGui:
             background=Colors.ACTIONS_BG,
             highlightthickness=0,
         )
-        actions_box.place(x=0, y=self.window_h * 0.5, anchor='nw')
+        actions_box.place(x=0, y=self.window_h - block_h * 2, anchor='nw')
 
         # Players info
         for i, t, c in zip([0, 1], [self.black_player_name, self.white_player_name], [Colors.BLACK, Colors.WHITE]):
