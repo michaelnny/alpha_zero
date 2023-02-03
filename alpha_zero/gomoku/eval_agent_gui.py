@@ -26,12 +26,12 @@ from alpha_zero.mcts_player import create_mcts_player
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 15, 'Board size for Gomoku.')
-flags.DEFINE_integer('stack_history', 8, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('board_size', 11, 'Board size for Gomoku.')
+flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
+flags.DEFINE_integer('num_res_blocks', 6, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
-    128,
+    64,
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
@@ -49,11 +49,11 @@ flags.DEFINE_bool(
 
 flags.DEFINE_string(
     'black_ckpt_file',
-    'checkpoints/gomoku_v2/train_steps_120000',
+    'saved_checkpoints/gomoku_small/train_steps_510000',
     'Load the checkpoint file for black player, will only load if human_vs_ai is False.',
 )
 flags.DEFINE_string(
-    'white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_120000', 'Load the checkpoint file for white player.'
+    'white_ckpt_file', 'saved_checkpoints/gomoku_small/train_steps_510000', 'Load the checkpoint file for white player.'
 )
 
 flags.DEFINE_integer('num_simulations', 400, 'Number of simulations per MCTS search.')

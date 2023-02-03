@@ -79,7 +79,7 @@ class BoardGameEnv(Env):
 
         self.winner: Union[None, int] = None
 
-        # Stores last action.
+        self.last_player = None
         self.last_action = None
 
         # History planes are FIFO queues, with the most recent state at index 0.
@@ -98,6 +98,7 @@ class BoardGameEnv(Env):
 
         self.winner: Union[None, int] = None
 
+        self.last_player = None
         self.last_action = None
 
         self.feature_planes: Mapping[int, deque] = self._get_empty_queue_dict()
@@ -129,13 +130,14 @@ class BoardGameEnv(Env):
         if self.is_current_player_won():
             reward = 1.0
             self.winner = self.current_player
+    
+        # The reward is always computed from last player's perspective
+        self.last_player = self.current_player
 
         done = self.is_game_over
         self.steps += 1
         
-        # Only switch next player if game is not over.
-        if not done:
-            self.current_player = self.opponent_player
+        self.current_player = self.opponent_player
         
         return self.observation(), reward, done, {}
 

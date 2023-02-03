@@ -88,13 +88,13 @@ class BestChildTest(parameterized.TestCase):
     def test_node_best_child_on_leaf_node(self):
         root_node = mcts.Node(to_play=0)
         with self.assertRaisesRegex(ValueError, 'Expand leaf node first'):
-            mcts.best_child(root_node, root_node.to_play, self.actions_mask, 19652, 1.25)
+            mcts.best_child(root_node, self.actions_mask, 19652, 1.25)
 
     def test_node_best_child_high_priorabilities(self):
         root_node = mcts.Node(to_play=0)
         mcts.expand(root_node, self.prior, 1)
         mcts.backup(root_node, 0.8, 0)
-        best_node = mcts.best_child(root_node, root_node.to_play, self.actions_mask, 19652, 1.25)
+        best_node = mcts.best_child(root_node, self.actions_mask, 19652, 1.25)
         self.assertEqual(best_node, root_node.children[1])
 
     def test_node_best_child_high_action_values(self):
@@ -108,7 +108,7 @@ class BestChildTest(parameterized.TestCase):
             mcts.backup(root_node.children[2], 0.5, 0)
             mcts.backup(root_node.children[3], 0.4, 0)
 
-        best_node = mcts.best_child(root_node, root_node.to_play, self.actions_mask, 19652, 1.25)
+        best_node = mcts.best_child(root_node, self.actions_mask, 19652, 1.25)
         # Child node Q is the opposite.
         self.assertEqual(best_node, root_node.children[1])
 

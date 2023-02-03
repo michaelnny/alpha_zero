@@ -57,10 +57,9 @@ Similar logic also applies to the rest of the search tree.
 In this MCTS implementation, we chose to use the first one to show how it's done in code.
 """
 
-from __future__ import annotations
 import copy
 import math
-from typing import Callable, List, Tuple, Mapping, Union
+from typing import Callable, List, Tuple, Mapping, Union, Any
 import numpy as np
 from alpha_zero.games.env import BoardGameEnv
 
@@ -68,7 +67,7 @@ from alpha_zero.games.env import BoardGameEnv
 class Node:
     """Node in the MCTS search tree."""
 
-    def __init__(self, to_play: int, prior: float = None, move: int = None, parent: Node = None) -> None:
+    def __init__(self, to_play: int, prior: float = None, move: int = None, parent: Any = None) -> None:
         """
         Args:
             to_play: the id of the current player.
@@ -395,9 +394,9 @@ def uct_search(
         
         assert node.to_play == sim_env.current_player
         
-        # Special case - If game is over, using the actual reward from the game to update statistics.
+        # Special case - If game is over, using the actual reward from the game to update statistics
         if done:
-            backup(node, reward, sim_env.current_player)
+            backup(node, reward, sim_env.last_player)
             continue
 
         # Phase 2 - Expand and evaluation
@@ -568,7 +567,7 @@ def parallel_uct_search(
             
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
-                backup(node, reward, sim_env.current_player)
+                backup(node, reward, sim_env.last_player)
                 continue
             else:
                 add_virtual_loss(node)

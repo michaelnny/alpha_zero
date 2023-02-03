@@ -127,7 +127,6 @@ class GomokuEnvTest(parameterized.TestCase):
                 # Opponent should not take win_actions
                 legit_actions = np.flatnonzero(env.actions_mask)
                 opponent_actions = list(set(legit_actions) - set(win_actions))
-
                 action = np.random.choice(opponent_actions, 1).item()
 
             obs, reward, done, _ = env.step(action)

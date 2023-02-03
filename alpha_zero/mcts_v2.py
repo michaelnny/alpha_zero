@@ -15,11 +15,10 @@
 """Optimized MCTS class which uses numpy to speed up node's internal computation.
 """
 
-from __future__ import annotations
 import collections
 import copy
 import math
-from typing import Callable, Tuple, Mapping, Union
+from typing import Callable, Tuple, Mapping, Union, Any
 import numpy as np
 from alpha_zero.games.env import BoardGameEnv
 
@@ -70,7 +69,7 @@ In this MCTS implementation, we chose to use the later one as it's consist with 
 class Node:
     """Node in the MCTS search tree."""
 
-    def __init__(self, num_actions: int, move: int = None, parent: Node = None) -> None:
+    def __init__(self, num_actions: int, move: int = None, parent: Any = None) -> None:
         """
         Args:
             num_actions: number of actions, including illegal actions.
@@ -228,9 +227,6 @@ def backup(node: Node, value: float) -> None:
 
     if not isinstance(value, float):
         raise ValueError(f'Expect `value` to be a float type, got {type(value)}')
-
-    # To get the value from parent node 'to move' player's perspective.
-    value = -value
 
     while node.parent is not None:
         node.number_visits += 1
@@ -420,7 +416,8 @@ def uct_search(
         expand(node, prior_prob)
 
         # Phase 3 - Backup statistics
-        backup(node, value)
+        # Switching the sign to get the value from parent node 'to move' player's (or last player's) perspective.
+        backup(node, -value)
 
     # Play - generate action probability from the root node.
     pi_probs = generate_play_policy(root_node, env.actions_mask, temperature)
@@ -596,7 +593,8 @@ def parallel_uct_search(
                     continue
 
                 expand(leaf, prior_prob)
-                backup(leaf, value.item())
+                # Switching the sign to get the value from parent node 'to move' player's (or last player's) perspective.
+                backup(leaf, -value.item())
 
     # Play - generate action probability from the root node.
     pi_probs = generate_play_policy(root_node, env.actions_mask, temperature)

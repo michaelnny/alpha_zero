@@ -108,14 +108,11 @@ class BoardGameGui:
 
         if platform == "linux":
             scale = 1.8
-            self.cell_size *= scale
-            self.piece_size *= scale
-            self.panel_w *= scale
-            self.dot_size *= scale
-            self.padding *= scale
-            self.font_size *= scale
-            self.info_font_size *= scale
-            self.title_font_size *= scale
+            self.cell_size = int(self.cell_size * scale) 
+            self.piece_size = int(self.piece_size * scale) 
+            self.panel_w = int(self.panel_w * scale) 
+            self.dot_size = int(self.dot_size * scale) 
+            self.padding = int(self.padding * scale)
 
         self.half_size = self.cell_size // 2
         self.board_size = self.env.board_size * self.cell_size
