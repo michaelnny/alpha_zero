@@ -445,11 +445,13 @@ def run_data_collector(
     """
     logging.info('Start data collector thread')
 
-    save_samples_dir = Path(save_dir)
-    if save_dir is not None and save_dir != '' and not save_samples_dir.exists():
-        save_samples_dir.mkdir(parents=True, exist_ok=True)
+    save_samples_dir = None
+    if save_dir is not None and save_dir != '':
+        save_samples_dir = Path(save_dir)
+        if not save_samples_dir.exists():
+            save_samples_dir.mkdir(parents=True, exist_ok=True)
 
-    should_save = save_samples_dir.exists() and save_frequency > 0
+    should_save = save_frequency > 0 and save_samples_dir
 
     while True:
         try:

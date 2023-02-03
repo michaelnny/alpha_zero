@@ -408,6 +408,7 @@ def uct_search(
 
         # Special case - If game is over, using the actual reward from the game to update statistics.
         if done:
+            # The reward is for the last player who made the move won/loss the game.
             backup(node, reward)
             continue
 
@@ -574,6 +575,7 @@ def parallel_uct_search(
 
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
+                # The reward is for the last player who made the move won/loss the game.
                 backup(node, reward)
                 continue
             else:

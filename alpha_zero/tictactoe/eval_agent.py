@@ -25,7 +25,7 @@ from alpha_zero.pipeline_v1 import load_checkpoint
 from alpha_zero.mcts_player import create_mcts_player
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('num_res_blocks', 2, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 3, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
     16,
@@ -33,10 +33,10 @@ flags.DEFINE_integer(
 )
 
 flags.DEFINE_string(
-    'black_ckpt_file', 'saved_checkpoints/tictactoe_v2/train_steps_49000', 'Load the checkpoint file for black player.'
+    'black_ckpt_file', 'checkpoints/tictactoe_v2/train_steps_19000', 'Load the checkpoint file for black player.'
 )
 flags.DEFINE_string(
-    'white_ckpt_file', 'saved_checkpoints/tictactoe_v2/train_steps_49000', 'Load the checkpoint file for white player.'
+    'white_ckpt_file', 'checkpoints/tictactoe_v2/train_steps_19000', 'Load the checkpoint file for white player.'
 )
 
 flags.DEFINE_integer('num_simulations', 24, 'Number of simulations per MCTS search.')

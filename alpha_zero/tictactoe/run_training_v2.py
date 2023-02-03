@@ -44,7 +44,7 @@ from alpha_zero.pipeline_v2 import (
 
 FLAGS = flags.FLAGS
 
-flags.DEFINE_integer('num_res_blocks', 2, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 3, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
     16,
@@ -52,8 +52,8 @@ flags.DEFINE_integer(
 )
 
 flags.DEFINE_integer('replay_capacity', 50000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 2000, 'Minimum replay size before learning starts.')
-flags.DEFINE_integer('batch_size', 512, 'Sample batch size when do learning.')
+flags.DEFINE_integer('min_replay_size', 5000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('batch_size', 256, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('learning_rate_decay', 0.1, 'Adam learning rate decay rate.')
@@ -62,7 +62,7 @@ flags.DEFINE_float('l2_decay', 0.0001, 'Adam L2 regularization.')
 
 flags.DEFINE_integer('num_train_steps', 50000, 'Number of training steps (measured in network updates).')
 
-flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
+flags.DEFINE_integer('num_actors', 2, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
     'num_simulations', 24, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
@@ -136,7 +136,7 @@ def main(argv):
     # Start to collect samples from self-play on a new thread.
     data_collector = threading.Thread(
         target=run_data_collector,
-        args=(data_queue, replay, FLAGS.samples_save_frequency, FLAGS.samples_save_dir),
+        args=(data_queue, replay, 0, None),
     )
     data_collector.start()
 

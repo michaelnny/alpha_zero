@@ -152,10 +152,9 @@ def best_child(node: Node, actions_mask: np.ndarray, c_puct_base: float, c_puct_
     if not isinstance(actions_mask, np.ndarray) or actions_mask.dtype != np.bool8 or len(actions_mask.shape) != 1:
         raise ValueError(f'Expect `actions_mask` to be a 1D bool numpy.array, got {actions_mask}')
 
-    # The child Q value is evaluated from `node.to_play` opponent perspective.
-    # when we select the best child for `node`, we want to do so for `node.to_play` perspective, 
-    # so we always switch the sign for node.child_Q values, shich means to select the 'worst' child for the opponent,
-    # thus the best child for `node.to_play`, this is possible since we're talking about two-player, zero-sum games.
+    # The child Q value is evaluated from the opponent perspective.
+    # when we select the best child for node, we want to do so from node.to_play's perspective, 
+    # so we always switch the sign for node.child_Q values, this is required since we're talking about two-player, zero-sum games.
     ucb_scores = -node.child_Q() + node.child_U(c_puct_base, c_puct_init)
     
     # Exclude illegal actions, note in some cases, the max ucb_scores may be zero.
@@ -396,6 +395,7 @@ def uct_search(
         
         # Special case - If game is over, using the actual reward from the game to update statistics
         if done:
+            # The reward is for the last player who made the move won/loss the game.
             backup(node, reward, sim_env.last_player)
             continue
 
@@ -567,6 +567,7 @@ def parallel_uct_search(
             
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
+                # The reward is for the last player who made the move won/loss the game.
                 backup(node, reward, sim_env.last_player)
                 continue
             else:

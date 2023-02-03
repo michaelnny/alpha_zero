@@ -97,7 +97,7 @@ class BoardGameGui:
         # UI element sizes
         self.cell_size = 46
         self.piece_size = 38
-        self.panel_w = 380
+        self.panel_w = 480
         self.dot_size = 8
         self.padding = 40
 
@@ -106,12 +106,14 @@ class BoardGameGui:
         self.info_font_size = 12
         self.title_font_size = 22
 
-        if platform == "linux":
+        self.is_os_linux = platform == "linux"
+
+        if self.is_os_linux:
             scale = 1.8
-            self.cell_size = int(self.cell_size * scale) 
-            self.piece_size = int(self.piece_size * scale) 
-            self.panel_w = int(self.panel_w * scale) 
-            self.dot_size = int(self.dot_size * scale) 
+            self.cell_size = int(self.cell_size * scale)
+            self.piece_size = int(self.piece_size * scale)
+            self.panel_w = int(self.panel_w * scale)
+            self.dot_size = int(self.dot_size * scale)
             self.padding = int(self.padding * scale)
 
         self.half_size = self.cell_size // 2
@@ -159,9 +161,9 @@ class BoardGameGui:
         )
 
         # Variables to update UI at runtime
-        self.title_var = tk.StringVar(value=self.get_games_title())  # GAME N
-        self.scores_var = tk.StringVar(value=self.get_match_scores())  # Won games: Black vs White
-        self.info_var = tk.StringVar()  # Who's move and who won
+        self.match_score_var = tk.StringVar(value=self.get_match_scores())  # Won games: Black vs White
+        self.game_title_var = tk.StringVar(value=self.get_games_title())  # GAME N
+        self.game_info_var = tk.StringVar()  # Who's move and who won
 
         self.env.reset()
 
@@ -220,17 +222,22 @@ class BoardGameGui:
             self.draw_dot(pos, Colors.LINE, self.dot_size)
 
     def draw_board_label(self):
+        scale = 0.5
+        if self.is_os_linux:
+            scale = 1.0
+
         # Row labels
         for j in range(self.num_rows):
             label = tk.Label(
                 self.canvas,
                 font=(self.font_family, self.font_size, 'bold'),
                 text=self.row_labels[j],
+                width=2,
                 background=Colors.BOARD_BG,
                 foreground=Colors.LABEL,
             )
             x = self.padding * 0.2
-            y = j * self.cell_size + self.half_size + self.padding - self.font_size * 0.8
+            y = j * self.cell_size + self.padding + self.font_size * scale
             label.place(x=x, y=y, anchor='nw')
 
         # Column labels
@@ -239,15 +246,24 @@ class BoardGameGui:
                 self.canvas,
                 font=(self.font_family, self.font_size, 'bold'),
                 text=self.col_labels[i],
-                anchor="center",
+                width=2,
                 background=Colors.BOARD_BG,
                 foreground=Colors.LABEL,
             )
-            x = i * self.cell_size + self.half_size + self.padding - self.font_size / 2
-            y = self.padding + self.board_size + self.padding * 0.2
+            x = i * self.cell_size + self.padding + self.font_size * scale
+            y = self.padding + self.board_size
             label.place(x=x, y=y, anchor='nw')
 
     def initialize_panel(self):
+        players_box = tk.Canvas(
+            self.panel,
+            width=self.panel_w,
+            height=self.window_h * 0.25 - 1,
+            background=Colors.INFO_BOX_BG,
+            highlightthickness=0,
+        )
+        players_box.place(x=0, y=0, anchor='nw')
+
         game_info_box = tk.Canvas(
             self.panel,
             width=self.panel_w,
@@ -255,16 +271,7 @@ class BoardGameGui:
             background=Colors.INFO_BOX_BG,
             highlightthickness=0,
         )
-        game_info_box.place(x=0, y=0, anchor='nw')
-
-        player_info_box = tk.Canvas(
-            self.panel,
-            width=self.panel_w,
-            height=self.window_h * 0.25 - 1,
-            background=Colors.INFO_BOX_BG,
-            highlightthickness=0,
-        )
-        player_info_box.place(x=0, y=self.window_h * 0.25, anchor='nw')
+        game_info_box.place(x=0, y=self.window_h * 0.25, anchor='nw')
 
         actions_box = tk.Canvas(
             self.panel,
@@ -275,54 +282,54 @@ class BoardGameGui:
         )
         actions_box.place(x=0, y=self.window_h * 0.5, anchor='nw')
 
-        # Game info
-        game_label = tk.Label(
-            game_info_box,
-            font=(self.font_family, self.title_font_size, 'bold'),
-            textvariable=self.title_var,
-            background=Colors.INFO_BOX_BG,
-            foreground=Colors.TEXT,
-        )
-        game_label.place(relx=0.5, y=self.padding, anchor='center')
-
-        info_label = tk.Label(
-            game_info_box,
-            font=(self.font_family, self.font_size, 'bold'),
-            textvariable=self.info_var,
-            background=Colors.INFO_BOX_BG,
-            foreground=Colors.INFO,
-        )
-        info_label.place(relx=0.5, y=self.padding * 2.5, anchor='center')
-
         # Players info
         for i, t, c in zip([0, 1], [self.black_player_name, self.white_player_name], [Colors.BLACK, Colors.WHITE]):
             if i == 0:
                 offset_x = self.padding
             else:
-                offset_x = self.padding * 0.8 + self.panel_w * 0.5
-            pos = (offset_x, self.padding)
-            x0, y0, x1, y1 = self.get_circle_from_pos_and_size(pos, self.piece_size * 0.7)
-            player_info_box.create_oval(x0, y0, x1, y1, fill=c, width=0, state=tk.DISABLED)
+                offset_x = self.padding + self.panel_w * 0.5
+            pos = (offset_x, self.padding + self.piece_size * 0.5)
+            x0, y0, x1, y1 = self.get_circle_from_pos_and_size(pos, self.piece_size)
+            players_box.create_oval(x0, y0, x1, y1, fill=c, width=0, state=tk.DISABLED)
 
             # Title
             title = tk.Label(
-                player_info_box,
-                font=(self.font_family, self.font_size, 'bold'),
+                players_box,
+                font=(self.font_family, self.title_font_size, 'bold'),
                 text=t,
                 background=Colors.INFO_BOX_BG,
                 foreground=Colors.TEXT,
             )
-            title.place(x=offset_x + self.piece_size * 0.5, y=self.padding // 2 + 6, anchor='nw')
+            title.place(x=offset_x + self.piece_size * 0.75, y=self.padding, anchor='nw')
 
         # Match scores
-        results_label = tk.Label(
-            player_info_box,
-            font=(self.font_family, self.font_size, 'bold'),
-            textvariable=self.scores_var,
+        match_results = tk.Label(
+            players_box,
+            font=(self.font_family, self.title_font_size, 'bold'),
+            textvariable=self.match_score_var,
             background=Colors.INFO_BOX_BG,
             foreground=Colors.TEXT,
         )
-        results_label.place(relx=0.5, y=self.padding * 2 + self.info_font_size, anchor='center')
+        match_results.place(relx=0.5, y=self.padding * 3 + self.info_font_size, anchor='center')
+
+        # Game title and info
+        game_title = tk.Label(
+            game_info_box,
+            font=(self.font_family, self.title_font_size, 'bold'),
+            textvariable=self.game_title_var,
+            background=Colors.INFO_BOX_BG,
+            foreground=Colors.TEXT,
+        )
+        game_title.place(relx=0.5, y=self.padding, anchor='center')
+
+        game_info = tk.Label(
+            game_info_box,
+            font=(self.font_family, self.font_size, 'bold'),
+            textvariable=self.game_info_var,
+            background=Colors.INFO_BOX_BG,
+            foreground=Colors.INFO,
+        )
+        game_info.place(relx=0.5, y=self.padding * 2.5, anchor='center')
 
         # Action buttons
         new_game_btn = tk.Label(
@@ -463,14 +470,14 @@ class BoardGameGui:
             else:
                 info_text = 'White to move'
         info_text = f'Steps {self.env.steps+1}, {info_text}'
-        self.info_var.set(info_text)
+        self.game_info_var.set(info_text)
 
     def update_match_results_info(self):
         if self.env.winner_name == 'black':
             self.black_won_games += 1
         elif self.env.winner_name == 'white':
             self.white_won_games += 1
-        self.scores_var.set(self.get_match_scores())
+        self.match_score_var.set(self.get_match_scores())
 
     def get_games_title(self):
         return f'GAME {self.played_games + 1}'
@@ -500,7 +507,7 @@ class BoardGameGui:
         self.clear_loop()
 
         self.played_games += 1
-        self.title_var.set(self.get_games_title())
+        self.game_title_var.set(self.get_games_title())
 
         self.env.reset()
         self.last_move = None

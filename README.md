@@ -38,7 +38,8 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
   - `run_training_v2.py` trains the agent following AlphaZero paper (without using evaluation to select 'best' player)
   - `eval_agent.py` evaluate the agents by playing the Gomoku game in terminal mode, only supports AlphaZero vs. AlphaZero mode
   - `eval_agent_gui.py` evaluate the agents by launching a simple GUI program to play Gomoku, supports AlphaZero vs. AlphaZero mode, and Human vs. AlphaZero mode
-* `mcts.py` contains the MCTS node and UCT tree-search algorithm.
+* `mcts_v1.py` contains the MCTS node and UCT tree-search algorithm.
+* `mcts_v2.py` contains the optimized version of MCTS node and UCT tree-search algorithm, which use Numpy arrays to store tree statistics.
 * `pipeline_v1.py` contains the functions to run self-play, training, and evaluation loops (following AlphaGo Zero paper, evaluation is used to select best player to generate self-play samples)
 * `pipeline_v2.py` contains the functions to run training, and evaluation loops (following AlphaZero paper, evaluation is only used to monitoring performance)
 
@@ -134,7 +135,7 @@ but it could takes much longer time for self-play to generate the same amount of
 
 One solution to mitigate this issue is to add some delay to the learner's training loop. The ideal situation is we want the actors to generate a batch of new samples before starting training on next batch. However, if we delay for too long, more bad samples are generated because the actors are still using the old parameters for neural network. The right value for the train delay parameter would depend on the setup, for example how many actors, what kind of hardware etc.
 
-In our experiment, running 3 actors and a single learner on a single RTX 3090 GPU, using 400 simulations and 8 parallel leaves for MCTS search, it takes ~20 minutes to generate 10000 sample positions. For the learner's training loop, we use batch size 256, and a 0.5 seconds delay per training step, it takes ~10 minutes to run 1000 training steps. This means every 10 minutes, a new checkpoint will be created and the actors will start using the new checkpoint to generate new samples.
+In our experiment, running 3 actors and a single learner on a single RTX 3090 GPU, using 400 simulations and 8 parallel leaves for MCTS search, it takes ~20 minutes to generate 120000 sample positions. For the learner's training loop, we use batch size 256, and a 0.5 seconds delay per training step, it takes ~10 minutes to run 1000 training steps. This means every 10 minutes, a new checkpoint will be created and the actors will start using the new checkpoint to generate new samples.
 
 
 # Evaluate Agents
