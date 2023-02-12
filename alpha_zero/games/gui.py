@@ -106,7 +106,7 @@ class BoardGameGui:
         self.info_font_size = 12
         self.title_font_size = 22
 
-        self.is_os_linux = platform == "linux"
+        self.is_os_linux = platform == 'linux'
 
         if self.is_os_linux:
             scale = 1.8
@@ -255,36 +255,36 @@ class BoardGameGui:
             label.place(x=x, y=y, anchor='nw')
 
     def initialize_panel(self):
-        block_h = self.window_h * 0.3
+        block_h = self.window_h * 0.6
         if self.is_os_linux:
-            block_h = self.window_h * 0.25
+            block_h = self.window_h * 0.6
 
-        players_box = tk.Canvas(
+        info_box = tk.Canvas(
             self.panel,
             width=self.panel_w,
             height=block_h - 1,
             background=Colors.INFO_BOX_BG,
             highlightthickness=0,
         )
-        players_box.place(x=0, y=0, anchor='nw')
+        info_box.place(x=0, y=0, anchor='nw')
 
-        game_info_box = tk.Canvas(
-            self.panel,
-            width=self.panel_w,
-            height=block_h - 1,
-            background=Colors.INFO_BOX_BG,
-            highlightthickness=0,
-        )
-        game_info_box.place(x=0, y=block_h, anchor='nw')
+        # game_info_box = tk.Canvas(
+        #     self.panel,
+        #     width=self.panel_w,
+        #     height=block_h - 1,
+        #     background=Colors.INFO_BOX_BG,
+        #     highlightthickness=0,
+        # )
+        # game_info_box.place(x=0, y=block_h, anchor='nw')
 
         actions_box = tk.Canvas(
             self.panel,
             width=self.panel_w,
-            height=self.window_h * 0.5,
+            height=self.window_h - block_h,
             background=Colors.ACTIONS_BG,
             highlightthickness=0,
         )
-        actions_box.place(x=0, y=self.window_h - block_h * 2, anchor='nw')
+        actions_box.place(x=0, y=block_h, anchor='nw')
 
         # Players info
         for i, t, c in zip([0, 1], [self.black_player_name, self.white_player_name], [Colors.BLACK, Colors.WHITE]):
@@ -294,11 +294,11 @@ class BoardGameGui:
                 offset_x = self.padding + self.panel_w * 0.5
             pos = (offset_x, self.padding + self.piece_size * 0.5)
             x0, y0, x1, y1 = self.get_circle_from_pos_and_size(pos, self.piece_size)
-            players_box.create_oval(x0, y0, x1, y1, fill=c, width=0, state=tk.DISABLED)
+            info_box.create_oval(x0, y0, x1, y1, fill=c, width=0, state=tk.DISABLED)
 
             # Title
             title = tk.Label(
-                players_box,
+                info_box,
                 font=(self.font_family, self.title_font_size, 'bold'),
                 text=t,
                 background=Colors.INFO_BOX_BG,
@@ -308,7 +308,7 @@ class BoardGameGui:
 
         # Match scores
         match_results = tk.Label(
-            players_box,
+            info_box,
             font=(self.font_family, self.title_font_size, 'bold'),
             textvariable=self.match_score_var,
             background=Colors.INFO_BOX_BG,
@@ -318,22 +318,22 @@ class BoardGameGui:
 
         # Game title and info
         game_title = tk.Label(
-            game_info_box,
+            info_box,
             font=(self.font_family, self.title_font_size, 'bold'),
             textvariable=self.game_title_var,
             background=Colors.INFO_BOX_BG,
             foreground=Colors.TEXT,
         )
-        game_title.place(relx=0.5, y=self.padding, anchor='center')
+        game_title.place(relx=0.5, y=self.padding * 5, anchor='center')
 
         game_info = tk.Label(
-            game_info_box,
+            info_box,
             font=(self.font_family, self.font_size, 'bold'),
             textvariable=self.game_info_var,
             background=Colors.INFO_BOX_BG,
             foreground=Colors.INFO,
         )
-        game_info.place(relx=0.5, y=self.padding * 2.5, anchor='center')
+        game_info.place(relx=0.5, y=self.padding * 6 + self.title_font_size, anchor='center')
 
         # Action buttons
         new_game_btn = tk.Label(

@@ -8,7 +8,7 @@ gym==0.25.2
 
 # PyTorch
 torch==1.13.1
-torchvision==0.13.1
+torchvision==0.14.1
 
 # Utilities
 numpy==1.23.4

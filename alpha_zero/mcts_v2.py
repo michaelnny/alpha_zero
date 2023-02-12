@@ -13,6 +13,46 @@
 # limitations under the License.
 # ==============================================================================
 """Optimized MCTS class which uses numpy to speed up node's internal computation.
+
+The positions are evaluated from the (to move) current player's perspective.
+
+        A           Black to move
+
+    B       C       White to move
+
+  D    E            Black to move
+
+For example, in the above two-player, zero-sum games search tree. 'A' is the root node,
+and when the game is in state corresponding to node 'A', it's black's turn to move.
+However the children nodes of 'A' are evaluated from white player's perspective.
+So if we select the best child for node 'A', without further consideration,
+we'd be actually selecting the best child for white player, which is not what we want.
+
+Let's look at an simplified example where we don't consider number of visits and total values,
+just the raw evaluation scores, if the evaluated scores (from white's perspective)
+for 'B' and 'C' are 0.8 and 0.3 respectively. Then according to these results,
+the best child of 'A' max(0.8, 0.3) is 'B', however this is done from white player's perspective.
+But node 'A' represents black's turn to move, so we need to select the best child from black player's perspective,
+which should be 'C' - the worst move for white, thus a best move for black.
+
+Solution 1:
+One way to resolve this issue is to always switching the signs of the child node's values when we select the best child.
+For example:
+    ucb_scores = -node.child_Q() + node.child_U()
+
+In this case, a max(-0.8, -0.3) will give us the correct results for black player when we select the best child for node 'A'.
+But this solution may introduce some confusion as the negative sign is not very self-explanation, and it's not in the pseudocode.
+
+Solution 2:
+Another more straight forward way is to simply store the values of the children nodes NOT from the current 'to move' player's perspective,
+but from the their parent node's 'to move' player's perspective. So that when we select the best child,
+we're always selecting the best child for the desired player. For the same example shown above,
+if the evaluated scores (from white's perspective) for 'B' and 'C' are 0.8 and 0.3 respectively,
+we'd actually store these scores as -0.8, -0.3 for 'B' and 'C' respectively. Since for two-player, zero-sum game,
+one player's win is another player's loss, so we can simply switching the sign of the values.
+Similar logic also applies to the rest of the search tree.
+
+In this MCTS implementation, we chose to use the later one as it's consist with the pseudocode of general MCTS and more easy to implement.
 """
 
 import collections
@@ -22,49 +62,6 @@ from typing import Callable, Tuple, Mapping, Union, Any
 import numpy as np
 from alpha_zero.games.env import BoardGameEnv
 
-
-"""
-Our game environment as well as neural network evaluation are constructed in a way 
-such that we evaluates the board from the 'to move' player's perspective.
-
-        A           Black to move
-
-    B       C       White to move
-
-  D    E            Black to move
-
-For example, in the above two-player, zero-sum games search tree. 'A' is the root node, 
-and when the game is in state corresponding to node 'A', it's black's turn to move. 
-However the children nodes of 'A' are evaluated from white player's perspective.
-So if we select the best child for node 'A', without further consideration, 
-we'd be actually selecting the best child for white player, which is not what we want.
-
-Let's look at an simplified example where we don't consider number of visits and total values, 
-just the raw evaluation scores, if the evaluated scores (from white's perspective) 
-for 'B' and 'C' are 0.8 and 0.3 respectively. Then according to these results, 
-the best child of 'A' max(0.8, 0.3) is 'B', however this is done from white player's perspective. 
-But node 'A' represents black's turn to move, so we need to select the best child from black player's perspective,
-which should be 'C' - the worst move for white, thus a best move for black. 
-
-Solution 1:
-One way to resolve this issue is to always switching the signs of the child node's values when we select the best child.
-For example:
-    ucb_scores = -node.child_Q() + node.child_U()
-
-In this case, a max(-0.8, -0.3) will give us the correct results for black player when we select the best child for node 'A'. 
-But this solution may introduce some confusion as the negative sign is not very self-explanation, and it's not in the pseudocode.
-
-Solution 2:
-Another more straight forward way is to simply store the values of the children nodes NOT from the current 'to move' player's perspective, 
-but from the their parent node's 'to move' player's perspective. So that when we select the best child, 
-we're always selecting the best child for the desired player. For the same example shown above, 
-if the evaluated scores (from white's perspective) for 'B' and 'C' are 0.8 and 0.3 respectively, 
-we'd actually store these scores as -0.8, -0.3 for 'B' and 'C' respectively. Since for two-player, zero-sum game,
-one player's win is another player's loss, so we can simply switching the sign of the values. 
-Similar logic also applies to the rest of the search tree.
-
-In this MCTS implementation, we chose to use the later one as it's consist with the pseudocode of general MCTS and more easy to implement.
-"""
 
 class Node:
     """Node in the MCTS search tree."""
@@ -92,12 +89,13 @@ class Node:
 
     def child_U(self, c_puct_base: float, c_puct_init: float) -> np.ndarray:
         """Returns a 1D numpy.array contains prior score for all child."""
-        pb_c = math.log((1 + self.number_visits + c_puct_base) / c_puct_base) + c_puct_init
-        return pb_c * self.child_priors * (math.sqrt(self.number_visits) / (self.child_number_visits + 1))
+        pb_c = math.log((1.0 + self.number_visits + c_puct_base) / c_puct_base) + c_puct_init
+        return pb_c * self.child_priors * math.sqrt(self.number_visits) / (1 + self.child_number_visits)
 
     def child_Q(self):
         """Returns a 1D numpy.array contains mean action value for all child."""
-        return self.child_total_value / (1 + self.child_number_visits)
+        child_number_visits = np.where(self.child_number_visits == 0, 1, self.child_number_visits)
+        return self.child_total_value / child_number_visits
 
     @property
     def number_visits(self):
@@ -131,12 +129,7 @@ class DummyNode(object):
         self.child_number_visits = collections.defaultdict(float)
 
 
-def best_child(
-    node: Node,
-    actions_mask: np.ndarray,
-    c_puct_base: float,
-    c_puct_init: float,
-) -> Node:
+def best_child(node: Node, actions_mask: np.ndarray, c_puct_base: float, c_puct_init: float) -> Node:
     """Returns best child node with maximum action value Q plus an upper confidence bound U,
     also creates child node corresponding to the best move if the child does not exists.
 
@@ -216,7 +209,7 @@ def backup(node: Node, value: float) -> None:
 
     Args:
         node: current node in the search tree.
-        value: the evaluated value (or final game outcome), 
+        value: the evaluated value (or final game outcome),
             this value should for the player corresponding to the 'to move' player of the given node,
             not the player who made the last move.
 
@@ -254,7 +247,7 @@ def add_dirichlet_noise(node: Node, actions_mask: np.ndarray, eps: float = 0.25,
     """
 
     if not isinstance(node, Node) or not node.is_expanded:
-        raise ValueError(f'Expect `node` to be expanded')
+        raise ValueError('Expect `node` to be expanded')
     if not isinstance(actions_mask, np.ndarray) or actions_mask.dtype != np.bool8 or len(actions_mask.shape) != 1:
         raise ValueError(f'Expect `actions_mask` to be a 1D bool numpy.array, got {actions_mask}')
     if not isinstance(eps, float) or not 0.0 <= eps <= 1.0:
@@ -380,7 +373,8 @@ def uct_search(
         root_node = Node(num_actions=env.num_actions, parent=DummyNode())
         prior_prob, value = eval_func(env.observation(), False)
         expand(root_node, prior_prob)
-        backup(root_node, value)
+        # Switching the sign to get the value from parent node 'to move' player's (or last player's) perspective.
+        backup(root_node, -value)
 
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
@@ -445,11 +439,12 @@ def add_virtual_loss(node: Node) -> None:
 
     # This is a loss for both players in the traversed path,
     # since we want to avoid multiple threads to select the same path.
-    vloss = -1
+    vloss = -1.0
     while node.parent is not None:
         node.losses_applied += 1
         node.total_value += vloss
         node = node.parent
+
 
 def revert_virtual_loss(node: Node) -> None:
     """Undo virtual loss to the traversed path.
@@ -458,13 +453,12 @@ def revert_virtual_loss(node: Node) -> None:
         node: current leaf node in the search tree.
     """
 
-    vloss = +1
+    vloss = +1.0
     while node.parent is not None:
         if node.losses_applied > 0:
             node.losses_applied -= 1
             node.total_value += vloss
         node = node.parent
-
 
 
 def parallel_uct_search(
@@ -481,7 +475,7 @@ def parallel_uct_search(
 ) -> Tuple[int, np.ndarray, Node]:
     """Single-threaded Upper Confidence Bound (UCB) for Trees (UCT) search without any rollout.
 
-    Supports leaf-parallel search and batched evaluation.
+    This implementation uses tree parallel search and batched evaluation.
 
     It follows the following general UCT search algorithm, except here we don't do rollout.
     ```
@@ -538,7 +532,8 @@ def parallel_uct_search(
         root_node = Node(num_actions=env.num_actions, parent=DummyNode())
         prior_prob, value = eval_func(env.observation(), False)
         expand(root_node, prior_prob)
-        backup(root_node, value)
+        # Switching the sign to get the value from parent node 'to move' player's (or last player's) perspective.
+        backup(root_node, -value)
 
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
@@ -546,12 +541,11 @@ def parallel_uct_search(
 
     # for simulation in range(num_simulations):
     while root_node.number_visits < num_simulations:
-
         leaves = []
         failsafe = 0
 
         while len(leaves) < parallel_leaves and failsafe < parallel_leaves * 2:
-            # This is necessary as when a game is over no leaf is added to leaves, 
+            # This is necessary as when a game is over no leaf is added to leaves,
             # as we use the actual game results to update statistic
             failsafe += 1
 
@@ -587,7 +581,7 @@ def parallel_uct_search(
             prior_probs, values = eval_func(np.stack(batched_obs, axis=0), True)
 
             for leaf, prior_prob, value in zip(batched_leaves, prior_probs, values):
-                revert_virtual_loss(leaf) # Always remove virtual loss before backup statistics
+                revert_virtual_loss(leaf)  # Always remove virtual loss before backup statistics
 
                 # If a node was picked multiple times (despite virtual losses), we shouldn't
                 # expand it more than once.

@@ -12,39 +12,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""Evaluate the AlphaZero on free-style Gomoku game."""
+"""Evaluate the AlphaZero on free-style Gomoku game with a simple GUI program."""
 from absl import app
 from absl import flags
-import time
-import timeit
 import os
 import torch
 
 from alpha_zero.games.gomoku import GomokuEnv
+from alpha_zero.games.gui import BoardGameGui
 from alpha_zero.network import AlphaZeroNet
 from alpha_zero.pipeline_v1 import load_checkpoint
 from alpha_zero.mcts_player import create_mcts_player
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 15, 'Board size for Gomoku.')
+flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 5, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
-    128,
+    64,
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_string(
-    'black_ckpt_file', 'checkpoints/gomoku_v2/train_steps_112000', 'Load the checkpoint file for black player.'
-)
-flags.DEFINE_string(
-    'white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_112000', 'Load the checkpoint file for white player.'
+flags.DEFINE_bool(
+    'human_vs_ai',
+    False,
+    'Default plays in the Human vs. AlphaZero mode, if False, will play in AlphaZero vs. AlphaZero mode.',
 )
 
-flags.DEFINE_integer('num_simulations', 600, 'Number of simulations per MCTS search.')
-flags.DEFINE_integer('parallel_leaves', 8, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
+flags.DEFINE_bool(
+    'show_step',
+    True,
+    'Show step number on stones, default off.',
+)
+
+flags.DEFINE_string(
+    'black_ckpt_file',
+    'checkpoints/gomoku_small_v2/train_steps_49000',
+    'Load the checkpoint file for black player, will only load if human_vs_ai is False.',
+)
+flags.DEFINE_string(
+    'white_ckpt_file', 'checkpoints/gomoku_small_v2/train_steps_49000', 'Load the checkpoint file for white player.'
+)
+
+flags.DEFINE_integer('num_simulations', 200, 'Number of simulations per MCTS search.')
+flags.DEFINE_integer('parallel_leaves', 1, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
@@ -60,7 +73,6 @@ flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 def main(argv):
     torch.manual_seed(FLAGS.seed)
-
     runtime_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
     eval_env = GomokuEnv(board_size=FLAGS.board_size, stack_history=FLAGS.stack_history)
@@ -86,41 +98,35 @@ def main(argv):
             deterministic=True,
         )
 
-    black_network = network_builder().to(device=runtime_device)
+    # White player is alway gonna be AI
     white_network = network_builder().to(device=runtime_device)
-
-    load_checkpoint_for_net(black_network, FLAGS.black_ckpt_file)
     load_checkpoint_for_net(white_network, FLAGS.white_ckpt_file)
-    black_network.eval()
     white_network.eval()
+    white_mcts_player = mcts_player_builder(white_network)
 
-    black_player = mcts_player_builder(black_network)
-    white_player = mcts_player_builder(white_network)
+    # Wrap MCTS player for the GUI program
+    def white_player(env: GomokuEnv) -> int:
+        action, _, _ = white_mcts_player(env, None, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
+        return action
 
-    # Start to play game
-    start = timeit.default_timer()
-    steps = 0
-    _ = eval_env.reset()
-    while True:
-        if eval_env.current_player_name == 'black':
-            player = black_player
-        else:
-            player = white_player
+    # Black player could be either human or AI
+    if FLAGS.human_vs_ai:
+        black_player = 'human'
+    else:
+        # Only create and load network if not in human vs. AI mode.
+        black_network = network_builder().to(device=runtime_device)
+        load_checkpoint_for_net(black_network, FLAGS.black_ckpt_file)
+        black_network.eval()
 
-        action, _, _ = player(eval_env, None, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
+        black_mcts_player = mcts_player_builder(black_network)
 
-        _, reward, done, _ = eval_env.step(action)
-        eval_env.render('human')
+        # Wrap MCTS player for the GUI program
+        def black_player(env: GomokuEnv) -> int:
+            action, _, _ = black_mcts_player(env, None, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
+            return action
 
-        steps += 1
-        if done:
-            break
-
-    eval_env.close()
-
-    duration = timeit.default_timer() - start
-    mean_search_time = duration / steps
-    print(f'Mean MCTS search time: {mean_search_time:.2f}')
+    game_gui = BoardGameGui(eval_env, black_player=black_player, white_player=white_player, show_step=FLAGS.show_step)
+    game_gui.start()
 
 
 if __name__ == '__main__':

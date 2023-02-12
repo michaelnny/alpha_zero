@@ -20,8 +20,10 @@ import torch
 import torch.nn.functional as F
 from alpha_zero.games.env import BoardGameEnv
 
-# from alpha_zero.mcts_v1 import Node, uct_search, parallel_uct_search
-from alpha_zero.mcts_v2 import Node, uct_search, parallel_uct_search
+from alpha_zero.mcts_v1 import Node, uct_search, parallel_uct_search
+
+# from alpha_zero.mcts_v2 import Node, uct_search, parallel_uct_search
+
 
 def create_mcts_player(
     network: torch.nn.Module,
@@ -62,7 +64,7 @@ def create_mcts_player(
         c_puct_base: float,
         c_puct_init: float,
         temperature: float,
-    ):  
+    ):
         if parallel_leaves > 1:
             return parallel_uct_search(
                 env=env,

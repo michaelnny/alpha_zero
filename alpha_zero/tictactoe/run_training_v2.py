@@ -56,8 +56,8 @@ flags.DEFINE_integer('min_replay_size', 5000, 'Minimum replay size before learni
 flags.DEFINE_integer('batch_size', 256, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
-flags.DEFINE_float('learning_rate_decay', 0.1, 'Adam learning rate decay rate.')
-flags.DEFINE_multi_integer('lr_milestones', [20000], 'The number of steps at which the learning rate will decay.')
+flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
+flags.DEFINE_multi_integer('lr_decay_milestones', [20000], 'The number of steps at which the learning rate will decay.')
 flags.DEFINE_float('l2_decay', 0.0001, 'Adam L2 regularization.')
 
 flags.DEFINE_integer('num_train_steps', 50000, 'Number of training steps (measured in network updates).')
@@ -96,7 +96,6 @@ flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 
 def main(argv):
-
     torch.manual_seed(FLAGS.seed)
     random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
 
@@ -115,7 +114,7 @@ def main(argv):
 
     network = network_builder()
     optimizer = torch.optim.Adam(network.parameters(), lr=FLAGS.learning_rate, weight_decay=FLAGS.l2_decay)
-    lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_milestones, gamma=FLAGS.learning_rate_decay)
+    lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_decay_milestones, gamma=FLAGS.lr_decay)
 
     actor_network = network_builder()
     actor_network.share_memory()

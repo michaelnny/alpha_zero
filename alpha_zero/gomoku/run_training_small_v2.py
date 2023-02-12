@@ -45,30 +45,30 @@ from alpha_zero.pipeline_v2 import (
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 15, 'Board size for Gomoku.')
+flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 5, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
-    128,
+    64,
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 200000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 50000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
+flags.DEFINE_integer('min_replay_size', 10000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 256, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.002, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [200000, 500000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [100000, 300000, 600000], 'The number of steps at which the learning rate will decay.'
 )
 flags.DEFINE_float('l2_decay', 0.0001, 'Adam L2 regularization.')
 flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
 
-flags.DEFINE_integer('num_actors', 3, 'Number of self-play actor processes.')
+flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 600, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations', 200, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
 flags.DEFINE_integer('parallel_leaves', 8, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
 
@@ -87,13 +87,13 @@ flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
-flags.DEFINE_float('train_delay', 0.45, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.25, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
 
-flags.DEFINE_integer('checkpoint_frequency', 2000, 'The frequency (in training step) to create new checkpoint.')
-flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_v2', 'Path for checkpoint file.')
+flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
+flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_small_v2', 'Path for checkpoint file.')
 flags.DEFINE_string('load_checkpoint_file', '', 'Load the checkpoint from file to resume training.')
 
 flags.DEFINE_integer(
@@ -101,17 +101,20 @@ flags.DEFINE_integer(
     50000,
     'The frequency (measured in number added in replay) to save self-play samples to file.',
 )
-flags.DEFINE_string('samples_save_dir', 'samples/gomoku_v2', 'Path for save self-play samples file.')
+flags.DEFINE_string('samples_save_dir', 'samples/gomoku_small_v2', 'Path for save self-play samples file.')
 flags.DEFINE_string('load_samples_file', '', 'Load the replay samples from file to resume training.')
 
-flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_v2.csv', 'A csv file contains training statistics.')
-flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_v2.csv', 'A csv file contains training statistics.')
+flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_small_v2.csv', 'A csv file contains training statistics.')
+flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_small_v2.csv', 'A csv file contains training statistics.')
 
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 
 def main(argv):
     torch.manual_seed(FLAGS.seed)
+    if torch.backends.cudnn.enabled:
+        torch.backends.cudnn.benchmark = False
+        torch.backends.cudnn.deterministic = True
     random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
 
     runtime_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

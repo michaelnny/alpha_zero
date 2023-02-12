@@ -135,7 +135,7 @@ but it could takes much longer time for self-play to generate the same amount of
 
 One solution to mitigate this issue is to add some delay to the learner's training loop. The ideal situation is we want the actors to generate a batch of new samples before starting training on next batch. However, if we delay for too long, more bad samples are generated because the actors are still using the old parameters for neural network. The right value for the train delay parameter would depend on the setup, for example how many actors, what kind of hardware etc.
 
-In our experiment, running 3 actors and a single learner on a single RTX 3090 GPU, using 400 simulations and 8 parallel leaves for MCTS search, it takes ~20 minutes to generate 120000 sample positions. For the learner's training loop, we use batch size 256, and a 0.5 seconds delay per training step, it takes ~10 minutes to run 1000 training steps. This means every 10 minutes, a new checkpoint will be created and the actors will start using the new checkpoint to generate new samples.
+In our experiment, running 3 actors and a single learner on a single RTX 3090 GPU, using 600 simulations and 8 parallel leaves for MCTS search, it takes ~30 minutes to generate 20000 sample positions. For the learner's training loop, we use batch size 256, and a 0.5 seconds delay per training step, it takes ~10 minutes to run 1000 training steps (one checkpoint). This means every 10 minutes, the actors will start using the new checkpoint to generate new samples.
 
 
 # Evaluate Agents

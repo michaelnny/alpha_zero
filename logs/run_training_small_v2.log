@@ -1,0 +1,43 @@
+I0211 20:25:46.839036 6317633536 pipeline_v1.py:445] Start data collector thread
+I0211 20:25:46.839412 6334459904 pipeline_v2.py:102] Start training thread
+I0211 20:25:48.162250 4342384000 pipeline_v1.py:88] Start self-play actor 1
+I0211 20:25:48.169182 4344432000 pipeline_v2.py:210] Start evaluator
+I0211 20:25:48.205204 4371432832 pipeline_v1.py:88] Start self-play actor 3
+I0211 20:25:48.236016 4301948288 pipeline_v1.py:88] Start self-play actor 0
+I0211 20:25:48.276530 4366058880 pipeline_v1.py:88] Start self-play actor 2
+I0211 23:28:43.207345 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_50000_20230211_232842'
+I0212 02:15:50.705135 6317633536 pipeline_v1.py:468] Collected 100000 sample positions
+I0212 02:15:51.999091 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_021550'
+I0212 02:20:59.604130 4342384000 pipeline_v1.py:145] Self-play actor 1 played 1000 games
+I0212 02:24:19.755889 4371432832 pipeline_v1.py:145] Self-play actor 3 played 1000 games
+I0212 02:25:34.720030 4366058880 pipeline_v1.py:145] Self-play actor 2 played 1000 games
+I0212 02:26:57.436866 4301948288 pipeline_v1.py:145] Self-play actor 0 played 1000 games
+I0212 04:50:45.604226 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_045044'
+I0212 05:38:01.279583 4371432832 pipeline_v1.py:145] Self-play actor 3 played 2000 games
+I0212 05:39:38.699782 4342384000 pipeline_v1.py:145] Self-play actor 1 played 2000 games
+I0212 05:42:52.573818 4366058880 pipeline_v1.py:145] Self-play actor 2 played 2000 games
+I0212 05:44:20.406810 4301948288 pipeline_v1.py:145] Self-play actor 0 played 2000 games
+I0212 07:22:37.125109 6317633536 pipeline_v1.py:468] Collected 200000 sample positions
+I0212 07:22:38.613058 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_072237'
+I0212 08:27:52.684538 4371432832 pipeline_v1.py:145] Self-play actor 3 played 3000 games
+I0212 08:30:05.650728 4342384000 pipeline_v1.py:145] Self-play actor 1 played 3000 games
+I0212 08:31:48.716781 4366058880 pipeline_v1.py:145] Self-play actor 2 played 3000 games
+I0212 08:35:12.829010 4301948288 pipeline_v1.py:145] Self-play actor 0 played 3000 games
+I0212 09:58:09.356031 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_095807'
+I0212 11:23:29.208848 4366058880 pipeline_v1.py:145] Self-play actor 2 played 4000 games
+I0212 11:24:27.616389 4342384000 pipeline_v1.py:145] Self-play actor 1 played 4000 games
+I0212 11:24:39.865424 4371432832 pipeline_v1.py:145] Self-play actor 3 played 4000 games
+I0212 11:28:16.783411 4301948288 pipeline_v1.py:145] Self-play actor 0 played 4000 games
+I0212 12:34:18.092879 6317633536 pipeline_v1.py:468] Collected 300000 sample positions
+I0212 12:34:19.744609 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_123418'
+I0212 14:17:59.800137 4366058880 pipeline_v1.py:145] Self-play actor 2 played 5000 games
+I0212 14:18:49.092020 4371432832 pipeline_v1.py:145] Self-play actor 3 played 5000 games
+I0212 14:20:13.511677 4342384000 pipeline_v1.py:145] Self-play actor 1 played 5000 games
+I0212 14:25:02.900559 4301948288 pipeline_v1.py:145] Self-play actor 0 played 5000 games
+I0212 15:14:29.279722 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_151427'
+I0212 17:08:04.081690 4366058880 pipeline_v1.py:145] Self-play actor 2 played 6000 games
+I0212 17:08:49.166789 4371432832 pipeline_v1.py:145] Self-play actor 3 played 6000 games
+I0212 17:13:49.642097 4342384000 pipeline_v1.py:145] Self-play actor 1 played 6000 games
+I0212 17:22:28.650294 4301948288 pipeline_v1.py:145] Self-play actor 0 played 6000 games
+I0212 17:49:10.944528 6317633536 pipeline_v1.py:468] Collected 400000 sample positions
+I0212 17:49:12.264591 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_174910'

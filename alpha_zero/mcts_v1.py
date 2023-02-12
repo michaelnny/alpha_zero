@@ -12,11 +12,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-"""MCTS class."""
+"""MCTS class.
 
-"""
-Our game environment as well as neural network evaluation are constructed in a way 
-such that we evaluates the board from the 'to move' player's perspective.
+The positions are evaluated from the (to move) current player's perspective.
 
         A           Black to move
 
@@ -24,34 +22,34 @@ such that we evaluates the board from the 'to move' player's perspective.
 
   D   E             Black to move
 
-For example, in the above two-player, zero-sum games search tree. 'A' is the root node, 
-and when the game is in state corresponding to node 'A', it's black's turn to move. 
+For example, in the above two-player, zero-sum games search tree. 'A' is the root node,
+and when the game is in state corresponding to node 'A', it's black's turn to move.
 However the children nodes of 'A' are evaluated from white player's perspective.
-So if we select the best child for node 'A', without further consideration, 
+So if we select the best child for node 'A', without further consideration,
 we'd be actually selecting the best child for white player, which is not what we want.
 
-Let's look at an simplified example where we don't consider number of visits and total values, 
-just the raw evaluation scores, if the evaluated scores (from white's perspective) 
-for 'B' and 'C' are 0.8 and 0.3 respectively. Then according to these results, 
-the best child of 'A' max(0.8, 0.3) is 'B', however this is done from white player's perspective. 
+Let's look at an simplified example where we don't consider number of visits and total values,
+just the raw evaluation scores, if the evaluated scores (from white's perspective)
+for 'B' and 'C' are 0.8 and 0.3 respectively. Then according to these results,
+the best child of 'A' max(0.8, 0.3) is 'B', however this is done from white player's perspective.
 But node 'A' represents black's turn to move, so we need to select the best child from black player's perspective,
-which should be 'C' - the worst move for white, thus a best move for black. 
+which should be 'C' - the worst move for white, thus a best move for black.
 
 Solution 1:
 One way to resolve this issue is to always switching the signs of the child node's values when we select the best child.
 For example:
     ucb_scores = -node.child_Q() + node.child_U()
 
-In this case, a max(-0.8, -0.3) will give us the correct results for black player when we select the best child for node 'A'. 
+In this case, a max(-0.8, -0.3) will give us the correct results for black player when we select the best child for node 'A'.
 But this solution may introduce some confusion as the negative sign is not very self-explanation, and it's not in the pseudocode.
 
 Solution 2:
-Another more straight forward way is to simply store the values of the children nodes NOT from the current 'to move' player's perspective, 
-but from the their parent node's 'to move' player's perspective. So that when we select the best child, 
-we're always selecting the best child for the desired player. For the same example shown above, 
-if the evaluated scores (from white's perspective) for 'B' and 'C' are 0.8 and 0.3 respectively, 
+Another more straight forward way is to simply store the values of the children nodes NOT from the current 'to move' player's perspective,
+but from the their parent node's 'to move' player's perspective. So that when we select the best child,
+we're always selecting the best child for the desired player. For the same example shown above,
+if the evaluated scores (from white's perspective) for 'B' and 'C' are 0.8 and 0.3 respectively,
 we'd actually store these scores as -0.8, -0.3 for 'B' and 'C' respectively. Since for two-player, zero-sum game,
-one player's win is another player's loss, so we can simply switching the sign of the values. 
+one player's win is another player's loss, so we can simply switching the sign of the values.
 Similar logic also applies to the rest of the search tree.
 
 In this MCTS implementation, we chose to use the first one to show how it's done in code.
@@ -101,13 +99,13 @@ class Node:
         #     ],
         #     dtype=np.float32,
         # )
-        
-        pb_c = math.log((1 + self.number_visits + c_puct_base) / c_puct_base) + c_puct_init
+
+        pb_c = math.log((1.0 + self.number_visits + c_puct_base) / c_puct_base) + c_puct_init
         return pb_c * np.array(
-            [child.prior * (math.sqrt(self.number_visits) / (child.number_visits + 1)) for child in self.children.values()],
+            [child.prior * (math.sqrt(self.number_visits) / (1 + child.number_visits)) for child in self.children.values()],
             dtype=np.float32,
         )
-    
+
     def child_Q(self) -> np.ndarray:
         """Returns a 1D numpy.array contains mean action value for all child."""
         return np.array([child.Q for child in self.children.values()], dtype=np.float32)
@@ -153,10 +151,10 @@ def best_child(node: Node, actions_mask: np.ndarray, c_puct_base: float, c_puct_
         raise ValueError(f'Expect `actions_mask` to be a 1D bool numpy.array, got {actions_mask}')
 
     # The child Q value is evaluated from the opponent perspective.
-    # when we select the best child for node, we want to do so from node.to_play's perspective, 
+    # when we select the best child for node, we want to do so from node.to_play's perspective,
     # so we always switch the sign for node.child_Q values, this is required since we're talking about two-player, zero-sum games.
     ucb_scores = -node.child_Q() + node.child_U(c_puct_base, c_puct_init)
-    
+
     # Exclude illegal actions, note in some cases, the max ucb_scores may be zero.
     ucb_scores = np.where(actions_mask, ucb_scores, -1000)
 
@@ -235,7 +233,7 @@ def add_dirichlet_noise(node: Node, actions_mask: np.ndarray, eps: float = 0.25,
     """
 
     if not isinstance(node, Node) or not node.is_expanded:
-        raise ValueError(f'Expect `node` to be expanded')
+        raise ValueError('Expect `node` to be expanded')
     if not isinstance(actions_mask, np.ndarray) or actions_mask.dtype != np.bool8 or len(actions_mask.shape) != 1:
         raise ValueError(f'Expect `actions_mask` to be a 1D bool numpy.array, got {actions_mask}')
     if not isinstance(eps, float) or not 0.0 <= eps <= 1.0:
@@ -293,7 +291,6 @@ def generate_play_policy(node: Node, actions_mask: np.ndarray, temperature: floa
         pi_probs = child_visits / np.sum(child_visits)
 
     return pi_probs
-
 
 
 def uct_search(
@@ -374,7 +371,7 @@ def uct_search(
     # for simulation in range(num_simulations):
     while root_node.number_visits < num_simulations:
         node = root_node
-        
+
         # Make sure do not touch the actual environment.
         sim_env = copy.deepcopy(env)
         obs = sim_env.observation()
@@ -390,9 +387,9 @@ def uct_search(
             obs, reward, done, _ = sim_env.step(node.move)
             if done:
                 break
-        
+
         assert node.to_play == sim_env.current_player
-        
+
         # Special case - If game is over, using the actual reward from the game to update statistics
         if done:
             # The reward is for the last player who made the move won/loss the game.
@@ -428,7 +425,7 @@ def add_virtual_loss(node: Node) -> None:
 
     Args:
         node: current leaf node in the search tree.
-        
+
     """
     # This is a loss for both players in the traversed path,
     # since we want to avoid multiple threads to select the same path.
@@ -446,7 +443,7 @@ def revert_virtual_loss(node: Node) -> None:
 
     Args:
         node: current leaf node in the search tree.
-        
+
     """
 
     vloss = -1
@@ -538,15 +535,13 @@ def parallel_uct_search(
 
     # for simulation in range(num_simulations):
     while root_node.number_visits < num_simulations:
-
         leaves = []
         failsafe = 0
 
         while len(leaves) < parallel_leaves and failsafe < parallel_leaves * 2:
             failsafe += 1
-            
             node = root_node
-            
+
             # Make sure do not touch the actual environment.
             sim_env = copy.deepcopy(env)
             obs = sim_env.observation()
@@ -562,9 +557,9 @@ def parallel_uct_search(
                 obs, reward, done, _ = sim_env.step(node.move)
                 if done:
                     break
-            
+
             assert node.to_play == sim_env.current_player
-            
+
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
                 # The reward is for the last player who made the move won/loss the game.

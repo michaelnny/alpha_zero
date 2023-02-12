@@ -128,23 +128,22 @@ def run_self_play(
                 transition = Transition(
                     state=obs,
                     pi_prob=np.ones_like(pi_prob) / len(pi_prob),
-                    value=reward,
+                    value=0.0,
                     player_id=env.current_player,
                 )
                 episode_trajectory.append(transition)
+
+        if reward != 0.0:
+            process_episode_trajectory(env.last_player, reward, episode_trajectory)
+
+        data_queue.put(episode_trajectory)
+
+        del episode_trajectory[:]
 
         game += 1
         if game % 1000 == 0:
             logging.info(f'Self-play actor {rank} played {game} games')
 
-        # When game is over, the env stops updates the current player for timestep `t`.
-        # So the current player for `t` is the same current player at `t-1` timestep who just won/loss the game.
-        if reward != 0.0:
-            process_episode_trajectory(env.current_player, reward, episode_trajectory)
-
-        data_queue.put(episode_trajectory)
-
-        del episode_trajectory[:]
     logging.info(f'Stop self-play actor {rank}')
 
 
@@ -453,32 +452,41 @@ def run_data_collector(
 
     should_save = save_frequency > 0 and save_samples_dir
 
+    count = 0
+
     while True:
         try:
             item = data_queue.get()
             if item == 'STOP':
                 break
+
             for sample in item:
+                count += 1
                 replay.add(sample)
-                # Save replay samples preriodically to avoid restart from zero.
+
+                if count > 0 and count % int(1e5) == 0:
+                    logging.info(f'Collected {count} sample positions')
+
+                # Save replay samples periodically to avoid restart from zero.
                 if should_save and replay.num_added > 1 and replay.num_added % save_frequency == 0:
                     save_file = save_samples_dir / f'replay_{replay.size}_{get_time_stamp(True)}'
                     save_to_file(replay.get_state(), save_file)
                     logging.info(f"Replay samples saved to '{save_file}'")
+
         except queue.Empty:
             pass
         except EOFError:
             pass
 
 
-def process_episode_trajectory(final_player_id: int, final_reward: float, episode_trajectory: List[Transition]) -> None:
-    """Update the final reward for the transitions, note this operation is in-place."""
+def process_episode_trajectory(last_player: int, reward: float, episode_trajectory: List[Transition]) -> None:
+    """Update the reward for the transitions, note this operation is in-place."""
     for i in range(len(episode_trajectory)):
         transition = episode_trajectory[i]
-        if transition.player_id == final_player_id:
-            value = final_reward
+        if transition.player_id == last_player:
+            value = reward
         else:
-            value = -final_reward
+            value = -reward
         episode_trajectory[i] = transition._replace(value=value)
 
 
