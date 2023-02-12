@@ -50,3 +50,10 @@ timestamp,train_steps,checkpoint,loss,learning_rate
 2023-02-12 18:04:42,49000,checkpoints/gomoku_small_v2/train_steps_49000,2.9296844005584717,0.01
 2023-02-12 18:30:15,50000,checkpoints/gomoku_small_v2/train_steps_50000,2.80912709236145,0.01
 2023-02-12 18:56:36,51000,checkpoints/gomoku_small_v2/train_steps_51000,2.93560791015625,0.01
+2023-02-12 19:22:24,52000,checkpoints/gomoku_small_v2/train_steps_52000,2.877317190170288,0.01
+2023-02-12 19:47:57,53000,checkpoints/gomoku_small_v2/train_steps_53000,2.7727484703063965,0.01
+2023-02-12 20:13:32,54000,checkpoints/gomoku_small_v2/train_steps_54000,2.7399661540985107,0.01
+2023-02-12 20:39:06,55000,checkpoints/gomoku_small_v2/train_steps_55000,3.012237310409546,0.01
+2023-02-12 21:05:45,56000,checkpoints/gomoku_small_v2/train_steps_56000,2.848426103591919,0.01
+2023-02-12 21:32:19,57000,checkpoints/gomoku_small_v2/train_steps_57000,2.815279006958008,0.01
+2023-02-12 21:59:15,58000,checkpoints/gomoku_small_v2/train_steps_58000,2.6880972385406494,0.01

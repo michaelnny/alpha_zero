@@ -57,7 +57,7 @@ In this MCTS implementation, we chose to use the first one to show how it's done
 
 import copy
 import math
-from typing import Callable, List, Tuple, Mapping, Union, Any
+from typing import Callable, Tuple, Mapping, Union, Any
 import numpy as np
 from alpha_zero.games.env import BoardGameEnv
 
@@ -89,17 +89,6 @@ class Node:
 
     def child_U(self, c_puct_base: float, c_puct_init: float) -> np.ndarray:
         """Returns a 1D numpy.array contains prior score for all child."""
-
-        # return np.array(
-        #     [
-        #         (math.log((1 + self.N + c_puct_base) / c_puct_base) + c_puct_init)
-        #         * child.prior
-        #         * (math.sqrt(self.N) / (child.N + 1))
-        #         for child in self.children
-        #     ],
-        #     dtype=np.float32,
-        # )
-
         pb_c = math.log((1.0 + self.number_visits + c_puct_base) / c_puct_base) + c_puct_init
         return pb_c * np.array(
             [child.prior * (math.sqrt(self.number_visits) / (1 + child.number_visits)) for child in self.children.values()],
@@ -159,8 +148,8 @@ def best_child(node: Node, actions_mask: np.ndarray, c_puct_base: float, c_puct_
     ucb_scores = np.where(actions_mask, ucb_scores, -1000)
 
     # Break ties if we have multiple 'maximum' values.
-    action_index = np.random.choice(np.where(ucb_scores == ucb_scores.max())[0])
-    return node.children[action_index]
+    move = np.random.choice(np.where(ucb_scores == ucb_scores.max())[0])
+    return node.children[move]
 
 
 def expand(node: Node, prior_prob: np.ndarray, child_to_play: int) -> None:
@@ -330,8 +319,7 @@ def uct_search(
         temperature: a parameter controls the level of exploration
             when generate policy action probabilities after MCTS search.
         num_simulations: number of simulations to run, default 800.
-        root_noise: whether add dirichlet noise to root node to encourage exploration,
-            default off.
+        root_noise: whether add dirichlet noise to root node to encourage exploration, default off.
         deterministic: after the MCTS search, choose the child node with most visits number to play in the game,
             instead of sample through a probability distribution, default off.
 
@@ -409,15 +397,15 @@ def uct_search(
 
     if deterministic:
         # Choose the action with most visit count.
-        action_index = np.argmax(pi_probs)
+        move = np.argmax(pi_probs)
     else:
         # Sample an action.
-        action_index = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
+        move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
     # Reuse sub-tree.
-    next_root_node = root_node.children[action_index]
+    next_root_node = root_node.children[move]
     next_root_node.parent = None
-    return (next_root_node.move, pi_probs, next_root_node)
+    return (move, pi_probs, next_root_node)
 
 
 def add_virtual_loss(node: Node) -> None:
@@ -443,7 +431,6 @@ def revert_virtual_loss(node: Node) -> None:
 
     Args:
         node: current leaf node in the search tree.
-
     """
 
     vloss = -1
@@ -468,7 +455,7 @@ def parallel_uct_search(
 ) -> Tuple[int, np.ndarray, Node]:
     """Single-threaded Upper Confidence Bound (UCB) for Trees (UCT) search without any rollout.
 
-    Supports leaf-parallel search and batched evaluation.
+    This implementation uses tree parallel search and batched evaluation.
 
     It follows the following general UCT search algorithm, except here we don't do rollout.
     ```
@@ -528,7 +515,6 @@ def parallel_uct_search(
         backup(root_node, value, env.current_player)
 
     assert root_node.to_play == env.current_player
-
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
         add_dirichlet_noise(root_node, env.actions_mask)
@@ -539,6 +525,8 @@ def parallel_uct_search(
         failsafe = 0
 
         while len(leaves) < parallel_leaves and failsafe < parallel_leaves * 2:
+            # This is necessary as when a game is over no leaf is added to leaves,
+            # as we use the actual game results to update statistic
             failsafe += 1
             node = root_node
 
@@ -571,8 +559,7 @@ def parallel_uct_search(
 
         if leaves:
             batched_nodes, batched_obs, batched_current_player, batched_opponent_player = map(list, zip(*leaves))
-            batched_obs = np.stack(batched_obs, axis=0)
-            prior_probs, values = eval_func(batched_obs, True)
+            prior_probs, values = eval_func(np.stack(batched_obs, axis=0), True)
 
             for leaf, prior_prob, value, current_player, opponent_player in zip(
                 batched_nodes, prior_probs, values, batched_current_player, batched_opponent_player
@@ -592,12 +579,12 @@ def parallel_uct_search(
 
     if deterministic:
         # Choose the action with most visit count.
-        action_index = np.argmax(pi_probs)
+        move = np.argmax(pi_probs)
     else:
         # Sample an action.
-        action_index = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
+        move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
     # Reuse sub-tree.
-    next_root_node = root_node.children[action_index]
+    next_root_node = root_node.children[move]
     next_root_node.parent = None
-    return (next_root_node.move, pi_probs, next_root_node)
+    return (move, pi_probs, next_root_node)
