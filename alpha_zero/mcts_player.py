@@ -14,10 +14,9 @@
 # ==============================================================================
 """MCTS player."""
 
-from typing import List, Tuple, Mapping, Union, Text, Any
+from typing import Tuple, Union
 import numpy as np
 import torch
-import torch.nn.functional as F
 from alpha_zero.games.env import BoardGameEnv
 
 from alpha_zero.mcts_v1 import Node, uct_search, parallel_uct_search
@@ -45,7 +44,7 @@ def create_mcts_player(
 
         state = torch.from_numpy(state_tensor).to(device=device, dtype=torch.float32)
         output = network(state)
-        pi_prob = F.softmax(output.pi_logits, dim=-1).cpu().numpy()
+        pi_prob = torch.softmax(output.pi_logits, dim=-1).cpu().numpy()
         value = torch.detach(output.value).cpu().numpy()
 
         if not batched:

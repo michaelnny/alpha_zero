@@ -1,0 +1,158 @@
+########################################################################################################################################################################################################################################################################
+This file contains the training logs produced by the following training script, which runs on a 2020 version of Mac Mini (M1 CPU only)
+
+nohup python3 -m alpha_zero.gomoku.run_training_small_v2 --replay_capacity=100000 --min_replay_size=10000 --batch_size=256 --num_actors=4 --num_simulations=200 --parallel_leaves=8 --train_delay=0.25 > ./logs/run_training_small_v2.log &
+########################################################################################################################################################################################################################################################################
+I0211 20:25:46.839036 6317633536 pipeline_v1.py:445] Start data collector thread
+I0211 20:25:46.839412 6334459904 pipeline_v2.py:102] Start training thread
+I0211 20:25:48.162250 4342384000 pipeline_v1.py:88] Start self-play actor 1
+I0211 20:25:48.169182 4344432000 pipeline_v2.py:210] Start evaluator
+I0211 20:25:48.205204 4371432832 pipeline_v1.py:88] Start self-play actor 3
+I0211 20:25:48.236016 4301948288 pipeline_v1.py:88] Start self-play actor 0
+I0211 20:25:48.276530 4366058880 pipeline_v1.py:88] Start self-play actor 2
+I0211 23:28:43.207345 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_50000_20230211_232842'
+I0212 02:15:50.705135 6317633536 pipeline_v1.py:468] Collected 100000 sample positions
+I0212 02:15:51.999091 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_021550'
+I0212 02:20:59.604130 4342384000 pipeline_v1.py:145] Self-play actor 1 played 1000 games
+I0212 02:24:19.755889 4371432832 pipeline_v1.py:145] Self-play actor 3 played 1000 games
+I0212 02:25:34.720030 4366058880 pipeline_v1.py:145] Self-play actor 2 played 1000 games
+I0212 02:26:57.436866 4301948288 pipeline_v1.py:145] Self-play actor 0 played 1000 games
+I0212 04:50:45.604226 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_045044'
+I0212 05:38:01.279583 4371432832 pipeline_v1.py:145] Self-play actor 3 played 2000 games
+I0212 05:39:38.699782 4342384000 pipeline_v1.py:145] Self-play actor 1 played 2000 games
+I0212 05:42:52.573818 4366058880 pipeline_v1.py:145] Self-play actor 2 played 2000 games
+I0212 05:44:20.406810 4301948288 pipeline_v1.py:145] Self-play actor 0 played 2000 games
+I0212 07:22:37.125109 6317633536 pipeline_v1.py:468] Collected 200000 sample positions
+I0212 07:22:38.613058 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_072237'
+I0212 08:27:52.684538 4371432832 pipeline_v1.py:145] Self-play actor 3 played 3000 games
+I0212 08:30:05.650728 4342384000 pipeline_v1.py:145] Self-play actor 1 played 3000 games
+I0212 08:31:48.716781 4366058880 pipeline_v1.py:145] Self-play actor 2 played 3000 games
+I0212 08:35:12.829010 4301948288 pipeline_v1.py:145] Self-play actor 0 played 3000 games
+I0212 09:58:09.356031 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_095807'
+I0212 11:23:29.208848 4366058880 pipeline_v1.py:145] Self-play actor 2 played 4000 games
+I0212 11:24:27.616389 4342384000 pipeline_v1.py:145] Self-play actor 1 played 4000 games
+I0212 11:24:39.865424 4371432832 pipeline_v1.py:145] Self-play actor 3 played 4000 games
+I0212 11:28:16.783411 4301948288 pipeline_v1.py:145] Self-play actor 0 played 4000 games
+I0212 12:34:18.092879 6317633536 pipeline_v1.py:468] Collected 300000 sample positions
+I0212 12:34:19.744609 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_123418'
+I0212 14:17:59.800137 4366058880 pipeline_v1.py:145] Self-play actor 2 played 5000 games
+I0212 14:18:49.092020 4371432832 pipeline_v1.py:145] Self-play actor 3 played 5000 games
+I0212 14:20:13.511677 4342384000 pipeline_v1.py:145] Self-play actor 1 played 5000 games
+I0212 14:25:02.900559 4301948288 pipeline_v1.py:145] Self-play actor 0 played 5000 games
+I0212 15:14:29.279722 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_151427'
+I0212 17:08:04.081690 4366058880 pipeline_v1.py:145] Self-play actor 2 played 6000 games
+I0212 17:08:49.166789 4371432832 pipeline_v1.py:145] Self-play actor 3 played 6000 games
+I0212 17:13:49.642097 4342384000 pipeline_v1.py:145] Self-play actor 1 played 6000 games
+I0212 17:22:28.650294 4301948288 pipeline_v1.py:145] Self-play actor 0 played 6000 games
+I0212 17:49:10.944528 6317633536 pipeline_v1.py:468] Collected 400000 sample positions
+I0212 17:49:12.264591 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_174910'
+I0212 19:57:49.871419 4366058880 pipeline_v1.py:145] Self-play actor 2 played 7000 games
+I0212 19:58:43.082957 4371432832 pipeline_v1.py:145] Self-play actor 3 played 7000 games
+I0212 20:01:01.154380 4342384000 pipeline_v1.py:145] Self-play actor 1 played 7000 games
+I0212 20:12:40.156814 4301948288 pipeline_v1.py:145] Self-play actor 0 played 7000 games
+I0212 20:24:31.133991 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_202429'
+I0212 22:42:30.570841 4366058880 pipeline_v1.py:145] Self-play actor 2 played 8000 games
+I0212 22:43:25.663138 4371432832 pipeline_v1.py:145] Self-play actor 3 played 8000 games
+I0212 22:46:14.214802 4342384000 pipeline_v1.py:145] Self-play actor 1 played 8000 games
+I0212 22:55:28.131222 4301948288 pipeline_v1.py:145] Self-play actor 0 played 8000 games
+I0212 23:01:23.880573 6317633536 pipeline_v1.py:468] Collected 500000 sample positions
+I0212 23:01:25.254287 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230212_230123'
+I0213 01:12:44.570876 4371432832 pipeline_v1.py:145] Self-play actor 3 played 9000 games
+I0213 01:18:47.411928 4366058880 pipeline_v1.py:145] Self-play actor 2 played 9000 games
+I0213 01:21:55.950079 4342384000 pipeline_v1.py:145] Self-play actor 1 played 9000 games
+I0213 01:31:18.662702 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_013117'
+I0213 01:32:23.564210 4301948288 pipeline_v1.py:145] Self-play actor 0 played 9000 games
+I0213 03:39:44.433405 4371432832 pipeline_v1.py:145] Self-play actor 3 played 10000 games
+I0213 03:52:48.696726 4366058880 pipeline_v1.py:145] Self-play actor 2 played 10000 games
+I0213 03:57:38.239848 4342384000 pipeline_v1.py:145] Self-play actor 1 played 10000 games
+I0213 04:01:09.872805 6317633536 pipeline_v1.py:468] Collected 600000 sample positions
+I0213 04:01:11.150907 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_040109'
+I0213 04:01:45.435359 4301948288 pipeline_v1.py:145] Self-play actor 0 played 10000 games
+I0213 06:00:59.275846 4371432832 pipeline_v1.py:145] Self-play actor 3 played 11000 games
+I0213 06:25:15.211171 4366058880 pipeline_v1.py:145] Self-play actor 2 played 11000 games
+I0213 06:31:03.262387 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_063101'
+I0213 06:32:29.003456 4301948288 pipeline_v1.py:145] Self-play actor 0 played 11000 games
+I0213 06:34:06.636218 4342384000 pipeline_v1.py:145] Self-play actor 1 played 11000 games
+I0213 08:22:28.199601 4371432832 pipeline_v1.py:145] Self-play actor 3 played 12000 games
+I0213 08:49:45.069004 4366058880 pipeline_v1.py:145] Self-play actor 2 played 12000 games
+I0213 08:53:49.472415 6317633536 pipeline_v1.py:468] Collected 700000 sample positions
+I0213 08:53:50.756206 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_085349'
+I0213 08:57:54.108463 4301948288 pipeline_v1.py:145] Self-play actor 0 played 12000 games
+I0213 08:58:32.271812 4342384000 pipeline_v1.py:145] Self-play actor 1 played 12000 games
+I0213 10:37:24.871041 4371432832 pipeline_v1.py:145] Self-play actor 3 played 13000 games
+I0213 11:07:41.763041 4366058880 pipeline_v1.py:145] Self-play actor 2 played 13000 games
+I0213 11:10:42.889976 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_111041'
+I0213 11:14:41.438309 4342384000 pipeline_v1.py:145] Self-play actor 1 played 13000 games
+I0213 11:16:42.308907 4301948288 pipeline_v1.py:145] Self-play actor 0 played 13000 games
+I0213 12:51:10.312844 4371432832 pipeline_v1.py:145] Self-play actor 3 played 14000 games
+I0213 13:25:34.888780 4366058880 pipeline_v1.py:145] Self-play actor 2 played 14000 games
+I0213 13:26:59.322376 6317633536 pipeline_v1.py:468] Collected 800000 sample positions
+I0213 13:27:00.605262 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_132659'
+I0213 13:32:38.476826 4342384000 pipeline_v1.py:145] Self-play actor 1 played 14000 games
+I0213 13:33:58.409981 4301948288 pipeline_v1.py:145] Self-play actor 0 played 14000 games
+I0213 15:03:07.340543 4371432832 pipeline_v1.py:145] Self-play actor 3 played 15000 games
+I0213 15:39:32.808250 4366058880 pipeline_v1.py:145] Self-play actor 2 played 15000 games
+I0213 15:42:12.200302 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_154210'
+I0213 15:47:01.724467 4342384000 pipeline_v1.py:145] Self-play actor 1 played 15000 games
+I0213 15:50:27.489320 4301948288 pipeline_v1.py:145] Self-play actor 0 played 15000 games
+I0213 17:14:04.960180 4371432832 pipeline_v1.py:145] Self-play actor 3 played 16000 games
+I0213 17:50:49.677474 4366058880 pipeline_v1.py:145] Self-play actor 2 played 16000 games
+I0213 17:56:31.247091 6317633536 pipeline_v1.py:468] Collected 900000 sample posiI0213 22:14:36.544040 4366058880 pipeline_v1.py:145] Self-play actor 2 played 18000 games
+I0213 22:18:34.247536 4342384000 pipeline_v1.py:145] Self-play actor 1 played 18000 games
+I0213 22:20:27.220410 6317633536 pipeline_v1.py:468] Collected 1000000 sample positions
+I0213 22:20:28.440647 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230213_222027'
+I0213 22:25:25.713701 4301948288 pipeline_v1.py:145] Self-play actor 0 played 18000 games
+I0213 23:39:03.019409 4371432832 pipeline_v1.py:145] Self-play actor 3 played 19000 games
+I0214 00:20:28.227576 4366058880 pipeline_v1.py:145] Self-play actor 2 played 19000 games
+I0214 00:24:51.142647 4342384000 pipeline_v1.py:145] Self-play actor 1 played 19000 games
+I0214 00:29:49.660001 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_002948'
+I0214 00:34:12.990200 4301948288 pipeline_v1.py:145] Self-play actor 0 played 19000 games
+I0214 01:46:25.589119 4371432832 pipeline_v1.py:145] Self-play actor 3 played 20000 games
+I0214 02:25:03.078748 4366058880 pipeline_v1.py:145] Self-play actor 2 played 20000 games
+I0214 02:32:43.502059 4342384000 pipeline_v1.py:145] Self-play actor 1 played 20000 games
+I0214 02:38:56.202826 6317633536 pipeline_v1.py:468] Collected 1100000 sample positions
+I0214 02:38:57.546170 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_023856'
+I0214 02:42:04.430095 4301948288 pipeline_v1.py:145] Self-play actor 0 played 20000 games
+I0214 03:52:57.526279 4371432832 pipeline_v1.py:145] Self-play actor 3 played 21000 games
+I0214 04:31:07.850722 4366058880 pipeline_v1.py:145] Self-play actor 2 played 21000 games
+I0214 04:38:28.905414 4342384000 pipeline_v1.py:145] Self-play actor 1 played 21000 games
+I0214 04:47:55.755975 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_044754'
+I0214 04:49:54.963645 4301948288 pipeline_v1.py:145] Self-play actor 0 played 21000 games
+I0214 05:56:49.679929 4371432832 pipeline_v1.py:145] Self-play actor 3 played 22000 games
+I0214 06:39:03.324928 4366058880 pipeline_v1.py:145] Self-play actor 2 played 22000 games
+I0214 06:47:24.866094 4342384000 pipeline_v1.py:145] Self-play actor 1 played 22000 games
+I0214 06:57:12.717608 6317633536 pipeline_v1.py:468] Collected 1200000 sample positions
+I0214 06:57:14.252545 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_065712'
+I0214 06:59:35.777504 4301948288 pipeline_v1.py:145] Self-play actor 0 played 22000 games
+I0214 08:04:15.023916 4371432832 pipeline_v1.py:145] Self-play actor 3 played 23000 games
+I0214 08:44:26.246841 4366058880 pipeline_v1.py:145] Self-play actor 2 played 23000 games
+I0214 08:53:21.896197 4342384000 pipeline_v1.py:145] Self-play actor 1 played 23000 games
+I0214 09:06:22.072410 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_090620'
+I0214 09:07:17.438215 4301948288 pipeline_v1.py:145] Self-play actor 0 played 23000 games
+I0214 10:09:46.333096 4371432832 pipeline_v1.py:145] Self-play actor 3 played 24000 games
+I0214 10:53:12.423216 4366058880 pipeline_v1.py:145] Self-play actor 2 played 24000 games
+I0214 11:00:56.930047 4342384000 pipeline_v1.py:145] Self-play actor 1 played 24000 games
+I0214 11:15:02.273725 4301948288 pipeline_v1.py:145] Self-play actor 0 played 24000 games
+I0214 11:15:32.109816 6317633536 pipeline_v1.py:468] Collected 1300000 sample positions
+I0214 11:15:33.543928 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_111532'
+I0214 12:14:01.014338 4371432832 pipeline_v1.py:145] Self-play actor 3 played 25000 games
+I0214 12:59:00.317113 4366058880 pipeline_v1.py:145] Self-play actor 2 played 25000 games
+I0214 13:07:18.743717 4342384000 pipeline_v1.py:145] Self-play actor 1 played 25000 games
+I0214 13:22:14.233352 4301948288 pipeline_v1.py:145] Self-play actor 0 played 25000 games
+I0214 13:23:57.243468 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_132355'
+I0214 14:18:53.518004 4371432832 pipeline_v1.py:145] Self-play actor 3 played 26000 games
+I0214 15:05:03.185274 4366058880 pipeline_v1.py:145] Self-play actor 2 played 26000 games
+I0214 15:13:07.541346 4342384000 pipeline_v1.py:145] Self-play actor 1 played 26000 games
+I0214 15:29:37.070590 4301948288 pipeline_v1.py:145] Self-play actor 0 played 26000 games
+I0214 15:32:44.145904 6317633536 pipeline_v1.py:468] Collected 1400000 sample positions
+I0214 15:32:45.609786 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_153244'
+I0214 16:25:00.049094 4371432832 pipeline_v1.py:145] Self-play actor 3 played 27000 games
+I0214 17:12:32.928645 4366058880 pipeline_v1.py:145] Self-play actor 2 played 27000 games
+I0214 17:21:24.665284 4342384000 pipeline_v1.py:145] Self-play actor 1 played 27000 games
+I0214 17:35:50.804976 4301948288 pipeline_v1.py:145] Self-play actor 0 played 27000 games
+I0214 17:41:18.275190 6317633536 pipeline_v1.py:474] Replay samples saved to 'samples/gomoku_small_v2/replay_100000_20230214_174116'
+I0214 18:31:28.223002 4371432832 pipeline_v1.py:145] Self-play actor 3 played 28000 games
+I0214 19:19:49.685584 4366058880 pipeline_v1.py:145] Self-play actor 2 played 28000 games
+I0214 19:26:33.813893 4342384000 pipeline_v1.py:145] Self-play actor 1 played 28000 games
+/opt/homebrew/Cellar/python@3.10/3.10.9/Frameworks/Python.framework/Versions/3.10/lib/python3.10/multiprocessing/resource_tracker.py:224: UserWarning: resource_tracker: There appear to be 7 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '
