@@ -92,11 +92,11 @@ flags.DEFINE_float(
 )
 
 flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
-flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_small_v2', 'Path for checkpoint file.')
+flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_v2_small', 'Path for checkpoint file.')
 flags.DEFINE_string('load_checkpoint_file', '', 'Load the checkpoint from file to resume training.')
 
-flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_small_v2.csv', 'A csv file contains training statistics.')
-flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_small_v2.csv', 'A csv file contains training statistics.')
+flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_v2_small.csv', 'A csv file contains training statistics.')
+flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_v2_small.csv', 'A csv file contains training statistics.')
 
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
