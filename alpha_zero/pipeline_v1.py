@@ -26,6 +26,7 @@ import sys
 import signal
 import pickle
 import time
+import timeit
 import queue
 import multiprocessing
 
@@ -196,8 +197,9 @@ def run_training(
     if not isinstance(checkpoint_dir, str) or checkpoint_dir == '':
         raise ValueError(f'Expect checkpoint_dir to be valid path, got {checkpoint_dir}')
 
-    writer = CsvWriter(csv_file)
     logging.info('Start training thread')
+    start = None
+    writer = CsvWriter(csv_file)
 
     network = network.to(device=device)
     network.train()
@@ -221,6 +223,9 @@ def run_training(
         if replay.size < min_replay_size:
             continue
 
+        if start is None:
+            start = timeit.default_timer()
+
         # Signaling other parties to stop running pipeline.
         if train_steps >= num_train_steps:
             break
@@ -234,6 +239,9 @@ def run_training(
         train_steps += 1
 
         if train_steps > 1 and train_steps % checkpoint_frequency == 0:
+            train_rate = (train_steps * batch_size) / (timeit.default_timer() - start)
+            logging.info(f'Train step rate {train_rate:.2f}')
+
             state_to_save = get_state_to_save()
             ckpt_file = ckpt_dir / f'train_steps_{train_steps}'
             create_checkpoint(state_to_save, ckpt_file)
@@ -270,10 +278,9 @@ def run_evaluation(
     num_simulations: int,
     parallel_leaves: int,
     checkpoint_files: List,
-    load_checkpoint_file: str,
     csv_file: str,
     stop_event: multiprocessing.Event,
-    initial_elo: int = -2000,
+    initial_elo: int = 0,
     win_ratio: float = 0.55,
 ) -> None:
     """Run the evaluation loop to select best player from new checkpoint,
@@ -292,7 +299,6 @@ def run_evaluation(
         num_simulations: number of simulations for each MCTS search.
         parallel_leaves: Number of parallel leaves for MCTS search.
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint.
-        load_checkpoint_file: resume training by load from checkpoint file.
         csv_file: a csv file contains the statistics for the best checkpoint.
         stop_event: a multiprocessing.Event signaling to stop running pipeline.
         initial_elo: initial elo rating, default -2000,
@@ -307,17 +313,12 @@ def run_evaluation(
 
     init_absl_logging()
     handle_exit_signal()
-    writer = CsvWriter(csv_file)
+
     logging.info('Start evaluator')
+    writer = CsvWriter(csv_file)
 
     disable_auto_grad(best_network)
     disable_auto_grad(new_checkpoint_network)
-
-    # Load states from checkpoint to resume training.
-    if load_checkpoint_file is not None and os.path.isfile(load_checkpoint_file):
-        loaded_state = load_checkpoint(load_checkpoint_file, 'cpu')
-        best_network.load_state_dict(loaded_state['network'])
-        logging.info(f'Loaded best network from checkpoint {load_checkpoint_file}')
 
     best_network = best_network.to(device=device)
     new_checkpoint_network = new_checkpoint_network.to(device=device)
@@ -428,8 +429,7 @@ def run_evaluation(
 def run_data_collector(
     data_queue: multiprocessing.SimpleQueue,
     replay: UniformReplay,
-    save_frequency: int,
-    save_dir: str,
+    log_interval: int = 100,
 ) -> None:
     """Collect samples from self-play,
     this runs on the same process as the training loop,
@@ -438,20 +438,11 @@ def run_data_collector(
     Args:
         data_queue: a multiprocessing.SimpleQueue to receive samples from self-play processes.
         replay: a simple uniform random experience replay.
-        save_frequency: the frequency to save replay state.
-        save_dir: where to save replay state.
+        log_interval: how often to log the statistic, measured in number of samples received.
 
     """
     logging.info('Start data collector thread')
-
-    save_samples_dir = None
-    if save_dir is not None and save_dir != '':
-        save_samples_dir = Path(save_dir)
-        if not save_samples_dir.exists():
-            save_samples_dir.mkdir(parents=True, exist_ok=True)
-
-    should_save = save_frequency > 0 and save_samples_dir
-
+    start = timeit.default_timer()
     count = 0
 
     while True:
@@ -464,14 +455,9 @@ def run_data_collector(
                 count += 1
                 replay.add(sample)
 
-                if count > 0 and count % int(1e5) == 0:
-                    logging.info(f'Collected {count} sample positions')
-
-                # Save replay samples periodically to avoid restart from zero.
-                if should_save and replay.num_added > 1 and replay.num_added % save_frequency == 0:
-                    save_file = save_samples_dir / f'replay_{replay.size}_{get_time_stamp(True)}'
-                    save_to_file(replay.get_state(), save_file)
-                    logging.info(f"Replay samples saved to '{save_file}'")
+                if count > 0 and count % log_interval == 0:
+                    gen_rate = count / (timeit.default_timer() - start)
+                    logging.info(f'Collected {count} samples, sample generation rate {gen_rate:.2f}')
 
         except queue.Empty:
             pass

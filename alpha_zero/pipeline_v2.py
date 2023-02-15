@@ -22,6 +22,7 @@ from absl import logging
 from typing import List
 from pathlib import Path
 import time
+import timeit
 import multiprocessing
 import torch
 
@@ -38,7 +39,6 @@ from alpha_zero.pipeline_v1 import (
     get_time_stamp,
     create_checkpoint,
     load_checkpoint,
-    load_from_file,
     disable_auto_grad,
     handle_exit_signal,
 )
@@ -100,6 +100,7 @@ def run_training(
 
     writer = CsvWriter(csv_file)
     logging.info('Start training thread')
+    start = None
 
     disable_auto_grad(actor_network)
 
@@ -126,6 +127,9 @@ def run_training(
         if replay.size < min_replay_size:
             continue
 
+        if start is None:
+            start = timeit.default_timer()
+
         # Signaling other parties to stop running pipeline.
         if train_steps >= num_train_steps:
             break
@@ -139,6 +143,9 @@ def run_training(
         train_steps += 1
 
         if train_steps > 1 and train_steps % checkpoint_frequency == 0:
+            train_rate = (train_steps * batch_size) / (timeit.default_timer() - start)
+            logging.info(f'Train step rate {train_rate:.2f}')
+
             state_to_save = get_state_to_save()
             ckpt_file = ckpt_dir / f'train_steps_{train_steps}'
             create_checkpoint(state_to_save, ckpt_file)

@@ -40,14 +40,13 @@ from alpha_zero.pipeline_v2 import (
     run_evaluation,
     run_data_collector,
     load_checkpoint,
-    load_from_file,
 )
 
 
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 5, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 6, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
     64,
@@ -56,7 +55,7 @@ flags.DEFINE_integer(
 
 flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
 flags.DEFINE_integer('min_replay_size', 10000, 'Minimum replay size before learning starts.')
-flags.DEFINE_integer('batch_size', 256, 'Sample batch size when do learning.')
+flags.DEFINE_integer('batch_size', 64, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
@@ -87,7 +86,7 @@ flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
-flags.DEFINE_float('train_delay', 0.25, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 1.0, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
@@ -95,14 +94,6 @@ flags.DEFINE_float(
 flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_small_v2', 'Path for checkpoint file.')
 flags.DEFINE_string('load_checkpoint_file', '', 'Load the checkpoint from file to resume training.')
-
-flags.DEFINE_integer(
-    'samples_save_frequency',
-    50000,
-    'The frequency (measured in number added in replay) to save self-play samples to file.',
-)
-flags.DEFINE_string('samples_save_dir', 'samples/gomoku_small_v2', 'Path for save self-play samples file.')
-flags.DEFINE_string('load_samples_file', '', 'Load the replay samples from file to resume training.')
 
 flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_small_v2.csv', 'A csv file contains training statistics.')
 flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_small_v2.csv', 'A csv file contains training statistics.')
@@ -159,23 +150,6 @@ def main(argv):
         logging.info(f'Loaded state from checkpoint {FLAGS.load_checkpoint_file}')
         logging.info(f'Current state: train steps {train_steps}, learning rate {lr_scheduler.get_last_lr()}')
 
-    # Load replay samples
-    if FLAGS.load_samples_file is not None and os.path.isfile(FLAGS.load_samples_file):
-        try:
-            replay.reset()
-            replay_state = load_from_file(FLAGS.load_samples_file)
-            # replay.set_state(replay_state)
-            for item in replay_state['storage']:
-                if item is None:
-                    break
-                replay.add(item)
-
-                if replay.num_added >= replay.capacity:
-                    break
-            logging.info(f"Loaded replay samples from file '{FLAGS.load_samples_file}'")
-        except Exception:
-            pass
-
     # Use the stop_event to signaling actors to stop running.
     stop_event = multiprocessing.Event()
     # Transfer samples from self-play process to training process.
@@ -187,7 +161,7 @@ def main(argv):
     # Start to collect samples from self-play on a new thread.
     data_collector = threading.Thread(
         target=run_data_collector,
-        args=(data_queue, replay, FLAGS.samples_save_frequency, FLAGS.samples_save_dir),
+        args=(data_queue, replay),
     )
     data_collector.start()
 

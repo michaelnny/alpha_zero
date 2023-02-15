@@ -170,7 +170,7 @@ def main(argv):
         args=(
             old_checkpoint_network,
             new_checkpoint_network,
-            'cpu',
+            runtime_device,
             evaluation_env,
             FLAGS.c_puct_base,
             FLAGS.c_puct_init,
