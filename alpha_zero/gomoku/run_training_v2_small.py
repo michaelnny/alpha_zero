@@ -55,12 +55,12 @@ flags.DEFINE_integer(
 
 flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
 flags.DEFINE_integer('min_replay_size', 10000, 'Minimum replay size before learning starts.')
-flags.DEFINE_integer('batch_size', 64, 'Sample batch size when do learning.')
+flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [100000, 300000, 600000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [200000, 500000], 'The number of steps at which the learning rate will decay.'
 )
 flags.DEFINE_float('l2_decay', 0.0001, 'Adam L2 regularization.')
 flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
@@ -86,12 +86,12 @@ flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
-flags.DEFINE_float('train_delay', 1.0, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.25, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
 
-flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
+flags.DEFINE_integer('checkpoint_frequency', 2000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_v2_small', 'Path for checkpoint file.')
 flags.DEFINE_string('load_checkpoint_file', '', 'Load the checkpoint from file to resume training.')
 

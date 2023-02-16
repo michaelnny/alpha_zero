@@ -53,7 +53,7 @@ flags.DEFINE_integer(
 
 flags.DEFINE_integer('replay_capacity', 50000, 'Maximum replay size, use most recent N positions for training.')
 flags.DEFINE_integer('min_replay_size', 5000, 'Minimum replay size before learning starts.')
-flags.DEFINE_integer('batch_size', 256, 'Sample batch size when do learning.')
+flags.DEFINE_integer('batch_size', 64, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')

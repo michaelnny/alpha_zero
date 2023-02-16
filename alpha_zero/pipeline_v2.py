@@ -144,7 +144,7 @@ def run_training(
 
         if train_steps > 1 and train_steps % checkpoint_frequency == 0:
             train_rate = (train_steps * batch_size) / (timeit.default_timer() - start)
-            logging.info(f'Train step rate {train_rate:.2f}')
+            logging.info(f'Train step {train_steps}, train sample rate {train_rate:.2f}')
 
             state_to_save = get_state_to_save()
             ckpt_file = ckpt_dir / f'train_steps_{train_steps}'
