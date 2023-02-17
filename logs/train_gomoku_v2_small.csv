@@ -1,2 +1,0 @@
-timestamp,train_steps,checkpoint,loss,learning_rate
-2023-02-17 22:22:09,2000,checkpoints/gomoku_v2_small/train_steps_2000,4.2036285400390625,0.0025

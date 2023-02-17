@@ -1,2 +1,0 @@
-timestamp,train_steps,checkpoint,elo_rating,episode_steps
-2023-02-17 22:22:21,2000,checkpoints/gomoku_v2_small/train_steps_2000,-16.0,24

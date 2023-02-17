@@ -19,9 +19,9 @@ import numpy as np
 import torch
 from alpha_zero.games.env import BoardGameEnv
 
-# from alpha_zero.mcts_v1 import Node, uct_search, parallel_uct_search
+from alpha_zero.mcts_v1 import Node, uct_search, parallel_uct_search
 
-from alpha_zero.mcts_v2 import Node, uct_search, parallel_uct_search
+# from alpha_zero.mcts_v2 import Node, uct_search, parallel_uct_search
 
 
 def create_mcts_player(

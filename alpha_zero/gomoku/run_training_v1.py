@@ -89,7 +89,7 @@ flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
 
-flags.DEFINE_integer('checkpoint_frequency', 5000, 'The frequency (in training step) to create new checkpoint.')
+flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_v1', 'Path for checkpoint file.')
 flags.DEFINE_string('load_checkpoint_file', '', 'Load the checkpoint from file to resume training.')
 

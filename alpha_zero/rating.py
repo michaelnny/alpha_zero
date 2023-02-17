@@ -30,14 +30,14 @@ def estimate_win_probability(ra, rb, c_elo: float = 1 / 400) -> float:
     return 1.0 / (1 + 10 ** ((rb - ra) * c_elo))
 
 
-def compute_elo_rating(winner: int, ra=0, rb=0, k=32) -> float:
+def compute_elo_rating(winner: int, ra=0, rb=0, k=16) -> float:
     """Returns the Elo rating from 'player A' perspective.
 
     Args:
         winner: who won the game, `0` for player A, `1` for player B.
         ra: current elo rating for player A, default 2500.
         rb: current elo rating for player B, default 2500.
-        k: the factor, default 32.
+        k: the factor, default 16.
 
     Returns:
         A tuple contains new estimated Elo ratings for player A and player B.

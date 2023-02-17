@@ -1,9 +1,0 @@
-I0217 21:52:13.301021 140009532241472 pipeline_v1.py:445] Start data collector thread
-I0217 21:52:13.301333 140009523848768 pipeline_v2.py:103] Start training thread
-I0217 21:52:13.983540 140237052248064 pipeline_v1.py:89] Start self-play actor 0
-I0217 21:52:13.984272 140411942477824 pipeline_v1.py:89] Start self-play actor 2
-I0217 21:52:13.987205 140222009229312 pipeline_v2.py:219] Start evaluator
-I0217 21:52:13.990658 140514399002624 pipeline_v1.py:89] Start self-play actor 1
-I0217 21:52:14.001951 140678602657792 pipeline_v1.py:89] Start self-play actor 3
-I0217 22:20:47.170642 140009532241472 pipeline_v1.py:461] Collected 20000 samples, sample generation rate 11.67
-I0217 22:22:09.696583 140009523848768 pipeline_v2.py:149] Train step 2000, train sample rate 276.72

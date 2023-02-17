@@ -68,9 +68,9 @@ flags.DEFINE_integer('num_train_steps', 200000, 'Number of training steps (measu
 
 flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 200, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations', 300, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
-flags.DEFINE_integer('parallel_leaves', 1, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
+flags.DEFINE_integer('parallel_leaves', 8, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
@@ -92,7 +92,7 @@ flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
 
-flags.DEFINE_integer('checkpoint_frequency', 2000, 'The frequency (in training step) to create new checkpoint.')
+flags.DEFINE_integer('checkpoint_frequency', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_string('checkpoint_dir', 'checkpoints/gomoku_v2_small', 'Path for checkpoint file.')
 flags.DEFINE_string('load_checkpoint_file', '', 'Load the checkpoint from file to resume training.')
 
