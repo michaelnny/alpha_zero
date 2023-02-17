@@ -177,7 +177,7 @@ def run_training(
         data_queue: a multiprocessing.SimpleQueue instance, only used to signal data collector to stop.
         min_replay_size: minimum replay size before start training.
         batch_size: sample batch size during training.
-        num_train_steps: total number of traning steps to run.
+        num_train_steps: total number of training steps to run.
         checkpoint_frequency: the frequency to create new checkpoint.
         checkpoint_dir: create new checkpoint save directory.
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint files.
@@ -221,6 +221,7 @@ def run_training(
 
     while True:
         if replay.size < min_replay_size:
+            time.sleep(30)
             continue
 
         if start is None:
@@ -284,7 +285,7 @@ def run_evaluation(
     win_ratio: float = 0.55,
 ) -> None:
     """Run the evaluation loop to select best player from new checkpoint,
-    the 'new' best player is then used by the 'self-play' processes to generate traning samples.
+    the 'new' best player is then used by the 'self-play' processes to generate training samples.
     Only stop the loop if `stop_event` is set to True.
 
     Args:
@@ -301,7 +302,7 @@ def run_evaluation(
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint.
         csv_file: a csv file contains the statistics for the best checkpoint.
         stop_event: a multiprocessing.Event signaling to stop running pipeline.
-        initial_elo: initial elo rating, default -2000,
+        initial_elo: initial elo rating, default 0,
         win_ratio: the win ratio for new checkpoint to become new best player, default 0.55.
 
      Raises:
@@ -459,6 +460,15 @@ def run_data_collector(
                     gen_rate = count / (timeit.default_timer() - start)
                     logging.info(f'Collected {count} samples, sample generation rate {gen_rate:.2f}')
 
+                # if count > 0 and count % 50000 == 0:
+                #     save_samples_dir = Path('./samples')
+                #     if not save_samples_dir.exists():
+                #         save_samples_dir.mkdir(parents=True, exist_ok=True)
+
+                #     save_file = save_samples_dir / f'replay_{replay.size}_{get_time_stamp(True)}'
+                #     save_to_file(replay.get_state(), save_file)
+                #     logging.info(f"Replay samples saved to '{save_file}'")
+
         except queue.Empty:
             pass
         except EOFError:
@@ -488,15 +498,15 @@ def calc_loss(
     value = torch.from_numpy(transitions.value).to(device=device, dtype=torch.float32, non_blocking=True)
 
     if argument_data:
-        # Argument data by apply random roation and reflection.
+        # Argument data by apply random rotation and reflection.
         state, pi_prob = random_rotation_and_reflection(state, pi_prob)
 
     network_out = network(state)
 
-    # value mse loss
+    # value MSE loss
     value_loss = F.mse_loss(network_out.value, value.unsqueeze(1), reduction='mean')
 
-    # policy cross-entryopy loss
+    # policy cross-entropy loss
     policy_loss = F.cross_entropy(network_out.pi_logits, pi_prob, reduction='mean')
 
     return policy_loss + value_loss

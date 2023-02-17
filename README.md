@@ -1,5 +1,5 @@
 Alpha Zero
-=============================
+================================================================================================
 A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku board game
 
 
@@ -46,8 +46,8 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
 
 # Author's Notes
 * The goal is not to make a strongest player but to study the algorithm, as we stopped the training once the agent have made some progress
-* We use scaled down configuration for the training, like using a smaller neural network, lesser simulations per MCTS search, and smaller batch size etc.
-* The elo ratings should not taken too seriously, since we don't set the agent to play against some existing (strong) agent
+* We use scaled down configuration for the training, like using a smaller board size, smaller neural network, lesser simulations per MCTS search etc.
+* The elo ratings should not taken too seriously, since we don't set the agent to play against some existing (strong) player
 
 
 # Quick start
@@ -111,21 +111,6 @@ python3 -m alpha_zero.gomoku.run_training_v1
 python3 -m alpha_zero.plot --train_csv_file=logs/train_gomoku_v1.csv --eval_csv_file=logs/eval_gomoku_v1.csv
 ```
 
-
-
-## MCTS performance
-
-We have to implementation of the MCTS search algorithm: `mcts_v1` and `mcts_v2`.
-The first one is very basic and easy to understand, however it's very slow due to the nature of massive amount of computations needed to complete the search. The second one is an optimized version, which we use numpy.arrays to store the statistics for the nodes in the search tree.
-
-The following table shows the mean search time (in second) per search for these different MCTS implementations.
-We run the experiment with a single thread for 100 search steps on a single RTX 3090 GPU, we use the 400 simulations per MCTS, for the tree-parallel search we use a parallel number of 8.
-| Module       | Single thread    | Tree-parallel    |
-| ------------ | ---------------- | ---------------- |
-| `mcts_v1`    | 0.92             | 1.1              |
-| `mcts_v2`    | 0.67             | 0.15             |
-
-
 ## Training on a single machine
 
 Although not directly mentioned in the original papers, we believe AlphaZero runs large amount of self-play actors (5000 TPUs) to generate self-play samples, while training on separate server (16 TPUs) at the same time.
@@ -142,7 +127,8 @@ However, using GPUs to train one batch can be much faster, usually 0.01 second (
 
 Another possible option is to run the learner loop on CPU only, and run actors on the faster GPU to generate samples more.
 
-In practice, we can often use a train sample rate that's 3-5x greater than the sample generation rate since we're using experience replay to store large amount of samples.
+In practice, we can often use a train sample rate that's 5-10x greater than the sample generation rate since we're using experience replay to store large amount of samples.
+
 
 # Evaluate Agents
 You can evaluate the agent by running the `eval_agent` script. In addition for the Gomoku game, We also have a very basic GUI program, which supports

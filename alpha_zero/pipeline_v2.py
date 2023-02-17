@@ -41,6 +41,7 @@ from alpha_zero.pipeline_v1 import (
     load_checkpoint,
     disable_auto_grad,
     handle_exit_signal,
+    load_from_file
 )
 
 
@@ -72,12 +73,12 @@ def run_training(
         optimizer: neural network optimizer.
         lr_scheduler: learning rate annealing scheduler.
         device: torch runtime device.
-        actor_network: the neural network actors runing self-play, for the case AlphaZero pipeline without evaluation.
+        actor_network: the neural network actors running self-play, for the case AlphaZero pipeline without evaluation.
         replay: a simple uniform experience replay.
         data_queue: a multiprocessing.SimpleQueue instance, only used to signal data collector to stop.
         min_replay_size: minimum replay size before start training.
         batch_size: sample batch size during training.
-        num_train_steps: total number of traning steps to run.
+        num_train_steps: total number of training steps to run.
         checkpoint_frequency: the frequency to create new checkpoint.
         checkpoint_dir: create new checkpoint save directory.
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint files.
@@ -119,12 +120,13 @@ def run_training(
         return {
             'network': network.state_dict(),
             'optimizer': optimizer.state_dict(),
-            'lr_scheduler': lr_scheduler.state_dict(),
+            # 'lr_scheduler': lr_scheduler.state_dict(),
             'train_steps': train_steps,
         }
 
     while True:
         if replay.size < min_replay_size:
+            time.sleep(30)
             continue
 
         if start is None:
@@ -185,9 +187,9 @@ def run_evaluation(
     checkpoint_files: List,
     csv_file: str,
     stop_event: multiprocessing.Event,
-    initial_elo: int = -2000,
+    initial_elo: int = 0,
 ) -> None:
-    """Monitoring training progress by play a single game with new checkpoint againt last checkpoint.
+    """Monitoring training progress by play a single game with new checkpoint against last checkpoint.
 
     Args:
         old_checkpoint_network: the last checkpoint network.
@@ -202,7 +204,7 @@ def run_evaluation(
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint.
         csv_file: a csv file contains the statistics for the best checkpoint.
         stop_event: a multiprocessing.Event signaling to stop running pipeline.
-        initial_elo: initial elo ratings for the players, default -2000.
+        initial_elo: initial elo ratings for the players, default 0.
 
      Raises:
         ValueError:
