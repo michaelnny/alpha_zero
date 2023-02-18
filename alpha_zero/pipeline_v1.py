@@ -107,13 +107,14 @@ def run_self_play(
         done = False
         reward = 0.0
         episode_trajectory: List[Transition] = []
+        root_node = None
         temp = temp_begin_value
 
         # Play and record transitions.
         while not done:
             if env.steps >= temp_decay_steps:
                 temp = temp_end_value
-            action, pi_prob = actor_player(env, c_puct_base, c_puct_init, temp)
+            action, pi_prob, root_node = actor_player(env, root_node, c_puct_base, c_puct_init, temp)
             transition = Transition(
                 state=obs,
                 pi_prob=pi_prob,
@@ -372,12 +373,13 @@ def run_evaluation(
         for _ in range(num_games):
             env.reset()
             done = False
+            root_node = None
 
             while not done:
                 if env.current_player == env.black_player:
-                    action, _ = black_player(env, c_puct_base, c_puct_init, temperature)
+                    action, _, root_node = black_player(env, root_node, c_puct_base, c_puct_init, temperature)
                 else:
-                    action, _ = white_player(env, c_puct_base, c_puct_init, temperature)
+                    action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
                 _, _, done, _ = env.step(action)
                 steps += 1
 

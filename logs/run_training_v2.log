@@ -5,3 +5,16 @@ I0218 18:47:02.831093 140523059892224 pipeline_v2.py:219] Start evaluator
 I0218 18:47:02.832879 140673125130240 pipeline_v1.py:89] Start self-play actor 0
 I0218 18:47:02.850275 140296641105920 pipeline_v1.py:89] Start self-play actor 3
 I0218 18:47:02.856012 139683412774912 pipeline_v1.py:89] Start self-play actor 2
+I0218 18:58:52.783228 140351981467200 pipeline_v2.py:149] Train step 1000, train sample rate 493.15
+I0218 19:01:06.350255 140351989859904 pipeline_v1.py:461] Collected 20000 samples, sample generation rate 23.69
+I0218 19:03:11.603106 140351981467200 pipeline_v2.py:149] Train step 2000, train sample rate 493.85
+I0218 19:07:30.484758 140351981467200 pipeline_v2.py:149] Train step 3000, train sample rate 494.04
+I0218 19:11:49.312740 140351981467200 pipeline_v2.py:149] Train step 4000, train sample rate 494.17
+I0218 19:15:07.092989 140351989859904 pipeline_v1.py:461] Collected 40000 samples, sample generation rate 23.74
+I0218 19:16:08.267108 140351981467200 pipeline_v2.py:149] Train step 5000, train sample rate 494.19
+I0218 19:20:26.940480 140351981467200 pipeline_v2.py:149] Train step 6000, train sample rate 494.30
+I0218 19:24:45.703356 140351981467200 pipeline_v2.py:149] Train step 7000, train sample rate 494.35
+I0218 19:29:04.632739 140351981467200 pipeline_v2.py:149] Train step 8000, train sample rate 494.35
+I0218 19:29:07.627667 140351989859904 pipeline_v1.py:461] Collected 60000 samples, sample generation rate 23.76
+I0218 19:33:24.121679 140351981467200 pipeline_v2.py:149] Train step 9000, train sample rate 494.23
+I0218 19:37:43.764923 140351981467200 pipeline_v2.py:149] Train step 10000, train sample rate 494.11

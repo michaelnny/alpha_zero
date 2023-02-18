@@ -282,6 +282,7 @@ def generate_play_policy(node: Node, legal_actions: np.ndarray, temperature: flo
 def uct_search(
     env: BoardGameEnv,
     eval_func: Callable[[np.ndarray, bool], Tuple[np.ndarray, Union[np.ndarray, float]]],
+    root_node: Node,
     c_puct_base: float,
     c_puct_init: float,
     temperature: float,
@@ -309,6 +310,7 @@ def uct_search(
         eval_func: a evaluation function when called returns the
             action probabilities and winning probability from
             current player's perspective.
+        root_node: root node of the search tree, this comes from reuse sub-tree.
         c_puct_base: a float constant determining the level of exploration.
         c_puct_init: a float constant determining the level of exploration.
         temperature: a parameter controls the level of exploration
@@ -322,6 +324,7 @@ def uct_search(
         tuple contains:
             a integer indicate the sampled action to play in the environment.
             a 1D numpy.array search policy action probabilities from the MCTS search result.
+            a Node instance represent subtree of this MCTS search, which can be used as next root node for MCTS search.
 
     Raises:
         ValueError:
@@ -338,10 +341,11 @@ def uct_search(
         raise RuntimeError('Game is over.')
 
     # Create root node
-    root_node = Node(to_play=env.current_player, parent=None)
-    prior_prob, value = eval_func(env.observation(), False)
-    expand(root_node, prior_prob, env.opponent_player)
-    backup(root_node, value, env.current_player)
+    if root_node is None:
+        root_node = Node(to_play=env.current_player, parent=None)
+        prior_prob, value = eval_func(env.observation(), False)
+        expand(root_node, prior_prob, env.opponent_player)
+        backup(root_node, value, env.current_player)
 
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
@@ -393,7 +397,12 @@ def uct_search(
         # Sample an action.
         move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
-    return (move, pi_probs)
+    next_root_node = None
+    if move in root_node.children:
+        next_root_node = root_node.children[move]
+        next_root_node.parent = None
+    
+    return (move, pi_probs, next_root_node)
 
 
 def add_virtual_loss(node: Node) -> None:
@@ -432,6 +441,7 @@ def revert_virtual_loss(node: Node) -> None:
 def parallel_uct_search(
     env: BoardGameEnv,
     eval_func: Callable[[np.ndarray, bool], Tuple[np.ndarray, Union[np.ndarray, float]]],
+    root_node: Node,
     c_puct_base: float,
     c_puct_init: float,
     temperature: float,
@@ -462,6 +472,7 @@ def parallel_uct_search(
         eval_func: a evaluation function when called returns the
             action probabilities and winning probability from
             current player's perspective.
+        root_node: root node of the search tree, this comes from reuse sub-tree.
         c_puct_base: a float constant determining the level of exploration.
         c_puct_init: a float constant determining the level of exploration.
         temperature: a parameter controls the level of exploration
@@ -477,6 +488,7 @@ def parallel_uct_search(
         tuple contains:
             a integer indicate the sampled action to play in the environment.
             a 1D numpy.array search policy action probabilities from the MCTS search result.
+            a Node instance represent subtree of this MCTS search, which can be used as next root node for MCTS search.
 
     Raises:
         ValueError:
@@ -493,10 +505,11 @@ def parallel_uct_search(
         raise RuntimeError('Game is over.')
 
     # Create root node
-    root_node = Node(to_play=env.current_player, parent=None)
-    prior_prob, value = eval_func(env.observation(), False)
-    expand(root_node, prior_prob, env.opponent_player)
-    backup(root_node, value, env.current_player)
+    if root_node is None:
+        root_node = Node(to_play=env.current_player, parent=None)
+        prior_prob, value = eval_func(env.observation(), False)
+        expand(root_node, prior_prob, env.opponent_player)
+        backup(root_node, value, env.current_player)
 
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
@@ -568,4 +581,9 @@ def parallel_uct_search(
         # Sample an action.
         move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
-    return (move, pi_probs)
+    next_root_node = None
+    if move in root_node.children:
+        next_root_node = root_node.children[move]
+        next_root_node.parent = None
+    
+    return (move, pi_probs, next_root_node)

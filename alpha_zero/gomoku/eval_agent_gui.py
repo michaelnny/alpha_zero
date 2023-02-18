@@ -122,7 +122,7 @@ def main(argv):
 
         # Wrap MCTS player for the GUI program
         def black_player(env: GomokuEnv) -> int:
-            action, _ = black_mcts_player(env, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
+            action, _, _ = black_mcts_player(env, None, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
             return action
 
     game_gui = BoardGameGui(eval_env, black_player=black_player, white_player=white_player, show_step=FLAGS.show_step)

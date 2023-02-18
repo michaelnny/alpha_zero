@@ -1,0 +1,11 @@
+timestamp,train_steps,checkpoint,elo_rating,episode_steps
+2023-02-18 18:58:58,1000,checkpoints/gomoku_v2/train_steps_1000,8.0,27
+2023-02-18 19:03:17,2000,checkpoints/gomoku_v2/train_steps_2000,16.0,39
+2023-02-18 19:07:34,3000,checkpoints/gomoku_v2/train_steps_3000,8.0,18
+2023-02-18 19:11:54,4000,checkpoints/gomoku_v2/train_steps_4000,16.0,25
+2023-02-18 19:16:15,5000,checkpoints/gomoku_v2/train_steps_5000,24.0,45
+2023-02-18 19:20:33,6000,checkpoints/gomoku_v2/train_steps_6000,16.0,32
+2023-02-18 19:24:51,7000,checkpoints/gomoku_v2/train_steps_7000,24.0,29
+2023-02-18 19:29:06,8000,checkpoints/gomoku_v2/train_steps_8000,32.0,13
+2023-02-18 19:33:30,9000,checkpoints/gomoku_v2/train_steps_9000,24.0,34
+2023-02-18 19:37:48,10000,checkpoints/gomoku_v2/train_steps_10000,16.0,24

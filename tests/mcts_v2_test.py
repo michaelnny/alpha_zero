@@ -237,9 +237,10 @@ class UCTSearchTest(parameterized.TestCase):
     def test_run_uct_search(self):
         env = GomokuEnv(board_size=7)
         obs = env.reset()
+        root_node = None
 
         while env.steps < 10:
-            action, pi_prob = mcts.uct_search(env, mock_eval_func, 19652, 1.25, 1.0, 100)
+            action, pi_prob, root_node = mcts.uct_search(env, mock_eval_func, root_node, 19652, 1.25, 1.0, 100)
             obs, reward, done, info = env.step(action)
             if done:
                 break
@@ -249,9 +250,10 @@ class ParallelUCTSearchTest(parameterized.TestCase):
     def test_run_parallel_uct_search(self):
         env = GomokuEnv(board_size=7)
         obs = env.reset()
+        root_node = None
 
         while env.steps < 10:
-            action, pi_prob = mcts.parallel_uct_search(env, mock_eval_func, 19652, 1.25, 1.0, 100, 4)
+            action, pi_prob, root_node = mcts.parallel_uct_search(env, mock_eval_func, root_node, 19652, 1.25, 1.0, 100, 4)
             obs, reward, done, info = env.step(action)
             if done:
                 break

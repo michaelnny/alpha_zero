@@ -93,7 +93,7 @@ def main(argv):
         else:
             player = white_player
 
-        action, _ = player(eval_env, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
+        action, _, _ = player(eval_env, None, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
 
         _, reward, done, _ = eval_env.step(action)
         eval_env.render('human')

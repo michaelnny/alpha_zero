@@ -263,13 +263,14 @@ def run_evaluation(
 
         env.reset()
         done = False
+        root_node = None
         steps = 0
 
         while not done:
             if env.current_player == env.black_player:
-                action, _ = black_player(env, c_puct_base, c_puct_init, temperature)
+                action, _, root_node= black_player(env, root_node, c_puct_base, c_puct_init, temperature)
             else:
-                action, _ = white_player(env, c_puct_base, c_puct_init, temperature)
+                action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
             _, _, done, _ = env.step(action)
             steps += 1
 
