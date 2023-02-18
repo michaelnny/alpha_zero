@@ -289,7 +289,7 @@ def uct_search(
     num_simulations: int = 800,
     root_noise: bool = False,
     deterministic: bool = False,
-) -> Tuple[int, np.ndarray]:
+) -> Tuple[int, np.ndarray, Node]:
     """Single-threaded Upper Confidence Bound (UCB) for Trees (UCT) search without any rollout.
 
     It follows the following general UCT search algorithm, except here we don't do rollout.
@@ -397,10 +397,8 @@ def uct_search(
         # Sample an action.
         move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
-    next_root_node = None
-    if move in root_node.children:
-        next_root_node = root_node.children[move]
-        next_root_node.parent = None
+    next_root_node = root_node.children[move]
+    next_root_node.parent = None
     
     return (move, pi_probs, next_root_node)
 
@@ -449,7 +447,7 @@ def parallel_uct_search(
     parallel_leaves: int = 8,
     root_noise: bool = False,
     deterministic: bool = False,
-) -> Tuple[int, np.ndarray]:
+) -> Tuple[int, np.ndarray, Node]:
     """Single-threaded Upper Confidence Bound (UCB) for Trees (UCT) search without any rollout.
 
     This implementation uses tree parallel search and batched evaluation.
@@ -581,9 +579,7 @@ def parallel_uct_search(
         # Sample an action.
         move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
-    next_root_node = None
-    if move in root_node.children:
-        next_root_node = root_node.children[move]
-        next_root_node.parent = None
-    
+    next_root_node = root_node.children[move]
+    next_root_node.parent = None
+
     return (move, pi_probs, next_root_node)

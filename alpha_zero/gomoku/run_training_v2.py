@@ -87,7 +87,7 @@ flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
-flags.DEFINE_float('train_delay', 0.25, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 1.0, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
