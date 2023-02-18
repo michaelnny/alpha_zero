@@ -266,18 +266,15 @@ def generate_play_policy(node: Node, legal_actions: np.ndarray, temperature: flo
     if not isinstance(temperature, float) or not 0 <= temperature <= 1.0:
         raise ValueError(f'Expect `temperature` to be float type in the range [0.0, 1.0], got {temperature}')
 
-    # Mask out illegal actions
-    child_visits = np.where(legal_actions, node.child_number_visits, 0).astype(np.int64)
-
     if temperature > 0.0:
-        # To avoid overflow when doing power operation over large numbers,
-        # we limit the exponent in the range of [1.0, 5.0],
-        exp = max(1.0, min(5.0, 1.0 / temperature))
-
-        pi_logits = np.power(child_visits, exp)
-        pi_probs = pi_logits / np.sum(pi_logits)
+        exp = 1.0 / temperature
+        pi_logits = np.power(node.child_number_visits, exp)
     else:
-        pi_probs = child_visits / np.sum(child_visits)
+        pi_logits = node.child_number_visits / np.sum(node.child_number_visits)
+
+    # Mask out illegal actions
+    pi_logits = np.where(legal_actions, pi_logits, 0.0).astype(np.float32)
+    pi_probs = pi_logits / np.sum(pi_logits)
 
     return pi_probs
 
@@ -285,14 +282,13 @@ def generate_play_policy(node: Node, legal_actions: np.ndarray, temperature: flo
 def uct_search(
     env: BoardGameEnv,
     eval_func: Callable[[np.ndarray, bool], Tuple[np.ndarray, Union[np.ndarray, float]]],
-    root_node: Node,
     c_puct_base: float,
     c_puct_init: float,
     temperature: float,
     num_simulations: int = 800,
     root_noise: bool = False,
     deterministic: bool = False,
-) -> Tuple[int, np.ndarray, Node]:
+) -> Tuple[int, np.ndarray]:
     """Single-threaded Upper Confidence Bound (UCB) for Trees (UCT) search without any rollout.
 
     It follows the following general UCT search algorithm, except here we don't do rollout.
@@ -313,7 +309,6 @@ def uct_search(
         eval_func: a evaluation function when called returns the
             action probabilities and winning probability from
             current player's perspective.
-        root_node: root node of the search tree, if none, new root node will be created.
         c_puct_base: a float constant determining the level of exploration.
         c_puct_init: a float constant determining the level of exploration.
         temperature: a parameter controls the level of exploration
@@ -327,7 +322,6 @@ def uct_search(
         tuple contains:
             a integer indicate the sampled action to play in the environment.
             a 1D numpy.array search policy action probabilities from the MCTS search result.
-            a Node instance represent subtree of this MCTS search, which can be used as next root node for MCTS search.
 
     Raises:
         ValueError:
@@ -343,20 +337,16 @@ def uct_search(
     if env.is_game_over:
         raise RuntimeError('Game is over.')
 
-    if root_node is None:
-        # Create new root node if not reusing sub-tree
-        root_node = Node(to_play=env.current_player, parent=None)
-        prior_prob, value = eval_func(env.observation(), False)
-        expand(root_node, prior_prob, env.opponent_player)
-        backup(root_node, value, env.current_player)
-
-    assert root_node.to_play == env.current_player
+    # Create root node
+    root_node = Node(to_play=env.current_player, parent=None)
+    prior_prob, value = eval_func(env.observation(), False)
+    expand(root_node, prior_prob, env.opponent_player)
+    backup(root_node, value, env.current_player)
 
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
         add_dirichlet_noise(root_node, env.legal_actions)
 
-    # for simulation in range(num_simulations):
     while root_node.number_visits < num_simulations:
         node = root_node
 
@@ -395,6 +385,7 @@ def uct_search(
     # Play - generate action probability from the root node.
     pi_probs = generate_play_policy(root_node, env.legal_actions, temperature)
 
+    move = None
     if deterministic:
         # Choose the action with most visit count.
         move = np.argmax(pi_probs)
@@ -402,10 +393,7 @@ def uct_search(
         # Sample an action.
         move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
-    # Reuse sub-tree.
-    next_root_node = root_node.children[move]
-    next_root_node.parent = None
-    return (move, pi_probs, next_root_node)
+    return (move, pi_probs)
 
 
 def add_virtual_loss(node: Node) -> None:
@@ -444,7 +432,6 @@ def revert_virtual_loss(node: Node) -> None:
 def parallel_uct_search(
     env: BoardGameEnv,
     eval_func: Callable[[np.ndarray, bool], Tuple[np.ndarray, Union[np.ndarray, float]]],
-    root_node: Node,
     c_puct_base: float,
     c_puct_init: float,
     temperature: float,
@@ -452,7 +439,7 @@ def parallel_uct_search(
     parallel_leaves: int = 8,
     root_noise: bool = False,
     deterministic: bool = False,
-) -> Tuple[int, np.ndarray, Node]:
+) -> Tuple[int, np.ndarray]:
     """Single-threaded Upper Confidence Bound (UCB) for Trees (UCT) search without any rollout.
 
     This implementation uses tree parallel search and batched evaluation.
@@ -475,7 +462,6 @@ def parallel_uct_search(
         eval_func: a evaluation function when called returns the
             action probabilities and winning probability from
             current player's perspective.
-        root_node: root node of the search tree, if none, new root node will be created.
         c_puct_base: a float constant determining the level of exploration.
         c_puct_init: a float constant determining the level of exploration.
         temperature: a parameter controls the level of exploration
@@ -491,7 +477,6 @@ def parallel_uct_search(
         tuple contains:
             a integer indicate the sampled action to play in the environment.
             a 1D numpy.array search policy action probabilities from the MCTS search result.
-            a Node instance represent subtree of this MCTS search, which can be used as next root node for MCTS search.
 
     Raises:
         ValueError:
@@ -507,19 +492,16 @@ def parallel_uct_search(
     if env.is_game_over:
         raise RuntimeError('Game is over.')
 
-    if root_node is None:
-        # Create new root node if not reusing sub-tree
-        root_node = Node(to_play=env.current_player, parent=None)
-        prior_prob, value = eval_func(env.observation(), False)
-        expand(root_node, prior_prob, env.opponent_player)
-        backup(root_node, value, env.current_player)
+    # Create root node
+    root_node = Node(to_play=env.current_player, parent=None)
+    prior_prob, value = eval_func(env.observation(), False)
+    expand(root_node, prior_prob, env.opponent_player)
+    backup(root_node, value, env.current_player)
 
-    assert root_node.to_play == env.current_player
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
         add_dirichlet_noise(root_node, env.legal_actions)
 
-    # for simulation in range(num_simulations):
     while root_node.number_visits < num_simulations:
         leaves = []
         failsafe = 0
@@ -570,7 +552,7 @@ def parallel_uct_search(
                 # expand it more than once.
                 if leaf.is_expanded:
                     continue
-                
+
                 # Children nodes are evaluated from opponent player's perspective.
                 expand(leaf, prior_prob, opponent_player)
                 backup(leaf, value.item(), current_player)
@@ -578,6 +560,7 @@ def parallel_uct_search(
     # Play - generate action probability from the root node.
     pi_probs = generate_play_policy(root_node, env.legal_actions, temperature)
 
+    move = None
     if deterministic:
         # Choose the action with most visit count.
         move = np.argmax(pi_probs)
@@ -585,7 +568,4 @@ def parallel_uct_search(
         # Sample an action.
         move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
-    # Reuse sub-tree.
-    next_root_node = root_node.children[move]
-    next_root_node.parent = None
-    return (move, pi_probs, next_root_node)
+    return (move, pi_probs)

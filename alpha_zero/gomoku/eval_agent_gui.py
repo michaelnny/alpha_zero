@@ -26,12 +26,12 @@ from alpha_zero.mcts_player import create_mcts_player
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 15, 'Board size for Gomoku.')
+flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 5, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
-    128,
+    64,
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
@@ -49,15 +49,15 @@ flags.DEFINE_bool(
 
 flags.DEFINE_string(
     'black_ckpt_file',
-    'checkpoints/gomoku_v2/train_steps_318000',
+    'checkpoints/gomoku_v2/train_steps_5000',
     'Load the checkpoint file for black player, will only load if human_vs_ai is False.',
 )
 flags.DEFINE_string(
-    'white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_318000', 'Load the checkpoint file for white player.'
+    'white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_5000', 'Load the checkpoint file for white player.'
 )
 
-flags.DEFINE_integer('num_simulations', 600, 'Number of simulations per MCTS search.')
-flags.DEFINE_integer('parallel_leaves', 8, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
+flags.DEFINE_integer('num_simulations', 200, 'Number of simulations per MCTS search.')
+flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
@@ -106,7 +106,7 @@ def main(argv):
 
     # Wrap MCTS player for the GUI program
     def white_player(env: GomokuEnv) -> int:
-        action, _, _ = white_mcts_player(env, None, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
+        action, _ = white_mcts_player(env, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
         return action
 
     # Black player could be either human or AI
@@ -122,7 +122,7 @@ def main(argv):
 
         # Wrap MCTS player for the GUI program
         def black_player(env: GomokuEnv) -> int:
-            action, _, _ = black_mcts_player(env, None, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
+            action, _ = black_mcts_player(env, FLAGS.c_puct_base, FLAGS.c_puct_init, FLAGS.temperature)
             return action
 
     game_gui = BoardGameGui(eval_env, black_player=black_player, white_player=white_player, show_step=FLAGS.show_step)

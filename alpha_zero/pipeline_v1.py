@@ -108,13 +108,12 @@ def run_self_play(
         reward = 0.0
         episode_trajectory: List[Transition] = []
         temp = temp_begin_value
-        root_node = None
 
         # Play and record transitions.
         while not done:
             if env.steps >= temp_decay_steps:
                 temp = temp_end_value
-            action, pi_prob, root_node = actor_player(env, root_node, c_puct_base, c_puct_init, temp)
+            action, pi_prob = actor_player(env, c_puct_base, c_puct_init, temp)
             transition = Transition(
                 state=obs,
                 pi_prob=pi_prob,
@@ -165,6 +164,7 @@ def run_training(
     stop_event: multiprocessing.Event,
     delay: float = 0.0,
     train_steps: int = None,
+    argument_data: bool = False,
 ):
     """Run the main training loop for N iterations, each iteration contains M updates.
 
@@ -185,6 +185,7 @@ def run_training(
         stop_event: a multiprocessing.Event signaling other parties to stop running pipeline.
         delay: wait time (in seconds) before start training on next batch samples, default 0.
         train_steps: already trained steps, used when resume training, default none.
+        argument_data: if true, apply random rotation and reflection during training, default off.
 
     Raises:
         ValueError:
@@ -233,7 +234,7 @@ def run_training(
 
         transitions = replay.sample(batch_size)
         optimizer.zero_grad()
-        loss = calc_loss(network, device, transitions, True)
+        loss = calc_loss(network, device, transitions, argument_data)
         loss.backward()
         optimizer.step()
         lr_scheduler.step()
@@ -269,7 +270,7 @@ def run_training(
 
 def run_evaluation(
     best_network: torch.nn.Module,
-    new_checkpoint_network: torch.nn.Module,
+    new_network: torch.nn.Module,
     device: torch.device,
     env: BoardGameEnv,
     num_games: int,
@@ -290,7 +291,7 @@ def run_evaluation(
 
     Args:
         best_network: the current best player.
-        new_checkpoint_network: new checkpoint network we want to evaluate.
+        new_network: new checkpoint network we want to evaluate.
         device: torch runtime device.
         env: a BoardGameEnv type environment.
         num_games: number of games to play during each evaluation process.
@@ -319,14 +320,14 @@ def run_evaluation(
     writer = CsvWriter(csv_file)
 
     disable_auto_grad(best_network)
-    disable_auto_grad(new_checkpoint_network)
+    disable_auto_grad(new_network)
 
     best_network = best_network.to(device=device)
-    new_checkpoint_network = new_checkpoint_network.to(device=device)
+    new_network = new_network.to(device=device)
 
     # Black is the new checkpoint, white is current best player.
     black_player = create_mcts_player(
-        network=new_checkpoint_network,
+        network=new_network,
         device=device,
         num_simulations=num_simulations,
         parallel_leaves=parallel_leaves,
@@ -356,10 +357,10 @@ def run_evaluation(
         # Remove the checkpoint file path from the shared list.
         ckpt_file = checkpoint_files.pop(0)
         loaded_state = load_checkpoint(ckpt_file, device)
-        new_checkpoint_network.load_state_dict(loaded_state['network'])
+        new_network.load_state_dict(loaded_state['network'])
         train_steps = loaded_state['train_steps']
 
-        new_checkpoint_network.eval()
+        new_network.eval()
         best_network.eval()
 
         won_games, loss_games, draw_games = 0, 0, 0
@@ -370,14 +371,13 @@ def run_evaluation(
 
         for _ in range(num_games):
             env.reset()
-            root_node = None
             done = False
 
             while not done:
                 if env.current_player == env.black_player:
-                    action, _, root_node = black_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                    action, _ = black_player(env, c_puct_base, c_puct_init, temperature)
                 else:
-                    action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                    action, _ = white_player(env, c_puct_base, c_puct_init, temperature)
                 _, _, done, _ = env.step(action)
                 steps += 1
 

@@ -42,17 +42,17 @@ from alpha_zero.pipeline_v1 import (
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 15, 'Board size for Gomoku.')
-flags.DEFINE_integer('stack_history', 8, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
+flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
+flags.DEFINE_integer('num_res_blocks', 5, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
-    128,
+    64,
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 200000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 50000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
+flags.DEFINE_integer('min_replay_size', 10000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
@@ -61,14 +61,15 @@ flags.DEFINE_multi_integer(
     'lr_decay_milestones', [200000, 800000, 1500000], 'The number of steps at which the learning rate will decay.'
 )
 flags.DEFINE_integer('num_train_steps', 2000000, 'Number of training steps (measured in network updates).')
+flags.DEFINE_bool('argument_data', False, 'Apply random rotation and mirror to batch samples during training, default off.')
 
 flags.DEFINE_integer('num_eval_games', 10, 'Number of games to play during evaluation to select best player.')
 
-flags.DEFINE_integer('num_actors', 3, 'Number of self-play actor processes.')
+flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 600, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations', 200, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
-flags.DEFINE_integer('parallel_leaves', 8, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
+flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
@@ -84,7 +85,7 @@ flags.DEFINE_float(
 flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
-flags.DEFINE_float('train_delay', 0.75, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.4, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
@@ -120,7 +121,7 @@ def main(argv):
     actor_network = copy.deepcopy(network)
     actor_network.share_memory()
 
-    new_checkpoint_network = copy.deepcopy(network)
+    new_ckpt_network = copy.deepcopy(network)
 
     replay = UniformReplay(FLAGS.replay_capacity, random_state)
 
@@ -135,7 +136,7 @@ def main(argv):
         train_steps = loaded_state['train_steps']
 
         actor_network.load_state_dict(loaded_state['network'])
-        new_checkpoint_network.load_state_dict(loaded_state['network'])
+        new_ckpt_network.load_state_dict(loaded_state['network'])
 
         logging.info(f'Loaded state from checkpoint {FLAGS.load_checkpoint_file}')
         logging.info(f'Current state: train steps {train_steps}, learning rate {lr_scheduler.get_last_lr()}')
@@ -175,6 +176,7 @@ def main(argv):
             stop_event,
             FLAGS.train_delay,
             train_steps,
+            FLAGS.argument_data,
         ),
     )
     learner.start()
@@ -184,7 +186,7 @@ def main(argv):
         target=run_evaluation,
         args=(
             actor_network,
-            new_checkpoint_network,
+            new_ckpt_network,
             runtime_device,
             evaluation_env,
             FLAGS.num_eval_games,

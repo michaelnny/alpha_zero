@@ -1,0 +1,7 @@
+I0218 18:47:02.160548 140351989859904 pipeline_v1.py:445] Start data collector thread
+I0218 18:47:02.160715 140351981467200 pipeline_v2.py:103] Start training thread
+I0218 18:47:02.830381 140486995644416 pipeline_v1.py:89] Start self-play actor 1
+I0218 18:47:02.831093 140523059892224 pipeline_v2.py:219] Start evaluator
+I0218 18:47:02.832879 140673125130240 pipeline_v1.py:89] Start self-play actor 0
+I0218 18:47:02.850275 140296641105920 pipeline_v1.py:89] Start self-play actor 3
+I0218 18:47:02.856012 139683412774912 pipeline_v1.py:89] Start self-play actor 2

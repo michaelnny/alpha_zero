@@ -24,8 +24,8 @@ from matplotlib.animation import FuncAnimation
 from matplotlib.ticker import FormatStrFormatter
 
 FLAGS = flags.FLAGS
-flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_v2_small.csv', 'A csv file contains training statistics.')
-flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_v2_small.csv', 'A csv file contains evaluation statistics.')
+flags.DEFINE_string('train_csv_file', 'logs/train_gomoku_v2.csv', 'A csv file contains training statistics.')
+flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_v2.csv', 'A csv file contains evaluation statistics.')
 flags.DEFINE_integer('update_frequency', 10, 'The frequency (in minutes) to update plots.')
 
 

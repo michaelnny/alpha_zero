@@ -65,7 +65,7 @@ flags.DEFINE_integer('num_actors', 2, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
     'num_simulations', 24, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
-flags.DEFINE_integer('parallel_leaves', 4, 'Number of parallel leaves for MCTS search, 1 means do not use parallel search.')
+flags.DEFINE_integer('parallel_leaves', 4, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
@@ -118,8 +118,8 @@ def main(argv):
     actor_network = network_builder()
     actor_network.share_memory()
 
-    old_checkpoint_network = network_builder()
-    new_checkpoint_network = network_builder()
+    old_ckpt_network = network_builder()
+    new_ckpt_network = network_builder()
 
     replay = UniformReplay(FLAGS.replay_capacity, random_state)
 
@@ -167,8 +167,8 @@ def main(argv):
     evaluator = multiprocessing.Process(
         target=run_evaluation,
         args=(
-            old_checkpoint_network,
-            new_checkpoint_network,
+            old_ckpt_network,
+            new_ckpt_network,
             runtime_device,
             evaluation_env,
             FLAGS.c_puct_base,

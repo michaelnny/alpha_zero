@@ -233,6 +233,8 @@ class BoardGameEnv(Env):
             The stack order is
             [Xt, Yt, Xt-1, Yt-1, Xt-2, Yt-2, ..., C]
 
+        Returns a 3D tensor with the dimension [N, board_size, board_size], 
+            where N = 2 x stack_history + 1 
         """
         # Stack feature planes from t, t-1, t-2, ...
         feature_planes = []
@@ -249,6 +251,7 @@ class BoardGameEnv(Env):
         if self.current_player == self.black_player:
             color_to_play += 1
 
+        # Using [C, H, W] channel first for PyTorch
         stacked_obs = np.concatenate([feature_planes, color_to_play], axis=0)
 
         return stacked_obs

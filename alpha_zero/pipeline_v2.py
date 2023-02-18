@@ -41,7 +41,7 @@ from alpha_zero.pipeline_v1 import (
     load_checkpoint,
     disable_auto_grad,
     handle_exit_signal,
-    load_from_file
+    load_from_file,
 )
 
 
@@ -62,8 +62,8 @@ def run_training(
     csv_file: str,
     stop_event: multiprocessing.Event,
     delay: float = 0.0,
-    argument_data: bool = False,
     train_steps: int = None,
+    argument_data: bool = False,
 ):
     """Run the main training loop for N iterations, each iteration contains M updates.
     This controls the 'pace' of the pipeline, including when should the other parties to stop.
@@ -85,8 +85,8 @@ def run_training(
         csv_file: a csv file contains the training statistics.
         stop_event: a multiprocessing.Event signaling other parties to stop running pipeline.
         delay: wait time (in seconds) before start training on next batch samples, default 0.
-        argument_data: if true, apply random rotation and reflection during training, default off.
         train_steps: already trained steps, used when resume training, default none.
+        argument_data: if true, apply random rotation and reflection during training, default off.
 
     Raises:
         ValueError:
@@ -120,7 +120,7 @@ def run_training(
         return {
             'network': network.state_dict(),
             'optimizer': optimizer.state_dict(),
-            # 'lr_scheduler': lr_scheduler.state_dict(),
+            'lr_scheduler': lr_scheduler.state_dict(),
             'train_steps': train_steps,
         }
 
@@ -175,8 +175,8 @@ def run_training(
 
 
 def run_evaluation(
-    old_checkpoint_network: torch.nn.Module,
-    new_checkpoint_network: torch.nn.Module,
+    old_network: torch.nn.Module,
+    new_network: torch.nn.Module,
     device: torch.device,
     env: BoardGameEnv,
     c_puct_base: float,
@@ -192,8 +192,8 @@ def run_evaluation(
     """Monitoring training progress by play a single game with new checkpoint against last checkpoint.
 
     Args:
-        old_checkpoint_network: the last checkpoint network.
-        new_checkpoint_network: new checkpoint network we want to evaluate.
+        old_network: the last checkpoint network.
+        new_network: new checkpoint network we want to evaluate.
         device: torch runtime device.
         env: a BoardGameEnv type environment.
         c_puct: a constant controls the level of exploration during MCTS search.
@@ -218,11 +218,11 @@ def run_evaluation(
     writer = CsvWriter(csv_file)
     logging.info('Start evaluator')
 
-    disable_auto_grad(old_checkpoint_network)
-    disable_auto_grad(new_checkpoint_network)
+    disable_auto_grad(old_network)
+    disable_auto_grad(new_network)
 
-    old_checkpoint_network = old_checkpoint_network.to(device=device)
-    new_checkpoint_network = new_checkpoint_network.to(device=device)
+    old_network = old_network.to(device=device)
+    new_network = new_network.to(device=device)
 
     # Set initial elo ratings
     black_elo = initial_elo
@@ -237,15 +237,15 @@ def run_evaluation(
         # Remove the checkpoint file path from the shared list.
         ckpt_file = checkpoint_files.pop(0)
         loaded_state = load_checkpoint(ckpt_file, device)
-        new_checkpoint_network.load_state_dict(loaded_state['network'])
+        new_network.load_state_dict(loaded_state['network'])
         train_steps = loaded_state['train_steps']
 
-        new_checkpoint_network.eval()
-        old_checkpoint_network.eval()
+        new_network.eval()
+        old_network.eval()
 
         # Black is the new checkpoint, white is last checkpoint.
         black_player = create_mcts_player(
-            network=new_checkpoint_network,
+            network=new_network,
             device=device,
             num_simulations=num_simulations,
             parallel_leaves=parallel_leaves,
@@ -253,7 +253,7 @@ def run_evaluation(
             deterministic=True,
         )
         white_player = create_mcts_player(
-            network=old_checkpoint_network,
+            network=old_network,
             device=device,
             num_simulations=num_simulations,
             parallel_leaves=parallel_leaves,
@@ -262,15 +262,14 @@ def run_evaluation(
         )
 
         env.reset()
-        root_node = None
         done = False
         steps = 0
 
         while not done:
             if env.current_player == env.black_player:
-                action, _, root_node = black_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                action, _ = black_player(env, c_puct_base, c_puct_init, temperature)
             else:
-                action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                action, _ = white_player(env, c_puct_base, c_puct_init, temperature)
             _, _, done, _ = env.step(action)
             steps += 1
 
@@ -290,4 +289,4 @@ def run_evaluation(
         write_to_csv(writer, log_output)
 
         # Unlike in AlphaGo Zero, here we always use the latest checkpoint for next evaluation.
-        old_checkpoint_network.load_state_dict(new_checkpoint_network.state_dict())
+        old_network.load_state_dict(new_network.state_dict())

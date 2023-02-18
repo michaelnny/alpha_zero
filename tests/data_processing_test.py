@@ -17,7 +17,7 @@ from absl.testing import absltest
 from absl.testing import parameterized
 import numpy as np
 import torch
-from alpha_zero.data_processing import rotate_state_and_prob, mirror_horizonral, mirror_vertical
+from alpha_zero.data_processing import rotate_state_and_prob, mirror_horizontal, mirror_vertical
 
 
 class PipelineDataArgumentationTest(parameterized.TestCase):
@@ -57,11 +57,8 @@ class PipelineDataArgumentationTest(parameterized.TestCase):
             ]
         )
 
-        self.pi_prob_last_action = torch.tensor([[0.0]])
 
-        self.pi_prob = torch.concat(
-            [self.pi_prob_2d.view(1, self.board_size * self.board_size), self.pi_prob_last_action], dim=1
-        )
+        self.pi_prob = self.pi_prob_2d.view(1, self.board_size * self.board_size)
 
         self.z = torch.tensor([1.0])
 
@@ -71,7 +68,6 @@ class PipelineDataArgumentationTest(parameterized.TestCase):
         expected_state = np.rot90(self.state.numpy(), 1, (1, 2))
         expected_pi_prob = np.rot90(self.pi_prob_2d.numpy(), 1, (0, 1))
         expected_pi_prob = expected_pi_prob.reshape((-1, self.board_size * self.board_size))
-        expected_pi_prob = np.concatenate([expected_pi_prob, self.pi_prob_last_action.numpy()], axis=1)
 
         np.testing.assert_equal(rotated_state.squeeze(0).numpy(), expected_state)
         np.testing.assert_equal(rotated_pi_prob.numpy(), expected_pi_prob)
@@ -82,7 +78,6 @@ class PipelineDataArgumentationTest(parameterized.TestCase):
         expected_state = np.rot90(self.state.numpy(), 2, (1, 2))
         expected_pi_prob = np.rot90(self.pi_prob_2d.numpy(), 2, (0, 1))
         expected_pi_prob = expected_pi_prob.reshape((-1, self.board_size * self.board_size))
-        expected_pi_prob = np.concatenate([expected_pi_prob, self.pi_prob_last_action.numpy()], axis=1)
 
         np.testing.assert_equal(rotated_state.squeeze(0).numpy(), expected_state)
         np.testing.assert_equal(rotated_pi_prob.numpy(), expected_pi_prob)
@@ -93,7 +88,6 @@ class PipelineDataArgumentationTest(parameterized.TestCase):
         expected_state = np.rot90(self.state.numpy(), 3, (1, 2))
         expected_pi_prob = np.rot90(self.pi_prob_2d.numpy(), 3, (0, 1))
         expected_pi_prob = expected_pi_prob.reshape((-1, self.board_size * self.board_size))
-        expected_pi_prob = np.concatenate([expected_pi_prob, self.pi_prob_last_action.numpy()], axis=1)
 
         np.testing.assert_equal(rotated_state.squeeze(0).numpy(), expected_state)
         np.testing.assert_equal(rotated_pi_prob.numpy(), expected_pi_prob)
@@ -104,12 +98,11 @@ class PipelineDataArgumentationTest(parameterized.TestCase):
         np.testing.assert_equal(rotated_pi_prob.numpy(), self.pi_prob.numpy())
 
     def test_mirror_horizontal(self):
-        flipped_state, flipped_pi_prob = mirror_horizonral(self.state[None, ...], self.pi_prob)
+        flipped_state, flipped_pi_prob = mirror_horizontal(self.state[None, ...], self.pi_prob)
 
         expected_state = np.stack([np.flip(s, axis=1) for s in self.state.numpy()], axis=0)
         expected_pi_prob = np.flip(self.pi_prob_2d.numpy(), axis=1)
         expected_pi_prob = expected_pi_prob.reshape((-1, self.board_size * self.board_size))
-        expected_pi_prob = np.concatenate([expected_pi_prob, self.pi_prob_last_action.numpy()], axis=1)
 
         np.testing.assert_equal(flipped_state.squeeze(0).numpy(), expected_state)
         np.testing.assert_equal(flipped_pi_prob.numpy(), expected_pi_prob)
@@ -120,7 +113,6 @@ class PipelineDataArgumentationTest(parameterized.TestCase):
         expected_state = np.stack([np.flip(s, axis=0) for s in self.state.numpy()], axis=0)
         expected_pi_prob = np.flip(self.pi_prob_2d.numpy(), axis=0)
         expected_pi_prob = expected_pi_prob.reshape((-1, self.board_size * self.board_size))
-        expected_pi_prob = np.concatenate([expected_pi_prob, self.pi_prob_last_action.numpy()], axis=1)
 
         np.testing.assert_equal(flipped_state.squeeze(0).numpy(), expected_state)
         np.testing.assert_equal(flipped_pi_prob.numpy(), expected_pi_prob)

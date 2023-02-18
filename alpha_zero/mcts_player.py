@@ -59,7 +59,6 @@ def create_mcts_player(
 
     def act(
         env: BoardGameEnv,
-        root_node: Node,
         c_puct_base: float,
         c_puct_init: float,
         temperature: float,
@@ -68,7 +67,6 @@ def create_mcts_player(
             return parallel_uct_search(
                 env=env,
                 eval_func=eval_func,
-                root_node=root_node,
                 c_puct_base=c_puct_base,
                 c_puct_init=c_puct_init,
                 temperature=temperature,
@@ -81,7 +79,6 @@ def create_mcts_player(
             return uct_search(
                 env=env,
                 eval_func=eval_func,
-                root_node=root_node,
                 c_puct_base=c_puct_base,
                 c_puct_init=c_puct_init,
                 temperature=temperature,
