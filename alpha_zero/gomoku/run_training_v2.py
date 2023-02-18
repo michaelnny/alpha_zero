@@ -45,9 +45,9 @@ from alpha_zero.pipeline_v2 import (
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
+flags.DEFINE_integer('board_size', 11, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 5, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 7, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
     64,
