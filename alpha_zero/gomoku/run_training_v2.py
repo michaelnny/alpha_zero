@@ -54,8 +54,8 @@ flags.DEFINE_integer(
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 200000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 20000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
+flags.DEFINE_integer('min_replay_size', 10000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
@@ -68,7 +68,7 @@ flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirror to ba
 
 flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 300, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations', 240, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
 flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
@@ -87,7 +87,7 @@ flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
-flags.DEFINE_float('train_delay', 1.0, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.75, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )

@@ -67,7 +67,7 @@ flags.DEFINE_integer('num_eval_games', 10, 'Number of games to play during evalu
 
 flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 300, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations', 240, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
 flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 

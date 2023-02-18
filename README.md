@@ -127,7 +127,7 @@ However, using GPUs to train one batch can be much faster, usually 0.01 second (
 
 Another possible option is to run the learner loop on CPU only, and run actors on the faster GPU to generate samples more.
 
-In practice, we can often use a train sample rate that's 5-10x greater than the sample generation rate since we're using experience replay to store large amount of samples.
+In practice, we can often use a train sample rate that's 3-5x greater than the sample generation rate since we're using experience replay to store large amount of samples.
 
 
 # Evaluate Agents

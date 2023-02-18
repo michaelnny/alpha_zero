@@ -256,13 +256,15 @@ def generate_play_policy(node: Node, temperature: float) -> np.ndarray:
         raise ValueError(f'Expect `temperature` to be float type in the range [0.0, 1.0], got {temperature}')
 
     if temperature > 0.0:
-        exp = 1.0 / temperature
+        # exp = 1.0 / temperature
+        # To avoid overflow when doing power operation over large numbers
+        exp = max(1.0, min(10.0, 1.0 / temperature))
         pi_logits = np.power(node.child_number_visits, exp)
     else:
         pi_logits = node.child_number_visits / np.sum(node.child_number_visits)
 
     # Mask out illegal actions
-    pi_logits = np.where(node.legal_actions, pi_logits, 0.0).astype(np.float32)
+    pi_logits = np.where(node.legal_actions == True, pi_logits, 0.0).astype(np.float32)
     pi_probs = pi_logits / np.sum(pi_logits)
 
     return pi_probs
