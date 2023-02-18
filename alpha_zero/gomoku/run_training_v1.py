@@ -55,10 +55,10 @@ flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most r
 flags.DEFINE_integer('min_replay_size', 10000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [200000, 800000, 1500000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [400000, 1000000], 'The number of steps at which the learning rate will decay.'
 )
 flags.DEFINE_integer('num_train_steps', 2000000, 'Number of training steps (measured in network updates).')
 flags.DEFINE_bool('argument_data', False, 'Apply random rotation and mirror to batch samples during training, default off.')
@@ -69,7 +69,7 @@ flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
     'num_simulations', 240, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
-flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
+flags.DEFINE_integer('parallel_leaves', 10, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
@@ -85,7 +85,7 @@ flags.DEFINE_float(
 flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
-flags.DEFINE_float('train_delay', 1.5, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.65, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )

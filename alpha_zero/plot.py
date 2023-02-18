@@ -45,33 +45,32 @@ def main(argv):
     eval_csv_file = FLAGS.eval_csv_file
     update_frequency = FLAGS.update_frequency
 
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 8))
+    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 6))
     plt.tight_layout(pad=5, w_pad=4)
 
-    ax1.set_title('Training Loss', fontsize=14)
-    ax1.set_xlabel('Train steps', fontsize=11)
-    ax1.set_ylabel('Loss', fontsize=11)
+    ax1.set_title('Training Loss', fontsize=16)
+    ax1.set_xlabel('Train steps', fontsize=14)
     ax1.xaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
     ax1.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
-    ax2.set_title('Elo Rating', fontsize=14)
-    ax2.set_xlabel('Train steps', fontsize=11)
-    ax2.set_ylabel('Elo', fontsize=11)
+    ax2.set_title('Evaluation Elo Rating', fontsize=16)
+    ax2.set_xlabel('Train steps', fontsize=14)
     ax2.xaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
-    # ax2.yaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
-    # ax2.yaxis.set_ticks(np.arange(-3000, 6000, 1000))
+    ax2.yaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
 
-    ax3.set_title('Evaluation Episode Steps', fontsize=14)
-    ax3.set_xlabel('Train steps', fontsize=11)
-    ax3.set_ylabel('Evaluation episode steps', fontsize=11)
+    # ax3 = ax2.twinx()
+    ax3.set_title('Evaluation Episode Steps', fontsize=16)
+    ax3.set_xlabel('Train steps', fontsize=14)
     ax3.xaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
+    ax3.yaxis.set_major_formatter(plt.FuncFormatter(label_format_func))
 
-    (line1,) = ax1.plot([], [], '-', color='blue', label='Loss')
-    (line2,) = ax2.plot([], [], '-', color='orange', label='AlphaZero')
-    (line3,) = ax3.plot([], [], '-', color='green', label='AlphaZero')
+    (line1,) = ax1.plot([], [], '-', color='blue', label='Train loss')
+    (line2,) = ax2.plot([], [], '-', color='orange', label='Elo rating')
+    (line3,) = ax3.plot([], [], '-', color='green', label='Evaluation episode steps')
 
     # ax1.legend(loc='upper right')
     # ax2.legend(loc='upper right')
+    # ax3.legend(loc='upper right')
 
     def plot_lines():
         if os.path.exists(train_csv_file):
@@ -98,7 +97,6 @@ def main(argv):
 
     def update_function(frame):
         plot_lines()
-
         return (line1, line2, line3)
 
     animated = FuncAnimation(

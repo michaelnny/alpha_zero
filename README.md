@@ -39,7 +39,7 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
   - `eval_agent.py` evaluate the agents by playing the Gomoku game in terminal mode, only supports AlphaZero vs. AlphaZero mode
   - `eval_agent_gui.py` evaluate the agents by launching a simple GUI program to play Gomoku, supports AlphaZero vs. AlphaZero mode, and Human vs. AlphaZero mode
 * `mcts_v1.py` contains the MCTS node and UCT tree-search algorithm.
-* `mcts_v2.py` contains the optimized version of MCTS node and UCT tree-search algorithm, which use Numpy arrays to store node statistics in the search tree.
+* `mcts_v2.py` contains the optimized version of MCTS node and UCT tree-search algorithm.
 * `pipeline_v1.py` contains the functions to run self-play, training, and evaluation loops (following AlphaGo Zero paper, evaluation is used to select best player to generate self-play samples)
 * `pipeline_v2.py` contains the functions to run training, and evaluation loops (following AlphaZero paper, evaluation is only used to monitoring performance)
 
@@ -125,9 +125,7 @@ Now we need to find the right value for batch size, so that in one second, the n
 
 However, using GPUs to train one batch can be much faster, usually 0.01 second (or lesser) for a single batch. It does not make sense to use `3.3` as a batch size, so we also need to use train delay to adjust this imbalance. In this case with batch size set to 32, we can use a train delay of 0.1 second per batch.
 
-Another possible option is to run the learner loop on CPU only, and run actors on the faster GPU to generate samples more.
-
-In practice, we can often use a train sample rate that's 3-5x greater than the sample generation rate since we're using experience replay to store large amount of samples.
+In practice, we can often use a train sample rate that's 5x greater than the sample generation rate, since we're using experience replay to store large amount of samples, and we also argument the samples during training.
 
 
 # Evaluate Agents

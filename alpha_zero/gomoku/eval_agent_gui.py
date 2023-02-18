@@ -49,15 +49,15 @@ flags.DEFINE_bool(
 
 flags.DEFINE_string(
     'black_ckpt_file',
-    'checkpoints/gomoku_v2/train_steps_1000',
+    'checkpoints/gomoku_v2/train_steps_6000',
     'Load the checkpoint file for black player, will only load if human_vs_ai is False.',
 )
 flags.DEFINE_string(
-    'white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_1000', 'Load the checkpoint file for white player.'
+    'white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_6000', 'Load the checkpoint file for white player.'
 )
 
 flags.DEFINE_integer('num_simulations', 240, 'Number of simulations per MCTS search.')
-flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
+flags.DEFINE_integer('parallel_leaves', 10, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
