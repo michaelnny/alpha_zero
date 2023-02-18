@@ -45,30 +45,30 @@ from alpha_zero.pipeline_v2 import (
 
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 11, 'Board size for Gomoku.')
+flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 7, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 6, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
     'num_planes',
     64,
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 10000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('replay_capacity', 200000, 'Maximum replay size, use most recent N positions for training.')
+flags.DEFINE_integer('min_replay_size', 20000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [200000, 600000, 1000000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [400000, 1000000], 'The number of steps at which the learning rate will decay.'
 )
 flags.DEFINE_integer('num_train_steps', 2000000, 'Number of training steps (measured in network updates).')
 flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirror to batch samples during training, default off.')
 
 flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 200, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations', 300, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
 flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
