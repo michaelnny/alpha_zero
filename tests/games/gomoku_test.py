@@ -125,7 +125,7 @@ class GomokuEnvTest(parameterized.TestCase):
                 winner_steps += 1
             else:
                 # Opponent should not take win_actions
-                legit_actions = np.flatnonzero(env.actions_mask)
+                legit_actions = np.flatnonzero(env.legal_actions)
                 opponent_actions = list(set(legit_actions) - set(win_actions))
                 action = np.random.choice(opponent_actions, 1).item()
 
@@ -156,7 +156,7 @@ class GomokuEnvTest(parameterized.TestCase):
                 winner_steps += 1
             else:
                 # Opponent should not take win_actions
-                legit_actions = np.flatnonzero(env.actions_mask)
+                legit_actions = np.flatnonzero(env.legal_actions)
                 opponent_actions = list(set(legit_actions) - set(win_actions))
 
                 action = np.random.choice(opponent_actions, 1).item()

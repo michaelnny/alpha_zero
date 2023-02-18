@@ -26,7 +26,7 @@ class NodeTest(parameterized.TestCase):
         super().setUp()
         self.num_actions = 4
         self.prior = np.array([0.2, 0.4, 0.25, 0.15])
-        self.actions_mask = np.ones_like(self.prior, dtype=np.bool8)
+        self.legal_actions = np.ones_like(self.prior, dtype=np.bool8)
         self.root_node = mcts.Node(to_play=0)
 
     def test_node_basics(self):
@@ -46,7 +46,7 @@ class ExpandNodeTest(parameterized.TestCase):
         super().setUp()
         self.num_actions = 4
         self.prior = np.array([0.2, 0.4, 0.25, 0.15])
-        self.actions_mask = np.ones_like(self.prior, dtype=np.bool8)
+        self.legal_actions = np.ones_like(self.prior, dtype=np.bool8)
 
     def test_expand_node(self):
         root_node = mcts.Node(to_play=0)
@@ -83,18 +83,18 @@ class BestChildTest(parameterized.TestCase):
         super().setUp()
         self.num_actions = 4
         self.prior = np.array([0.2, 0.4, 0.25, 0.15])
-        self.actions_mask = np.ones_like(self.prior, dtype=np.bool8)
+        self.legal_actions = np.ones_like(self.prior, dtype=np.bool8)
 
     def test_node_best_child_on_leaf_node(self):
         root_node = mcts.Node(to_play=0)
         with self.assertRaisesRegex(ValueError, 'Expand leaf node first'):
-            mcts.best_child(root_node, self.actions_mask, 19652, 1.25)
+            mcts.best_child(root_node, self.legal_actions, 19652, 1.25)
 
     def test_node_best_child_high_priorabilities(self):
         root_node = mcts.Node(to_play=0)
         mcts.expand(root_node, self.prior, 1)
         mcts.backup(root_node, 0.8, 0)
-        best_node = mcts.best_child(root_node, self.actions_mask, 19652, 1.25)
+        best_node = mcts.best_child(root_node, self.legal_actions, 19652, 1.25)
         self.assertEqual(best_node, root_node.children[1])
 
     def test_node_best_child_high_action_values(self):
@@ -108,7 +108,7 @@ class BestChildTest(parameterized.TestCase):
             mcts.backup(root_node.children[2], 0.5, 0)
             mcts.backup(root_node.children[3], 0.4, 0)
 
-        best_node = mcts.best_child(root_node, self.actions_mask, 19652, 1.25)
+        best_node = mcts.best_child(root_node, self.legal_actions, 19652, 1.25)
         # Child node Q is the opposite.
         self.assertEqual(best_node, root_node.children[1])
 
@@ -118,7 +118,7 @@ class MCTSUpdateStatisticsTest(parameterized.TestCase):
         super().setUp()
         self.num_actions = 4
         self.prior = np.array([0.2, 0.4, 0.25, 0.15])
-        self.actions_mask = np.ones_like(self.prior, dtype=np.bool8)
+        self.legal_actions = np.ones_like(self.prior, dtype=np.bool8)
 
     @parameterized.named_parameters(('black_player', 1), ('white_player', -1))
     def test_update_statistics_root_node(self, to_play):
@@ -204,12 +204,12 @@ class MCTSGeneratePlayPolicyTest(parameterized.TestCase):
         super().setUp()
         self.num_actions = 4
         self.prior = np.array([0.2, 0.4, 0.25, 0.15])
-        self.actions_mask = np.ones_like(self.prior, dtype=np.bool8)
+        self.legal_actions = np.ones_like(self.prior, dtype=np.bool8)
 
     def test_play_policy_error_on_leaf_node(self):
         root_node = mcts.Node(to_play=0)
         with self.assertRaisesRegex(ValueError, 'Node not expanded'):
-            mcts.generate_play_policy(root_node, self.actions_mask, 0.1)
+            mcts.generate_play_policy(root_node, self.legal_actions, 0.1)
 
     def test_play_policy_root_node_greedy_equal_prob(self):
         root_node = mcts.Node(to_play=0)
@@ -219,7 +219,7 @@ class MCTSGeneratePlayPolicyTest(parameterized.TestCase):
         for node in root_node.children.values():
             mcts.backup(node, 0.02, 0)
 
-        pi_prob = mcts.generate_play_policy(root_node, self.actions_mask, 0.1)
+        pi_prob = mcts.generate_play_policy(root_node, self.legal_actions, 0.1)
         visits = np.array([1, 1, 1, 1])
         expected_prob = visits / np.sum(visits)
         np.testing.assert_allclose(pi_prob, expected_prob)
@@ -232,7 +232,7 @@ class MCTSGeneratePlayPolicyTest(parameterized.TestCase):
         for node in root_node.children.values():
             mcts.backup(node, 0.02, 0)
 
-        pi_prob = mcts.generate_play_policy(root_node, self.actions_mask, 0.1)
+        pi_prob = mcts.generate_play_policy(root_node, self.legal_actions, 0.1)
         np.testing.assert_allclose(np.sum(pi_prob), np.ones(1))
 
     def test_play_policy_root_node_greedy_no_equal_prob(self):
@@ -246,7 +246,7 @@ class MCTSGeneratePlayPolicyTest(parameterized.TestCase):
         child = root_node.children[1]
         mcts.backup(child, 0.02, 0)
 
-        pi_prob = mcts.generate_play_policy(root_node, self.actions_mask, 0.1)
+        pi_prob = mcts.generate_play_policy(root_node, self.legal_actions, 0.1)
         visits = np.array([1, 2, 1, 1], dtype=np.float64)
         exp = 5  # limit max to 5
         visits = visits**exp
@@ -261,7 +261,7 @@ class MCTSGeneratePlayPolicyTest(parameterized.TestCase):
         for node in root_node.children.values():
             mcts.backup(node, 0.02, 0)
 
-        pi_prob = mcts.generate_play_policy(root_node, self.actions_mask, 1.0)
+        pi_prob = mcts.generate_play_policy(root_node, self.legal_actions, 1.0)
         visits = np.array([1, 1, 1, 1])
         expected_prob = visits / np.sum(visits)
         np.testing.assert_allclose(pi_prob, expected_prob)
@@ -276,7 +276,7 @@ class MCTSGeneratePlayPolicyTest(parameterized.TestCase):
                 mcts.backup(node, 0.02, 0)
 
         with self.assertRaisesRegex(ValueError, 'Expect'):
-            pi_prob = mcts.generate_play_policy(root_node, self.actions_mask, tmp)
+            pi_prob = mcts.generate_play_policy(root_node, self.legal_actions, tmp)
 
 
 def mock_eval_func(state_tensor, batched=False):

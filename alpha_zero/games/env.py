@@ -69,8 +69,8 @@ class BoardGameEnv(Env):
         self.num_actions = self.board_size**2
         self.action_space: Discrete = Discrete(self.num_actions)
 
-        # Legal actions mask, where True represents a legal action and False represents a illegal action
-        self.actions_mask: np.ndarray = np.ones(self.num_actions, dtype=np.bool8).flatten()
+        # Legal actions mask, where 'True' represents a legal action and 'False' represents a illegal action
+        self.legal_actions: np.ndarray = np.ones(self.num_actions, dtype=np.bool8).flatten()
 
         # The player to move at current time step, if game is over this is the player who made the last move and won/loss the game.
         self.current_player: int = self.black_player
@@ -90,7 +90,7 @@ class BoardGameEnv(Env):
         super().reset(**kwargs)
 
         self.board: np.ndarray = np.zeros_like(self.board)
-        self.actions_mask: np.ndarray = np.ones_like(self.actions_mask, dtype=np.bool8).flatten()
+        self.legal_actions: np.ndarray = np.ones_like(self.legal_actions, dtype=np.bool8).flatten()
 
         self.current_player: int = self.black_player
 
@@ -109,7 +109,7 @@ class BoardGameEnv(Env):
         """Plays one move."""
         if not 0 <= action <= self.action_space.n - 1:
             raise ValueError(f'Invalid action. Expect action to be in range [0, {self.action_space.n}], got {action}')
-        if not self.actions_mask[action]:
+        if not self.legal_actions[action]:
             raise ValueError(f'Invalid action. The action {action} has already been taken.')
         if self.is_game_over:
             raise RuntimeError('Game is over, call reset before using step method.')
@@ -118,7 +118,7 @@ class BoardGameEnv(Env):
         reward = 0.0
 
         # Make sure the action is illegal from now on.
-        self.actions_mask[action] = False
+        self.legal_actions[action] = False
         self.last_action = action
 
         # Update board state.
@@ -130,15 +130,15 @@ class BoardGameEnv(Env):
         if self.is_current_player_won():
             reward = 1.0
             self.winner = self.current_player
-    
+
         # The reward is always computed from last player's perspective
         self.last_player = self.current_player
 
         done = self.is_game_over
         self.steps += 1
-        
+
         self.current_player = self.opponent_player
-        
+
         return self.observation(), reward, done, {}
 
     def render(self, mode='terminal'):
@@ -148,9 +148,9 @@ class BoardGameEnv(Env):
 
         if mode == 'human':
             # Clearing the Screen
-            if(os.name == 'posix'): # posix is os name for Linux or mac
+            if os.name == 'posix':  # posix is os name for Linux or mac
                 os.system('clear')
-            else: # else screen will be cleared for windows
+            else:  # else screen will be cleared for windows
                 os.system('cls')
 
         black_stone = 'X'
@@ -186,7 +186,7 @@ class BoardGameEnv(Env):
                     our_str = f'({our_str})'
                 outfile.write(f'{our_str}'.center(3))
             outfile.write('\r\n')
-        
+
         # Add column label
         outfile.write('    ' + '_' * self.board_size * 3)
         outfile.write('\r\n')
@@ -264,7 +264,7 @@ class BoardGameEnv(Env):
         if not 0 <= action <= self.action_space.n - 1:
             return False
 
-        return self.actions_mask[action]
+        return self.legal_actions[action]
 
     def is_current_player_won(self) -> bool:
         """Checks if the current player just won the game during play."""
