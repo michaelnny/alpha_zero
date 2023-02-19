@@ -50,7 +50,7 @@ flags.DEFINE_integer(
 )
 
 flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 50000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('min_replay_size', 20000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.002, 'Learning rate.')
