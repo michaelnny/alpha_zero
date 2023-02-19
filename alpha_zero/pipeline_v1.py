@@ -115,7 +115,6 @@ def run_self_play(
             if env.steps >= temp_decay_steps:
                 temp = temp_end_value
             move, pi_prob, root_node = actor_player(env, root_node, c_puct_base, c_puct_init, temp)
-            next_obs, reward, done, _ = env.step(move)
 
             transition = Transition(
                 state=obs,
@@ -125,11 +124,11 @@ def run_self_play(
             )
             episode_trajectory.append(transition)
 
-            obs = next_obs
+            obs, reward, done, _ = env.step(move)
 
             # Add final observation, using uniform policy probabilities.
             if done:
-                uniform_pi_prob = np.ones_like(pi_prob)
+                uniform_pi_prob = np.ones(env.num_actions)
                 uniform_pi_prob /= np.sum(uniform_pi_prob)
 
                 transition = Transition(
