@@ -129,7 +129,7 @@ def run_self_play(
 
             # Add final observation, using uniform policy probabilities.
             if done:
-                uniform_pi_prob = np.ones(pi_prob)
+                uniform_pi_prob = np.ones_like(pi_prob)
                 uniform_pi_prob /= np.sum(uniform_pi_prob)
 
                 transition = Transition(
