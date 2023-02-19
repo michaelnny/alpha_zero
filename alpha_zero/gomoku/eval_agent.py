@@ -44,7 +44,7 @@ flags.DEFINE_string(
 )
 
 flags.DEFINE_integer('num_simulations', 240, 'Number of simulations per MCTS search.')
-flags.DEFINE_integer('parallel_leaves', 10, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
+flags.DEFINE_integer('parallel_leaves', 8, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')

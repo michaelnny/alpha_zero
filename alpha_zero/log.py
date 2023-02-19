@@ -16,7 +16,7 @@
 import collections
 import os
 import csv
-from typing import List, Tuple
+from typing import List, Tuple, Mapping, Text, Any
 
 
 class CsvWriter:
@@ -76,3 +76,38 @@ class CsvWriter:
 
 def write_to_csv(writer: CsvWriter, log_output: List[Tuple]) -> None:
     writer.write(collections.OrderedDict((n, v) for n, v, _ in log_output))
+
+
+def extract_args_from_flags_dict(flags_dict: Mapping[Text, Any]):
+
+    # Default arguments from the absl flags
+    keys_to_exclude = [
+        'logtostderr',
+        'alsologtostderr',
+        'log_dir',
+        'v',
+        'verbosity',
+        'logger_levels',
+        'stderrthreshold',
+        'showprefixforinfo',
+        'run_with_pdb',
+        'pdb_post_mortem',
+        'pdb',
+        'run_with_profiling',
+        'profile_file',
+        'use_cprofile_for_profiling',
+        'only_check_args',
+        '?',
+        'help',
+        'helpshort',
+        'helpfull',
+        'helpxml',
+    ]
+
+    args = {}
+
+    for k, v in flags_dict.items():
+        if k not in keys_to_exclude:
+            args[k] = v
+
+    return args

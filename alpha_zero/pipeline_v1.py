@@ -164,7 +164,7 @@ def run_training(
     csv_file: str,
     stop_event: multiprocessing.Event,
     delay: float = 0.0,
-    train_steps: int = None,
+    train_steps: int = 0,
     argument_data: bool = False,
 ):
     """Run the main training loop for N iterations, each iteration contains M updates.
@@ -185,7 +185,7 @@ def run_training(
         csv_file: a csv file contains the training statistics.
         stop_event: a multiprocessing.Event signaling other parties to stop running pipeline.
         delay: wait time (in seconds) before start training on next batch samples, default 0.
-        train_steps: already trained steps, used when resume training, default none.
+        train_steps: already trained steps, used when resume training, default 0.
         argument_data: if true, apply random rotation and reflection during training, default off.
 
     Raises:
@@ -202,6 +202,8 @@ def run_training(
     logging.info('Start training thread')
     start = None
     writer = CsvWriter(csv_file)
+
+    last_train_step = train_steps  # Store train step from last session incase resume training
 
     network = network.to(device=device)
     network.train()
@@ -242,7 +244,7 @@ def run_training(
         train_steps += 1
 
         if train_steps > 1 and train_steps % checkpoint_frequency == 0:
-            train_rate = (train_steps * batch_size) / (timeit.default_timer() - start)
+            train_rate = ((train_steps - last_train_step) * batch_size) / (timeit.default_timer() - start)
             logging.info(f'Train step {train_steps}, train sample rate {train_rate:.2f}')
 
             state_to_save = get_state_to_save()
@@ -257,6 +259,7 @@ def run_training(
                 ('checkpoint', ckpt_file, '%3s'),
                 ('loss', loss.detach().item(), '%.4f'),
                 ('learning_rate', lr_scheduler.get_last_lr()[0], '%.2f'),
+                ('train_sample_rate', train_rate, '%.2f'),
             ]
             write_to_csv(writer, log_output)
 
