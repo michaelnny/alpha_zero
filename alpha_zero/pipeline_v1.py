@@ -124,6 +124,7 @@ def run_self_play(
             )
             episode_trajectory.append(transition)
 
+            # Reward is for last player's move
             obs, reward, done, _ = env.step(move)
 
             # Add final observation, using uniform policy probabilities.
