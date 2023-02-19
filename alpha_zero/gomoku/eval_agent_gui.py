@@ -50,10 +50,10 @@ flags.DEFINE_bool(
 
 flags.DEFINE_string(
     'black_ckpt_file',
-    'checkpoints/gomoku_v2/train_steps_78000',
+    'checkpoints/gomoku_v2/train_steps_20000',
     'Load the checkpoint file for black player, will only load if human_vs_ai is False.',
 )
-flags.DEFINE_string('white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_78000', 'Load the checkpoint file for white player.')
+flags.DEFINE_string('white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_20000', 'Load the checkpoint file for white player.')
 
 flags.DEFINE_integer('num_simulations', 240, 'Number of simulations per MCTS search.')
 flags.DEFINE_integer(

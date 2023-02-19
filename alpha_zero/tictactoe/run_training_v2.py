@@ -34,12 +34,8 @@ from torch.optim.lr_scheduler import MultiStepLR
 from alpha_zero.games.tictactoe import TicTacToeEnv
 from alpha_zero.network import AlphaZeroNet
 from alpha_zero.replay import UniformReplay
-from alpha_zero.pipeline_v2 import (
-    run_self_play,
-    run_training,
-    run_evaluation,
-    run_data_collector,
-)
+from alpha_zero.pipeline_v2 import run_self_play, run_training, run_evaluation, run_data_collector
+from alpha_zero.log import extract_args_from_flags_dict
 
 
 FLAGS = flags.FLAGS
@@ -65,7 +61,11 @@ flags.DEFINE_integer('num_actors', 2, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
     'num_simulations', 24, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
 )
-flags.DEFINE_integer('parallel_leaves', 4, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
+flags.DEFINE_integer(
+    'parallel_leaves',
+    4,
+    'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.',
+)
 
 flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
@@ -97,8 +97,11 @@ flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 def main(argv):
     torch.manual_seed(FLAGS.seed)
     random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
-
     runtime_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    logging.info(f'Running on {runtime_device}, with the following arguments:')
+    args_dict = extract_args_from_flags_dict(FLAGS.flag_values_dict())
+    logging.info(args_dict)
 
     def environment_builder():
         return TicTacToeEnv()

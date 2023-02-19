@@ -49,16 +49,16 @@ flags.DEFINE_integer(
     'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 50000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 5000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
+flags.DEFINE_integer('min_replay_size', 50000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.002, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [100000, 400000, 1000000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [200000, 600000], 'The number of steps at which the learning rate will decay.'
 )
-flags.DEFINE_integer('num_train_steps', 2000000, 'Number of training steps (measured in network updates).')
+flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
 flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirror to batch samples during training, default off.')
 
 flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
@@ -86,7 +86,7 @@ flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
-flags.DEFINE_float('train_delay', 0.25, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.6, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
@@ -102,14 +102,14 @@ flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 
 def main(argv):
-    args_dict = extract_args_from_flags_dict(FLAGS.flag_values_dict())
-    logging.info('Arguments and hyper-parameters:')
-    logging.info(args_dict)
-
+    
     torch.manual_seed(FLAGS.seed)
     random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
-
     runtime_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
+    logging.info(f'Running on {runtime_device}, with the following arguments:')
+    args_dict = extract_args_from_flags_dict(FLAGS.flag_values_dict())
+    logging.info(args_dict)
 
     def environment_builder():
         return GomokuEnv(board_size=FLAGS.board_size, stack_history=FLAGS.stack_history)

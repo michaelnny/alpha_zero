@@ -78,7 +78,7 @@ def write_to_csv(writer: CsvWriter, log_output: List[Tuple]) -> None:
     writer.write(collections.OrderedDict((n, v) for n, v, _ in log_output))
 
 
-def extract_args_from_flags_dict(flags_dict: Mapping[Text, Any]):
+def extract_args_from_flags_dict(flags_dict: Mapping[Text, Any]) -> Mapping[Text, Any]:
 
     # Default arguments from the absl flags
     keys_to_exclude = [
