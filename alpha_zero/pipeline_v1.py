@@ -259,7 +259,6 @@ def run_training(
                 ('checkpoint', ckpt_file, '%3s'),
                 ('loss', loss.detach().item(), '%.4f'),
                 ('learning_rate', lr_scheduler.get_last_lr()[0], '%.2f'),
-                ('train_sample_rate', train_rate, '%.2f'),
             ]
             write_to_csv(writer, log_output)
 
