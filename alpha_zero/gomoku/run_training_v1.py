@@ -84,7 +84,7 @@ flags.DEFINE_float(
 flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
-flags.DEFINE_float('train_delay', 0.65, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.5, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
@@ -128,7 +128,7 @@ def main(argv):
 
     replay = UniformReplay(FLAGS.replay_capacity, random_state)
 
-    train_steps = None
+    train_steps = 0
     # Load states from checkpoint to resume training.
     if FLAGS.load_checkpoint_file is not None and os.path.isfile(FLAGS.load_checkpoint_file):
         network.to(device=runtime_device)
