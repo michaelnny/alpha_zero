@@ -216,7 +216,7 @@ def main(argv):
             args=(
                 i,
                 actor_network,
-                runtime_device,
+                'cpu',
                 environment_builder(),
                 data_queue,
                 FLAGS.c_puct_base,
