@@ -15,7 +15,6 @@
 """Evaluate the AlphaZero on free-style Gomoku game."""
 from absl import app
 from absl import flags
-import time
 import timeit
 import os
 import torch

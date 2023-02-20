@@ -15,7 +15,6 @@
 """Evaluate the AlphaZero on free-style Gomoku game with a simple GUI program."""
 from absl import app
 from absl import flags
-from absl import logging
 import os
 import torch
 
