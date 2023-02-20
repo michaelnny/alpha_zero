@@ -13,8 +13,3 @@ nohup.out
 # Jupyter Notebook
 .ipynb_checkpoints
 
-
-# big files
-recordings/*
-checkpoints/*
-samples/*

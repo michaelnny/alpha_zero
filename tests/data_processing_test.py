@@ -57,10 +57,8 @@ class PipelineDataArgumentationTest(parameterized.TestCase):
             ]
         )
 
-
         self.pi_prob = self.pi_prob_2d.view(1, self.board_size * self.board_size)
 
-        self.z = torch.tensor([1.0])
 
     def test_run_rotate_90(self):
         rotated_state, rotated_pi_prob = rotate_state_and_prob(self.state[None, ...], self.pi_prob, 90)

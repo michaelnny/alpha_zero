@@ -25,6 +25,9 @@ from absl import app
 from absl import flags
 from absl import logging
 import os
+
+os.environ['OMP_NUM_THREADS'] = '1'
+
 import copy
 import multiprocessing
 import threading
@@ -53,13 +56,13 @@ flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most r
 flags.DEFINE_integer('min_replay_size', 20000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.002, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [200000, 600000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [20000, 100000, 500000], 'The number of steps at which the learning rate will decay.'
 )
 flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
-flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirror to batch samples during training, default off.')
+flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirror to batch samples during training, default on.')
 
 flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
@@ -86,7 +89,7 @@ flags.DEFINE_integer(
     'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
 )
 
-flags.DEFINE_float('train_delay', 0.6, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.35, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
@@ -218,7 +221,7 @@ def main(argv):
             args=(
                 i,
                 actor_network,
-                runtime_device,
+                'cpu',
                 environment_builder(),
                 data_queue,
                 FLAGS.c_puct_base,

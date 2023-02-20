@@ -5,15 +5,13 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
 
 # Content
 - [Environment and Requirements](#environment-and-requirements)
-- [Supported Games](#supported-games)
 - [Code Structure](#code-structure)
 - [Author's Notes](#authors-notes)
 - [Quick Start](#quick-start)
 - [Train Agents](#train-agents)
 - [Evaluate Agents](#evaluate-agents)
 - [Training Progress and Performance](#training-progress-and-performance)
-- [Reference Papers](#reference-papers)
-- [Reference Code](#reference-code)
+- [References](#references)
 - [License](#license)
 - [Citing our work](#citing-our-work)
 
@@ -24,11 +22,6 @@ A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku
 * PyTorch       1.13.1
 * gym           0.25.2
 * numpy         1.23.4
-
-
-# Supported Games
-* Tic-Tac-Toe
-* Free-style Gomoku
 
 
 # Code Structure
@@ -80,18 +73,8 @@ pip3 install -r requirements.txt
 ```
 
 
+
 # Train Agents
-
-## Tic-Tac-Toe
-
-```
-python3 -m alpha_zero.tictactoe.run_training_v2
-
-# check training performance
-python3 -m alpha_zero.plot --train_csv_file=logs/train_tictactoe_v2.csv --eval_csv_file=logs/eval_tictactoe_v2.csv
-```
-
-## Gomoku Game
 
 Trains the agent using the AlphaZero method, which is highly recommended.
 ```
@@ -99,14 +82,14 @@ python3 -m alpha_zero.gomoku.run_training_v2
 
 
 # resume training
-python3 -m alpha_zero.gomoku.run_training_v2 --load_samples_file=./samples/gomoku_v2/replay_200000_20230112_102835 --load_checkpoint_file=./checkpoints/gomoku_v2/train_steps_64000 --initial_elo=-2064
+python3 -m alpha_zero.gomoku.run_training_v2 --load_checkpoint_file=checkpoints/gomoku_v2/train_steps_64000 --initial_elo=64
 
 
 # check training performance
 python3 -m alpha_zero.plot --train_csv_file=logs/train_gomoku_v2.csv --eval_csv_file=logs/eval_gomoku_v2.csv
 ```
 
-Trains the agent the AlphaGo Zero method, which may be much slower depending on thr number of evaluation games to play to select the new best player.
+Trains the agent the AlphaGo Zero method, which may be much slower depending on the number of evaluation games to play to select the new best player.
 ```
 python3 -m alpha_zero.gomoku.run_training_v1
 
@@ -128,7 +111,7 @@ Now we need to find the right value for batch size, so that in one second, the n
 
 However, using GPUs to train one batch can be much faster, usually 0.01 second (or lesser) for a single batch. It does not make sense to use `3.3` as a batch size, so we also need to use train delay to adjust this imbalance. In this case with batch size set to 32, we can use a train delay of 0.1 second per batch.
 
-In practice, we can often use a train sample rate that's 10-20x greater than the sample generation rate, since we're using experience replay to store large amount of samples, and we also argument the samples through random rotation and mirroring during training.
+In practice, we can often run the actors on CPU and leaner on GPU, with 1:10 as the sample generation rate vs. train sample rate ratio. We figured this imbalanced ratio is reasonable since we're using experience replay to store large amount of samples, and we also argument the samples through random rotation and mirroring during training.
 
 
 # Evaluate Agents
@@ -146,25 +129,23 @@ python3 -m alpha_zero.gomoku.eval_agent_gui --nohuman_vs_ai
 ```
 
 
+
 # Training Progress and Performance
 ## Screenshots Gomoku
 * Training performance measured in Elo rating
-![Training performance](/screenshots/gomoku_performance.png)
+![Training performance](/screenshots/gomoku_9x9_train_progress.png)
 
 * Evaluation
-![Train steps 501000](/screenshots/gomoku_train_steps_501000.png)
-![Train steps 502000](/screenshots/gomoku_train_steps_502000.png)
+![Train steps 501000](/screenshots/gomoku_9x9_train_steps_167000.png)
 
-* The agent failed to do well in 'edge' case
-![Edge case](/screenshots/gomoku_edge_case.png)
+# References
 
-
-# Reference Papers
+## References Papers
 * [Mastering the game of Go without human knowledge](https://www.nature.com/articles/nature24270/)
 * [Mastering Chess and Shogi by Self-Play with a General Reinforcement Learning Algorithm](https://arxiv.org/abs//1712.01815)
 
 
-# Reference Code
+## Reference Code
 * [A Deep Dive into Monte Carlo Tree Search](https://www.moderndescartes.com/essays/deep_dive_mcts/)
 * [MCTS basic code](https://github.com/brilee/python_uct)
 * [Deep RL Zoo](https://github.com/michaelnny/deep_rl_zoo)

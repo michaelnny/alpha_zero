@@ -54,54 +54,54 @@ class BoardGameEnv(Env):
 
         super().__init__()
 
-        self.name: str = name
-        self.board_size: int = board_size
-        self.board: np.ndarray = np.zeros((self.board_size, self.board_size), dtype=np.int8)
-        self.stack_history: int = stack_history
+        self.name = name
+        self.board_size = board_size
+        self.board = np.zeros((self.board_size, self.board_size), dtype=np.int8)
+        self.stack_history = stack_history
 
-        self.black_player: int = black_player_id  # black player id as well as stone color on the board
-        self.white_player: int = white_player_id  # white player id as well as stone color on the board
+        self.black_player = black_player_id  # black player id as well as stone color on the board
+        self.white_player = white_player_id  # white player id as well as stone color on the board
 
-        self.observation_space: Box = Box(
+        self.observation_space = Box(
             low=0, high=2, shape=(self.stack_history * 2 + 1, self.board_size, self.board_size), dtype=np.int8
         )
 
         self.num_actions = self.board_size**2
-        self.action_space: Discrete = Discrete(self.num_actions)
+        self.action_space = Discrete(self.num_actions)
 
         # Legal actions mask, where 'True' represents a legal action and 'False' represents a illegal action
-        self.legal_actions: np.ndarray = np.ones(self.num_actions, dtype=np.bool8).flatten()
+        self.legal_actions = np.ones(self.num_actions, dtype=np.bool8).flatten()
 
         # The player to move at current time step, if game is over this is the player who made the last move and won/loss the game.
-        self.current_player: int = self.black_player
+        self.current_player = self.black_player
 
-        self.steps: int = 0
+        self.steps = 0
 
-        self.winner: Union[None, int] = None
+        self.winner = None
 
         self.last_player = None
         self.last_action = None
 
         # History planes are FIFO queues, with the most recent state at index 0.
-        self.feature_planes: Mapping[int, deque] = self._get_empty_queue_dict()
+        self.feature_planes = self._get_empty_queue_dict()
 
     def reset(self, **kwargs) -> np.ndarray:
         """Reset game to initial state."""
         super().reset(**kwargs)
 
-        self.board: np.ndarray = np.zeros_like(self.board)
-        self.legal_actions: np.ndarray = np.ones_like(self.legal_actions, dtype=np.bool8).flatten()
+        self.board = np.zeros_like(self.board)
+        self.legal_actions = np.ones_like(self.legal_actions, dtype=np.bool8).flatten()
 
-        self.current_player: int = self.black_player
+        self.current_player = self.black_player
 
-        self.steps: int = 0
+        self.steps = 0
 
-        self.winner: Union[None, int] = None
+        self.winner = None
 
         self.last_player = None
         self.last_action = None
 
-        self.feature_planes: Mapping[int, deque] = self._get_empty_queue_dict()
+        self.feature_planes = self._get_empty_queue_dict()
 
         return self.observation()
 
@@ -233,8 +233,8 @@ class BoardGameEnv(Env):
             The stack order is
             [Xt, Yt, Xt-1, Yt-1, Xt-2, Yt-2, ..., C]
 
-        Returns a 3D tensor with the dimension [N, board_size, board_size], 
-            where N = 2 x stack_history + 1 
+        Returns a 3D tensor with the dimension [N, board_size, board_size],
+            where N = 2 x stack_history + 1
         """
         # Stack feature planes from t, t-1, t-2, ...
         feature_planes = []

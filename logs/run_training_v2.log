@@ -1,0 +1,548 @@
+I0220 08:02:45.454258 140270857617408 run_training_v2.py:113] Running on cuda, with the following arguments:
+I0220 08:02:45.454366 140270857617408 run_training_v2.py:115] {'board_size': 9, 'stack_history': 4, 'num_res_blocks': 6, 'num_planes': 64, 'replay_capacity': 100000, 'min_replay_size': 20000, 'batch_size': 128, 'learning_rate': 0.002, 'lr_decay': 0.1, 'lr_decay_milestones': [200000, 600000], 'num_train_steps': 1000000, 'argument_data': True, 'num_actors': 20, 'num_simulations': 240, 'parallel_leaves': 8, 'c_puct_base': 19652.0, 'c_puct_init': 1.25, 'temp_begin_value': 1.0, 'temp_end_value': 0.01, 'temp_decay_steps': 30, 'train_delay': 0.25, 'initial_elo': 0.0, 'checkpoint_frequency': 1000, 'checkpoint_dir': 'checkpoints/gomoku_v2', 'load_checkpoint_file': '', 'train_csv_file': 'logs/train_gomoku_v2.csv', 'eval_csv_file': 'logs/eval_gomoku_v2.csv', 'seed': 1}
+I0220 08:02:45.997476 140268330284608 pipeline_v1.py:455] Start data collector thread
+I0220 08:02:45.997938 140268321891904 pipeline_v2.py:103] Start training thread
+I0220 08:02:46.860772 139987337576448 pipeline_v1.py:89] Start self-play actor 11
+I0220 08:02:46.889384 140427953045504 pipeline_v1.py:89] Start self-play actor 1
+I0220 08:02:46.917500 140456109408256 pipeline_v1.py:89] Start self-play actor 17
+I0220 08:02:46.956960 139794084257792 pipeline_v1.py:89] Start self-play actor 15
+I0220 08:02:46.994289 140575852011520 pipeline_v1.py:89] Start self-play actor 14
+I0220 08:02:47.001706 140061254062080 pipeline_v1.py:89] Start self-play actor 0
+I0220 08:02:47.008105 140494229368832 pipeline_v1.py:89] Start self-play actor 5
+I0220 08:02:47.015168 140675103780864 pipeline_v2.py:216] Start evaluator
+I0220 08:02:47.019015 139731106177024 pipeline_v1.py:89] Start self-play actor 9
+I0220 08:02:47.022174 139865135177728 pipeline_v1.py:89] Start self-play actor 7
+I0220 08:02:47.022481 139649843744768 pipeline_v1.py:89] Start self-play actor 8
+I0220 08:02:47.022481 140208123510784 pipeline_v1.py:89] Start self-play actor 2
+I0220 08:02:47.025976 140083823620096 pipeline_v1.py:89] Start self-play actor 12
+I0220 08:02:47.028352 139747712106496 pipeline_v1.py:89] Start self-play actor 10
+I0220 08:02:47.030473 140520597942272 pipeline_v1.py:89] Start self-play actor 13
+I0220 08:02:47.033529 140432353648640 pipeline_v1.py:89] Start self-play actor 3
+I0220 08:02:47.034158 139735532085248 pipeline_v1.py:89] Start self-play actor 6
+I0220 08:02:47.041914 139777440792576 pipeline_v1.py:89] Start self-play actor 4
+I0220 08:02:47.047863 140010991353856 pipeline_v1.py:89] Start self-play actor 16
+I0220 08:02:47.054840 140014530310144 pipeline_v1.py:89] Start self-play actor 19
+I0220 08:02:47.082338 139712674672640 pipeline_v1.py:89] Start self-play actor 18
+I0220 08:10:49.951866 140268330284608 pipeline_v1.py:471] Collected 20000 samples, sample generation rate 41.33
+I0220 08:15:38.495862 140268321891904 pipeline_v2.py:146] Train step 1000, train sample rate 490.14
+I0220 08:18:24.881779 140268330284608 pipeline_v1.py:471] Collected 40000 samples, sample generation rate 42.60
+I0220 08:19:59.225598 140268321891904 pipeline_v2.py:146] Train step 2000, train sample rate 490.54
+I0220 08:24:19.559697 140268321891904 pipeline_v2.py:146] Train step 3000, train sample rate 490.92
+I0220 08:25:25.282582 140268330284608 pipeline_v1.py:471] Collected 60000 samples, sample generation rate 44.14
+I0220 08:28:39.915266 140268321891904 pipeline_v2.py:146] Train step 4000, train sample rate 491.09
+I0220 08:32:01.342167 140268330284608 pipeline_v1.py:471] Collected 80000 samples, sample generation rate 45.58
+I0220 08:33:00.634735 140268321891904 pipeline_v2.py:146] Train step 5000, train sample rate 491.07
+I0220 08:37:21.123213 140268321891904 pipeline_v2.py:146] Train step 6000, train sample rate 491.12
+I0220 08:38:13.690127 140268330284608 pipeline_v1.py:471] Collected 100000 samples, sample generation rate 47.00
+I0220 08:41:41.588377 140268321891904 pipeline_v2.py:146] Train step 7000, train sample rate 491.16
+I0220 08:44:14.830732 140268330284608 pipeline_v1.py:471] Collected 120000 samples, sample generation rate 48.22
+I0220 08:46:01.989002 140268321891904 pipeline_v2.py:146] Train step 8000, train sample rate 491.21
+I0220 08:50:14.021922 140268330284608 pipeline_v1.py:471] Collected 140000 samples, sample generation rate 49.16
+I0220 08:50:22.518837 140268321891904 pipeline_v2.py:146] Train step 9000, train sample rate 491.22
+I0220 08:54:43.111699 140268321891904 pipeline_v2.py:146] Train step 10000, train sample rate 491.22
+I0220 08:56:31.882100 140268330284608 pipeline_v1.py:471] Collected 160000 samples, sample generation rate 49.60
+I0220 08:59:03.724997 140268321891904 pipeline_v2.py:146] Train step 11000, train sample rate 491.21
+I0220 09:02:51.871908 140268330284608 pipeline_v1.py:471] Collected 180000 samples, sample generation rate 49.92
+I0220 09:03:24.432370 140268321891904 pipeline_v2.py:146] Train step 12000, train sample rate 491.19
+I0220 09:07:44.993435 140268321891904 pipeline_v2.py:146] Train step 13000, train sample rate 491.20
+I0220 09:09:12.548133 140268330284608 pipeline_v1.py:471] Collected 200000 samples, sample generation rate 50.17
+I0220 09:12:05.761910 140268321891904 pipeline_v2.py:146] Train step 14000, train sample rate 491.17
+I0220 09:15:27.687638 140268330284608 pipeline_v1.py:471] Collected 220000 samples, sample generation rate 50.44
+I0220 09:16:26.343569 140268321891904 pipeline_v2.py:146] Train step 15000, train sample rate 491.17
+I0220 09:20:46.983731 140268321891904 pipeline_v2.py:146] Train step 16000, train sample rate 491.17
+I0220 09:21:40.913046 140268330284608 pipeline_v1.py:471] Collected 240000 samples, sample generation rate 50.69
+I0220 09:25:07.644881 140268321891904 pipeline_v2.py:146] Train step 17000, train sample rate 491.16
+I0220 09:27:39.868553 140268330284608 pipeline_v1.py:471] Collected 260000 samples, sample generation rate 51.04
+I0220 09:29:28.347746 140268321891904 pipeline_v2.py:146] Train step 18000, train sample rate 491.15
+I0220 09:32:03.915567 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 1000 games
+I0220 09:32:29.819825 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 1000 games
+I0220 09:32:43.116904 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 1000 games
+I0220 09:33:13.283582 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 1000 games
+I0220 09:33:34.286133 140268330284608 pipeline_v1.py:471] Collected 280000 samples, sample generation rate 51.39
+I0220 09:33:48.831844 140268321891904 pipeline_v2.py:146] Train step 19000, train sample rate 491.17
+I0220 09:33:58.940303 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 1000 games
+I0220 09:34:08.631535 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 1000 games
+I0220 09:34:22.497298 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 1000 games
+I0220 09:34:40.755996 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 1000 games
+I0220 09:34:45.943296 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 1000 games
+I0220 09:34:50.528625 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 1000 games
+I0220 09:35:54.142136 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 1000 games
+I0220 09:35:56.306894 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 1000 games
+I0220 09:35:59.284178 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 1000 games
+I0220 09:36:00.998505 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 1000 games
+I0220 09:36:28.528400 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 1000 games
+I0220 09:36:48.000889 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 1000 games
+I0220 09:37:28.500326 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 1000 games
+I0220 09:38:05.747710 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 1000 games
+I0220 09:38:09.450082 140268321891904 pipeline_v2.py:146] Train step 20000, train sample rate 491.16
+I0220 09:38:29.556409 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 1000 games
+I0220 09:39:25.074897 140268330284608 pipeline_v1.py:471] Collected 300000 samples, sample generation rate 51.73
+I0220 09:40:08.822277 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 1000 games
+I0220 09:42:30.043793 140268321891904 pipeline_v2.py:146] Train step 21000, train sample rate 491.17
+I0220 09:45:09.689757 140268330284608 pipeline_v1.py:471] Collected 320000 samples, sample generation rate 52.09
+I0220 09:46:50.761834 140268321891904 pipeline_v2.py:146] Train step 22000, train sample rate 491.16
+I0220 09:50:54.625742 140268330284608 pipeline_v1.py:471] Collected 340000 samples, sample generation rate 52.40
+I0220 09:51:11.397409 140268321891904 pipeline_v2.py:146] Train step 23000, train sample rate 491.15
+I0220 09:55:32.027100 140268321891904 pipeline_v2.py:146] Train step 24000, train sample rate 491.15
+I0220 09:56:35.050688 140268330284608 pipeline_v1.py:471] Collected 360000 samples, sample generation rate 52.72
+I0220 09:59:52.499174 140268321891904 pipeline_v2.py:146] Train step 25000, train sample rate 491.16
+I0220 10:02:14.515347 140268330284608 pipeline_v1.py:471] Collected 380000 samples, sample generation rate 53.01
+I0220 10:04:13.260006 140268321891904 pipeline_v2.py:146] Train step 26000, train sample rate 491.15
+I0220 10:07:51.723385 140268330284608 pipeline_v1.py:471] Collected 400000 samples, sample generation rate 53.29
+I0220 10:08:34.008844 140268321891904 pipeline_v2.py:146] Train step 27000, train sample rate 491.14
+I0220 10:12:54.640733 140268321891904 pipeline_v2.py:146] Train step 28000, train sample rate 491.14
+I0220 10:13:27.068974 140268330284608 pipeline_v1.py:471] Collected 420000 samples, sample generation rate 53.56
+I0220 10:17:15.322226 140268321891904 pipeline_v2.py:146] Train step 29000, train sample rate 491.14
+I0220 10:18:59.920185 140268330284608 pipeline_v1.py:471] Collected 440000 samples, sample generation rate 53.83
+I0220 10:21:35.896851 140268321891904 pipeline_v2.py:146] Train step 30000, train sample rate 491.14
+I0220 10:24:32.817399 140268330284608 pipeline_v1.py:471] Collected 460000 samples, sample generation rate 54.07
+I0220 10:25:56.661006 140268321891904 pipeline_v2.py:146] Train step 31000, train sample rate 491.13
+I0220 10:30:05.856892 140268330284608 pipeline_v1.py:471] Collected 480000 samples, sample generation rate 54.30
+I0220 10:30:17.388736 140268321891904 pipeline_v2.py:146] Train step 32000, train sample rate 491.12
+I0220 10:34:38.089991 140268321891904 pipeline_v2.py:146] Train step 33000, train sample rate 491.12
+I0220 10:35:38.560587 140268330284608 pipeline_v1.py:471] Collected 500000 samples, sample generation rate 54.51
+I0220 10:38:58.758408 140268321891904 pipeline_v2.py:146] Train step 34000, train sample rate 491.12
+I0220 10:40:15.947349 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 2000 games
+I0220 10:40:17.440102 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 2000 games
+I0220 10:41:12.672089 140268330284608 pipeline_v1.py:471] Collected 520000 samples, sample generation rate 54.70
+I0220 10:41:43.967479 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 2000 games
+I0220 10:42:13.942508 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 2000 games
+I0220 10:42:14.853908 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 2000 games
+I0220 10:42:51.465040 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 2000 games
+I0220 10:43:07.111390 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 2000 games
+I0220 10:43:19.282011 140268321891904 pipeline_v2.py:146] Train step 35000, train sample rate 491.12
+I0220 10:43:19.885775 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 2000 games
+I0220 10:43:38.462025 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 2000 games
+I0220 10:43:41.681195 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 2000 games
+I0220 10:43:46.507831 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 2000 games
+I0220 10:44:20.258770 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 2000 games
+I0220 10:45:15.742080 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 2000 games
+I0220 10:45:17.408914 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 2000 games
+I0220 10:45:52.583373 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 2000 games
+I0220 10:46:01.366209 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 2000 games
+I0220 10:46:43.356113 140268330284608 pipeline_v1.py:471] Collected 540000 samples, sample generation rate 54.89
+I0220 10:46:44.787116 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 2000 games
+I0220 10:47:16.752167 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 2000 games
+I0220 10:47:39.898220 140268321891904 pipeline_v2.py:146] Train step 36000, train sample rate 491.12
+I0220 10:48:11.269433 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 2000 games
+I0220 10:49:45.471183 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 2000 games
+I0220 10:52:00.400452 140268321891904 pipeline_v2.py:146] Train step 37000, train sample rate 491.13
+I0220 10:52:16.825054 140268330284608 pipeline_v1.py:471] Collected 560000 samples, sample generation rate 55.06
+I0220 10:56:20.973438 140268321891904 pipeline_v2.py:146] Train step 38000, train sample rate 491.13
+I0220 10:57:50.380273 140268330284608 pipeline_v1.py:471] Collected 580000 samples, sample generation rate 55.22
+I0220 11:00:41.759621 140268321891904 pipeline_v2.py:146] Train step 39000, train sample rate 491.13
+I0220 11:03:25.087729 140268330284608 pipeline_v1.py:471] Collected 600000 samples, sample generation rate 55.36
+I0220 11:05:02.434487 140268321891904 pipeline_v2.py:146] Train step 40000, train sample rate 491.12
+I0220 11:08:59.525828 140268330284608 pipeline_v1.py:471] Collected 620000 samples, sample generation rate 55.49
+I0220 11:09:23.227665 140268321891904 pipeline_v2.py:146] Train step 41000, train sample rate 491.12
+I0220 11:13:43.708811 140268321891904 pipeline_v2.py:146] Train step 42000, train sample rate 491.12
+I0220 11:14:32.454325 140268330284608 pipeline_v1.py:471] Collected 640000 samples, sample generation rate 55.62
+I0220 11:18:04.320247 140268321891904 pipeline_v2.py:146] Train step 43000, train sample rate 491.12
+I0220 11:20:06.221023 140268330284608 pipeline_v1.py:471] Collected 660000 samples, sample generation rate 55.74
+I0220 11:22:24.949817 140268321891904 pipeline_v2.py:146] Train step 44000, train sample rate 491.12
+I0220 11:25:38.492272 140268330284608 pipeline_v1.py:471] Collected 680000 samples, sample generation rate 55.86
+I0220 11:26:45.516827 140268321891904 pipeline_v2.py:146] Train step 45000, train sample rate 491.13
+I0220 11:31:06.226795 140268321891904 pipeline_v2.py:146] Train step 46000, train sample rate 491.12
+I0220 11:31:11.718480 140268330284608 pipeline_v1.py:471] Collected 700000 samples, sample generation rate 55.97
+I0220 11:35:26.836075 140268321891904 pipeline_v2.py:146] Train step 47000, train sample rate 491.12
+I0220 11:36:46.594056 140268330284608 pipeline_v1.py:471] Collected 720000 samples, sample generation rate 56.07
+I0220 11:39:47.298679 140268321891904 pipeline_v2.py:146] Train step 48000, train sample rate 491.13
+I0220 11:41:34.313897 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 3000 games
+I0220 11:42:19.325001 140268330284608 pipeline_v1.py:471] Collected 740000 samples, sample generation rate 56.17
+I0220 11:44:07.815423 140268321891904 pipeline_v2.py:146] Train step 49000, train sample rate 491.13
+I0220 11:44:28.439722 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 3000 games
+I0220 11:45:50.777445 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 3000 games
+I0220 11:47:09.982460 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 3000 games
+I0220 11:47:54.938570 140268330284608 pipeline_v1.py:471] Collected 760000 samples, sample generation rate 56.26
+I0220 11:48:22.462713 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 3000 games
+I0220 11:48:24.125388 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 3000 games
+I0220 11:48:28.658896 140268321891904 pipeline_v2.py:146] Train step 50000, train sample rate 491.12
+I0220 11:48:42.459806 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 3000 games
+I0220 11:49:02.165573 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 3000 games
+I0220 11:50:05.953976 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 3000 games
+I0220 11:51:01.681560 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 3000 games
+I0220 11:51:43.824476 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 3000 games
+I0220 11:52:08.161024 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 3000 games
+I0220 11:52:13.751269 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 3000 games
+I0220 11:52:49.367732 140268321891904 pipeline_v2.py:146] Train step 51000, train sample rate 491.12
+I0220 11:52:54.401220 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 3000 games
+I0220 11:53:20.961918 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 3000 games
+I0220 11:53:30.892125 140268330284608 pipeline_v1.py:471] Collected 780000 samples, sample generation rate 56.34
+I0220 11:54:30.464336 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 3000 games
+I0220 11:55:38.945580 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 3000 games
+I0220 11:56:13.518472 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 3000 games
+I0220 11:57:09.898349 140268321891904 pipeline_v2.py:146] Train step 52000, train sample rate 491.13
+I0220 11:57:18.155127 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 3000 games
+I0220 11:58:42.682926 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 3000 games
+I0220 11:59:06.191152 140268330284608 pipeline_v1.py:471] Collected 800000 samples, sample generation rate 56.42
+I0220 12:01:30.582138 140268321891904 pipeline_v2.py:146] Train step 53000, train sample rate 491.12
+I0220 12:04:41.641614 140268330284608 pipeline_v1.py:471] Collected 820000 samples, sample generation rate 56.49
+I0220 12:05:51.092836 140268321891904 pipeline_v2.py:146] Train step 54000, train sample rate 491.13
+I0220 12:10:11.643545 140268321891904 pipeline_v2.py:146] Train step 55000, train sample rate 491.13
+I0220 12:10:16.748633 140268330284608 pipeline_v1.py:471] Collected 840000 samples, sample generation rate 56.56
+I0220 12:14:32.098436 140268321891904 pipeline_v2.py:146] Train step 56000, train sample rate 491.14
+I0220 12:15:53.134656 140268330284608 pipeline_v1.py:471] Collected 860000 samples, sample generation rate 56.63
+I0220 12:18:52.570090 140268321891904 pipeline_v2.py:146] Train step 57000, train sample rate 491.14
+I0220 12:21:25.746047 140268330284608 pipeline_v1.py:471] Collected 880000 samples, sample generation rate 56.70
+I0220 12:23:13.254022 140268321891904 pipeline_v2.py:146] Train step 58000, train sample rate 491.14
+I0220 12:27:02.272403 140268330284608 pipeline_v1.py:471] Collected 900000 samples, sample generation rate 56.76
+I0220 12:27:33.940628 140268321891904 pipeline_v2.py:146] Train step 59000, train sample rate 491.14
+I0220 12:31:54.682332 140268321891904 pipeline_v2.py:146] Train step 60000, train sample rate 491.13
+I0220 12:32:34.636947 140268330284608 pipeline_v1.py:471] Collected 920000 samples, sample generation rate 56.83
+I0220 12:36:15.364411 140268321891904 pipeline_v2.py:146] Train step 61000, train sample rate 491.13
+I0220 12:38:11.482599 140268330284608 pipeline_v1.py:471] Collected 940000 samples, sample generation rate 56.88
+I0220 12:40:35.997233 140268321891904 pipeline_v2.py:146] Train step 62000, train sample rate 491.13
+I0220 12:43:45.034345 140268330284608 pipeline_v1.py:471] Collected 960000 samples, sample generation rate 56.94
+I0220 12:44:56.545541 140268321891904 pipeline_v2.py:146] Train step 63000, train sample rate 491.13
+I0220 12:47:49.976893 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 4000 games
+I0220 12:47:55.190243 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 4000 games
+I0220 12:49:17.371520 140268321891904 pipeline_v2.py:146] Train step 64000, train sample rate 491.13
+I0220 12:49:19.422293 140268330284608 pipeline_v1.py:471] Collected 980000 samples, sample generation rate 57.00
+I0220 12:50:41.532570 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 4000 games
+I0220 12:52:42.718098 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 4000 games
+I0220 12:53:38.125818 140268321891904 pipeline_v2.py:146] Train step 65000, train sample rate 491.12
+I0220 12:54:57.936546 140268330284608 pipeline_v1.py:471] Collected 1000000 samples, sample generation rate 57.04
+I0220 12:55:34.779699 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 4000 games
+I0220 12:57:04.054814 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 4000 games
+I0220 12:57:09.081836 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 4000 games
+I0220 12:57:16.414189 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 4000 games
+I0220 12:57:31.267899 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 4000 games
+I0220 12:57:55.454971 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 4000 games
+I0220 12:57:58.848147 140268321891904 pipeline_v2.py:146] Train step 66000, train sample rate 491.12
+I0220 12:58:41.225830 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 4000 games
+I0220 12:59:02.273707 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 4000 games
+I0220 12:59:04.681937 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 4000 games
+I0220 13:00:17.845317 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 4000 games
+I0220 13:00:31.785671 140268330284608 pipeline_v1.py:471] Collected 1020000 samples, sample generation rate 57.09
+I0220 13:01:59.209617 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 4000 games
+I0220 13:02:19.514520 140268321891904 pipeline_v2.py:146] Train step 67000, train sample rate 491.12
+I0220 13:03:21.310400 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 4000 games
+I0220 13:03:56.833731 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 4000 games
+I0220 13:04:07.139271 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 4000 games
+I0220 13:06:05.450719 140268330284608 pipeline_v1.py:471] Collected 1040000 samples, sample generation rate 57.14
+I0220 13:06:40.322817 140268321891904 pipeline_v2.py:146] Train step 68000, train sample rate 491.11
+I0220 13:07:23.782411 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 4000 games
+I0220 13:08:58.848101 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 4000 games
+I0220 13:11:01.128082 140268321891904 pipeline_v2.py:146] Train step 69000, train sample rate 491.11
+I0220 13:11:40.283678 140268330284608 pipeline_v1.py:471] Collected 1060000 samples, sample generation rate 57.19
+I0220 13:15:21.844682 140268321891904 pipeline_v2.py:146] Train step 70000, train sample rate 491.11
+I0220 13:17:14.380717 140268330284608 pipeline_v1.py:471] Collected 1080000 samples, sample generation rate 57.24
+I0220 13:19:42.418957 140268321891904 pipeline_v2.py:146] Train step 71000, train sample rate 491.11
+I0220 13:22:50.381576 140268330284608 pipeline_v1.py:471] Collected 1100000 samples, sample generation rate 57.28
+I0220 13:24:02.896703 140268321891904 pipeline_v2.py:146] Train step 72000, train sample rate 491.11
+I0220 13:28:23.547703 140268321891904 pipeline_v2.py:146] Train step 73000, train sample rate 491.11
+I0220 13:28:25.895784 140268330284608 pipeline_v1.py:471] Collected 1120000 samples, sample generation rate 57.32
+I0220 13:32:44.145653 140268321891904 pipeline_v2.py:146] Train step 74000, train sample rate 491.11
+I0220 13:34:00.160960 140268330284608 pipeline_v1.py:471] Collected 1140000 samples, sample generation rate 57.36
+I0220 13:37:04.831288 140268321891904 pipeline_v2.py:146] Train step 75000, train sample rate 491.11
+I0220 13:39:35.482058 140268330284608 pipeline_v1.py:471] Collected 1160000 samples, sample generation rate 57.40
+I0220 13:41:25.572063 140268321891904 pipeline_v2.py:146] Train step 76000, train sample rate 491.11
+I0220 13:45:08.726838 140268330284608 pipeline_v1.py:471] Collected 1180000 samples, sample generation rate 57.44
+I0220 13:45:46.160427 140268321891904 pipeline_v2.py:146] Train step 77000, train sample rate 491.11
+I0220 13:50:06.889110 140268321891904 pipeline_v2.py:146] Train step 78000, train sample rate 491.11
+I0220 13:50:44.081473 140268330284608 pipeline_v1.py:471] Collected 1200000 samples, sample generation rate 57.48
+I0220 13:53:50.474722 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 5000 games
+I0220 13:54:27.421287 140268321891904 pipeline_v2.py:146] Train step 79000, train sample rate 491.11
+I0220 13:55:00.599683 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 5000 games
+I0220 13:56:18.067770 140268330284608 pipeline_v1.py:471] Collected 1220000 samples, sample generation rate 57.51
+I0220 13:58:04.962160 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 5000 games
+I0220 13:58:48.049103 140268321891904 pipeline_v2.py:146] Train step 80000, train sample rate 491.11
+I0220 13:59:09.915779 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 5000 games
+I0220 14:01:54.417414 140268330284608 pipeline_v1.py:471] Collected 1240000 samples, sample generation rate 57.54
+I0220 14:03:02.559347 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 5000 games
+I0220 14:03:08.711883 140268321891904 pipeline_v2.py:146] Train step 81000, train sample rate 491.11
+I0220 14:03:51.701679 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 5000 games
+I0220 14:04:10.152387 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 5000 games
+I0220 14:04:35.236911 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 5000 games
+I0220 14:04:57.815669 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 5000 games
+I0220 14:05:10.773843 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 5000 games
+I0220 14:06:30.570714 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 5000 games
+I0220 14:07:04.175896 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 5000 games
+I0220 14:07:24.587816 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 5000 games
+I0220 14:07:28.014421 140268330284608 pipeline_v1.py:471] Collected 1260000 samples, sample generation rate 57.58
+I0220 14:07:29.366973 140268321891904 pipeline_v2.py:146] Train step 82000, train sample rate 491.11
+I0220 14:07:34.768766 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 5000 games
+I0220 14:10:47.552282 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 5000 games
+I0220 14:11:49.932332 140268321891904 pipeline_v2.py:146] Train step 83000, train sample rate 491.11
+I0220 14:12:01.924541 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 5000 games
+I0220 14:12:06.006911 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 5000 games
+I0220 14:13:04.836957 140268330284608 pipeline_v1.py:471] Collected 1280000 samples, sample generation rate 57.61
+I0220 14:13:08.532926 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 5000 games
+I0220 14:13:18.646218 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 5000 games
+I0220 14:13:23.119365 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 5000 games
+I0220 14:16:10.618726 140268321891904 pipeline_v2.py:146] Train step 84000, train sample rate 491.11
+I0220 14:18:38.399279 140268330284608 pipeline_v1.py:471] Collected 1300000 samples, sample generation rate 57.64
+I0220 14:20:31.334835 140268321891904 pipeline_v2.py:146] Train step 85000, train sample rate 491.11
+I0220 14:24:10.938496 140268330284608 pipeline_v1.py:471] Collected 1320000 samples, sample generation rate 57.68
+I0220 14:24:51.905941 140268321891904 pipeline_v2.py:146] Train step 86000, train sample rate 491.11
+I0220 14:29:12.609944 140268321891904 pipeline_v2.py:146] Train step 87000, train sample rate 491.11
+I0220 14:29:43.278188 140268330284608 pipeline_v1.py:471] Collected 1340000 samples, sample generation rate 57.72
+I0220 14:33:33.462732 140268321891904 pipeline_v2.py:146] Train step 88000, train sample rate 491.10
+I0220 14:35:17.243404 140268330284608 pipeline_v1.py:471] Collected 1360000 samples, sample generation rate 57.75
+I0220 14:37:54.178968 140268321891904 pipeline_v2.py:146] Train step 89000, train sample rate 491.10
+I0220 14:40:52.045064 140268330284608 pipeline_v1.py:471] Collected 1380000 samples, sample generation rate 57.77
+I0220 14:42:14.970248 140268321891904 pipeline_v2.py:146] Train step 90000, train sample rate 491.10
+I0220 14:46:26.954112 140268330284608 pipeline_v1.py:471] Collected 1400000 samples, sample generation rate 57.80
+I0220 14:46:35.792379 140268321891904 pipeline_v2.py:146] Train step 91000, train sample rate 491.09
+I0220 14:50:56.530281 140268321891904 pipeline_v2.py:146] Train step 92000, train sample rate 491.09
+I0220 14:52:02.199368 140268330284608 pipeline_v1.py:471] Collected 1420000 samples, sample generation rate 57.83
+I0220 14:55:17.204527 140268321891904 pipeline_v2.py:146] Train step 93000, train sample rate 491.09
+I0220 14:57:40.002785 140268330284608 pipeline_v1.py:471] Collected 1440000 samples, sample generation rate 57.85
+I0220 14:59:37.825425 140268321891904 pipeline_v2.py:146] Train step 94000, train sample rate 491.09
+I0220 15:03:16.410201 140268330284608 pipeline_v1.py:471] Collected 1460000 samples, sample generation rate 57.87
+I0220 15:03:58.620409 140268321891904 pipeline_v2.py:146] Train step 95000, train sample rate 491.09
+I0220 15:04:01.134971 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 6000 games
+I0220 15:04:05.872828 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 6000 games
+I0220 15:04:22.476835 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 6000 games
+I0220 15:06:48.971279 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 6000 games
+I0220 15:08:19.497341 140268321891904 pipeline_v2.py:146] Train step 96000, train sample rate 491.08
+I0220 15:08:54.460263 140268330284608 pipeline_v1.py:471] Collected 1480000 samples, sample generation rate 57.88
+I0220 15:09:00.654995 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 6000 games
+I0220 15:10:37.808347 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 6000 games
+I0220 15:10:57.556398 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 6000 games
+I0220 15:11:49.159745 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 6000 games
+I0220 15:12:34.333786 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 6000 games
+I0220 15:12:40.288544 140268321891904 pipeline_v2.py:146] Train step 97000, train sample rate 491.08
+I0220 15:12:58.754321 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 6000 games
+I0220 15:13:49.085570 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 6000 games
+I0220 15:14:28.065006 140268330284608 pipeline_v1.py:471] Collected 1500000 samples, sample generation rate 57.91
+I0220 15:14:59.354318 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 6000 games
+I0220 15:17:00.198445 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 6000 games
+I0220 15:17:01.062640 140268321891904 pipeline_v2.py:146] Train step 98000, train sample rate 491.08
+I0220 15:17:25.413237 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 6000 games
+I0220 15:17:27.119643 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 6000 games
+I0220 15:18:57.648917 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 6000 games
+I0220 15:19:43.103864 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 6000 games
+I0220 15:20:02.795157 140268330284608 pipeline_v1.py:471] Collected 1520000 samples, sample generation rate 57.93
+I0220 15:20:11.624879 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 6000 games
+I0220 15:21:21.804178 140268321891904 pipeline_v2.py:146] Train step 99000, train sample rate 491.08
+I0220 15:21:29.114460 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 6000 games
+I0220 15:22:26.285840 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 6000 games
+I0220 15:25:39.538325 140268330284608 pipeline_v1.py:471] Collected 1540000 samples, sample generation rate 57.95
+I0220 15:25:42.542741 140268321891904 pipeline_v2.py:146] Train step 100000, train sample rate 491.08
+I0220 15:30:03.284269 140268321891904 pipeline_v2.py:146] Train step 101000, train sample rate 491.07
+I0220 15:31:15.137165 140268330284608 pipeline_v1.py:471] Collected 1560000 samples, sample generation rate 57.97
+I0220 15:34:24.006795 140268321891904 pipeline_v2.py:146] Train step 102000, train sample rate 491.07
+I0220 15:36:49.959778 140268330284608 pipeline_v1.py:471] Collected 1580000 samples, sample generation rate 57.99
+I0220 15:38:44.788802 140268321891904 pipeline_v2.py:146] Train step 103000, train sample rate 491.07
+I0220 15:42:25.665925 140268330284608 pipeline_v1.py:471] Collected 1600000 samples, sample generation rate 58.01
+I0220 15:43:05.474481 140268321891904 pipeline_v2.py:146] Train step 104000, train sample rate 491.07
+I0220 15:47:26.153904 140268321891904 pipeline_v2.py:146] Train step 105000, train sample rate 491.07
+I0220 15:47:59.787920 140268330284608 pipeline_v1.py:471] Collected 1620000 samples, sample generation rate 58.04
+I0220 15:51:47.182618 140268321891904 pipeline_v2.py:146] Train step 106000, train sample rate 491.07
+I0220 15:53:35.209866 140268330284608 pipeline_v1.py:471] Collected 1640000 samples, sample generation rate 58.06
+I0220 15:56:07.992438 140268321891904 pipeline_v2.py:146] Train step 107000, train sample rate 491.07
+I0220 15:59:11.173413 140268330284608 pipeline_v1.py:471] Collected 1660000 samples, sample generation rate 58.07
+I0220 16:00:28.584637 140268321891904 pipeline_v2.py:146] Train step 108000, train sample rate 491.07
+I0220 16:04:45.095864 140268330284608 pipeline_v1.py:471] Collected 1680000 samples, sample generation rate 58.09
+I0220 16:04:49.347929 140268321891904 pipeline_v2.py:146] Train step 109000, train sample rate 491.07
+I0220 16:09:10.124748 140268321891904 pipeline_v2.py:146] Train step 110000, train sample rate 491.07
+I0220 16:09:16.824191 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 7000 games
+I0220 16:10:01.797022 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 7000 games
+I0220 16:10:20.951081 140268330284608 pipeline_v1.py:471] Collected 1700000 samples, sample generation rate 58.11
+I0220 16:13:30.919754 140268321891904 pipeline_v2.py:146] Train step 111000, train sample rate 491.06
+I0220 16:15:56.813213 140268330284608 pipeline_v1.py:471] Collected 1720000 samples, sample generation rate 58.13
+I0220 16:16:21.314492 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 7000 games
+I0220 16:17:51.721568 140268321891904 pipeline_v2.py:146] Train step 112000, train sample rate 491.06
+I0220 16:18:52.573756 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 7000 games
+I0220 16:19:01.817954 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 7000 games
+I0220 16:19:39.968394 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 7000 games
+I0220 16:19:42.079255 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 7000 games
+I0220 16:19:49.664749 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 7000 games
+I0220 16:20:37.356862 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 7000 games
+I0220 16:21:31.801658 140268330284608 pipeline_v1.py:471] Collected 1740000 samples, sample generation rate 58.14
+I0220 16:22:12.561615 140268321891904 pipeline_v2.py:146] Train step 113000, train sample rate 491.06
+I0220 16:22:21.703207 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 7000 games
+I0220 16:23:17.873806 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 7000 games
+I0220 16:23:32.129579 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 7000 games
+I0220 16:23:39.572221 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 7000 games
+I0220 16:24:57.992547 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 7000 games
+I0220 16:25:14.667874 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 7000 games
+I0220 16:25:58.839476 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 7000 games
+I0220 16:26:33.200661 140268321891904 pipeline_v2.py:146] Train step 114000, train sample rate 491.06
+I0220 16:27:06.856981 140268330284608 pipeline_v1.py:471] Collected 1760000 samples, sample generation rate 58.16
+I0220 16:27:56.931378 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 7000 games
+I0220 16:28:41.499996 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 7000 games
+I0220 16:30:53.725061 140268321891904 pipeline_v2.py:146] Train step 115000, train sample rate 491.06
+I0220 16:32:44.994582 140268330284608 pipeline_v1.py:471] Collected 1780000 samples, sample generation rate 58.17
+I0220 16:32:58.386898 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 7000 games
+I0220 16:34:59.612238 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 7000 games
+I0220 16:35:14.608703 140268321891904 pipeline_v2.py:146] Train step 116000, train sample rate 491.06
+I0220 16:38:20.635175 140268330284608 pipeline_v1.py:471] Collected 1800000 samples, sample generation rate 58.19
+I0220 16:39:35.184527 140268321891904 pipeline_v2.py:146] Train step 117000, train sample rate 491.06
+I0220 16:43:55.073208 140268330284608 pipeline_v1.py:471] Collected 1820000 samples, sample generation rate 58.21
+I0220 16:43:55.849092 140268321891904 pipeline_v2.py:146] Train step 118000, train sample rate 491.06
+I0220 16:48:16.456973 140268321891904 pipeline_v2.py:146] Train step 119000, train sample rate 491.06
+I0220 16:49:29.668586 140268330284608 pipeline_v1.py:471] Collected 1840000 samples, sample generation rate 58.22
+I0220 16:52:37.092143 140268321891904 pipeline_v2.py:146] Train step 120000, train sample rate 491.06
+I0220 16:55:04.687350 140268330284608 pipeline_v1.py:471] Collected 1860000 samples, sample generation rate 58.24
+I0220 16:56:57.750792 140268321891904 pipeline_v2.py:146] Train step 121000, train sample rate 491.06
+I0220 17:00:38.914200 140268330284608 pipeline_v1.py:471] Collected 1880000 samples, sample generation rate 58.25
+I0220 17:01:18.444999 140268321891904 pipeline_v2.py:146] Train step 122000, train sample rate 491.06
+I0220 17:05:39.167377 140268321891904 pipeline_v2.py:146] Train step 123000, train sample rate 491.06
+I0220 17:06:17.681445 140268330284608 pipeline_v1.py:471] Collected 1900000 samples, sample generation rate 58.26
+I0220 17:09:59.721403 140268321891904 pipeline_v2.py:146] Train step 124000, train sample rate 491.06
+I0220 17:11:52.092214 140268330284608 pipeline_v1.py:471] Collected 1920000 samples, sample generation rate 58.28
+I0220 17:14:20.408349 140268321891904 pipeline_v2.py:146] Train step 125000, train sample rate 491.06
+I0220 17:16:02.524991 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 8000 games
+I0220 17:16:35.459847 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 8000 games
+I0220 17:17:29.099534 140268330284608 pipeline_v1.py:471] Collected 1940000 samples, sample generation rate 58.29
+I0220 17:18:41.079653 140268321891904 pipeline_v2.py:146] Train step 126000, train sample rate 491.06
+I0220 17:23:01.914127 140268321891904 pipeline_v2.py:146] Train step 127000, train sample rate 491.06
+I0220 17:23:05.247968 140268330284608 pipeline_v1.py:471] Collected 1960000 samples, sample generation rate 58.30
+I0220 17:23:34.501635 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 8000 games
+I0220 17:26:25.902874 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 8000 games
+I0220 17:26:46.917231 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 8000 games
+I0220 17:27:22.616099 140268321891904 pipeline_v2.py:146] Train step 128000, train sample rate 491.06
+I0220 17:28:40.913563 140268330284608 pipeline_v1.py:471] Collected 1980000 samples, sample generation rate 58.31
+I0220 17:28:43.417266 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 8000 games
+I0220 17:29:00.039163 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 8000 games
+I0220 17:29:48.607049 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 8000 games
+I0220 17:30:04.892367 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 8000 games
+I0220 17:30:40.730666 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 8000 games
+I0220 17:31:21.694402 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 8000 games
+I0220 17:31:25.647397 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 8000 games
+I0220 17:31:43.253029 140268321891904 pipeline_v2.py:146] Train step 129000, train sample rate 491.06
+I0220 17:32:08.778704 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 8000 games
+I0220 17:32:10.146708 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 8000 games
+I0220 17:34:14.137519 140268330284608 pipeline_v1.py:471] Collected 2000000 samples, sample generation rate 58.33
+I0220 17:35:16.255241 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 8000 games
+I0220 17:36:03.858487 140268321891904 pipeline_v2.py:146] Train step 130000, train sample rate 491.06
+I0220 17:37:37.355479 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 8000 games
+I0220 17:37:44.412351 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 8000 games
+I0220 17:38:13.054870 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 8000 games
+I0220 17:39:48.456476 140268330284608 pipeline_v1.py:471] Collected 2020000 samples, sample generation rate 58.34
+I0220 17:40:24.465422 140268321891904 pipeline_v2.py:146] Train step 131000, train sample rate 491.06
+I0220 17:44:29.782994 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 8000 games
+I0220 17:44:45.185752 140268321891904 pipeline_v2.py:146] Train step 132000, train sample rate 491.06
+I0220 17:45:22.283088 140268330284608 pipeline_v1.py:471] Collected 2040000 samples, sample generation rate 58.36
+I0220 17:46:57.567753 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 8000 games
+I0220 17:49:05.889884 140268321891904 pipeline_v2.py:146] Train step 133000, train sample rate 491.06
+I0220 17:50:59.361989 140268330284608 pipeline_v1.py:471] Collected 2060000 samples, sample generation rate 58.37
+I0220 17:53:26.579285 140268321891904 pipeline_v2.py:146] Train step 134000, train sample rate 491.06
+I0220 17:56:32.164829 140268330284608 pipeline_v1.py:471] Collected 2080000 samples, sample generation rate 58.38
+I0220 17:57:47.289944 140268321891904 pipeline_v2.py:146] Train step 135000, train sample rate 491.06
+I0220 18:02:05.346505 140268330284608 pipeline_v1.py:471] Collected 2100000 samples, sample generation rate 58.40
+I0220 18:02:08.000293 140268321891904 pipeline_v2.py:146] Train step 136000, train sample rate 491.05
+I0220 18:06:28.608267 140268321891904 pipeline_v2.py:146] Train step 137000, train sample rate 491.06
+I0220 18:07:42.989420 140268330284608 pipeline_v1.py:471] Collected 2120000 samples, sample generation rate 58.41
+I0220 18:10:49.069338 140268321891904 pipeline_v2.py:146] Train step 138000, train sample rate 491.06
+I0220 18:13:15.016931 140268330284608 pipeline_v1.py:471] Collected 2140000 samples, sample generation rate 58.42
+I0220 18:15:09.646393 140268321891904 pipeline_v2.py:146] Train step 139000, train sample rate 491.06
+I0220 18:18:49.033518 140268330284608 pipeline_v1.py:471] Collected 2160000 samples, sample generation rate 58.44
+I0220 18:19:30.323490 140268321891904 pipeline_v2.py:146] Train step 140000, train sample rate 491.06
+I0220 18:23:50.933938 140268321891904 pipeline_v2.py:146] Train step 141000, train sample rate 491.06
+I0220 18:24:19.424767 140268330284608 pipeline_v1.py:471] Collected 2180000 samples, sample generation rate 58.46
+I0220 18:25:27.112247 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 9000 games
+I0220 18:27:17.423641 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 9000 games
+I0220 18:28:11.673885 140268321891904 pipeline_v2.py:146] Train step 142000, train sample rate 491.06
+I0220 18:29:54.067189 140268330284608 pipeline_v1.py:471] Collected 2200000 samples, sample generation rate 58.47
+I0220 18:29:59.876316 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 9000 games
+I0220 18:31:45.036077 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 9000 games
+I0220 18:32:32.398695 140268321891904 pipeline_v2.py:146] Train step 143000, train sample rate 491.06
+I0220 18:34:25.604150 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 9000 games
+I0220 18:35:26.371921 140268330284608 pipeline_v1.py:471] Collected 2220000 samples, sample generation rate 58.48
+I0220 18:36:31.683207 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 9000 games
+I0220 18:36:53.389950 140268321891904 pipeline_v2.py:146] Train step 144000, train sample rate 491.05
+I0220 18:37:27.442653 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 9000 games
+I0220 18:39:25.293204 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 9000 games
+I0220 18:39:29.096665 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 9000 games
+I0220 18:39:54.061298 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 9000 games
+I0220 18:40:00.731983 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 9000 games
+I0220 18:40:24.173164 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 9000 games
+I0220 18:40:59.544537 140268330284608 pipeline_v1.py:471] Collected 2240000 samples, sample generation rate 58.50
+I0220 18:41:14.025243 140268321891904 pipeline_v2.py:146] Train step 145000, train sample rate 491.05
+I0220 18:41:56.931599 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 9000 games
+I0220 18:42:15.797408 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 9000 games
+I0220 18:43:39.302155 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 9000 games
+I0220 18:44:14.172555 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 9000 games
+I0220 18:45:34.683575 140268321891904 pipeline_v2.py:146] Train step 146000, train sample rate 491.05
+I0220 18:46:34.265959 140268330284608 pipeline_v1.py:471] Collected 2260000 samples, sample generation rate 58.51
+I0220 18:47:42.583170 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 9000 games
+I0220 18:48:38.283226 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 9000 games
+I0220 18:49:55.346521 140268321891904 pipeline_v2.py:146] Train step 147000, train sample rate 491.05
+I0220 18:51:49.175296 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 9000 games
+I0220 18:52:04.948367 140268330284608 pipeline_v1.py:471] Collected 2280000 samples, sample generation rate 58.52
+I0220 18:54:16.071164 140268321891904 pipeline_v2.py:146] Train step 148000, train sample rate 491.05
+I0220 18:55:46.426429 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 9000 games
+I0220 18:57:37.570707 140268330284608 pipeline_v1.py:471] Collected 2300000 samples, sample generation rate 58.54
+I0220 18:58:36.856853 140268321891904 pipeline_v2.py:146] Train step 149000, train sample rate 491.05
+I0220 19:02:57.543050 140268321891904 pipeline_v2.py:146] Train step 150000, train sample rate 491.05
+I0220 19:03:12.297538 140268330284608 pipeline_v1.py:471] Collected 2320000 samples, sample generation rate 58.55
+I0220 19:07:18.117995 140268321891904 pipeline_v2.py:146] Train step 151000, train sample rate 491.05
+I0220 19:08:44.779277 140268330284608 pipeline_v1.py:471] Collected 2340000 samples, sample generation rate 58.56
+I0220 19:11:38.957739 140268321891904 pipeline_v2.py:146] Train step 152000, train sample rate 491.05
+I0220 19:14:19.890960 140268330284608 pipeline_v1.py:471] Collected 2360000 samples, sample generation rate 58.57
+I0220 19:15:59.600299 140268321891904 pipeline_v2.py:146] Train step 153000, train sample rate 491.05
+I0220 19:19:54.276522 140268330284608 pipeline_v1.py:471] Collected 2380000 samples, sample generation rate 58.58
+I0220 19:20:20.355390 140268321891904 pipeline_v2.py:146] Train step 154000, train sample rate 491.05
+I0220 19:24:41.590309 140268321891904 pipeline_v2.py:146] Train step 155000, train sample rate 491.04
+I0220 19:25:29.727627 140268330284608 pipeline_v1.py:471] Collected 2400000 samples, sample generation rate 58.59
+I0220 19:29:02.200054 140268321891904 pipeline_v2.py:146] Train step 156000, train sample rate 491.04
+I0220 19:31:05.129742 140268330284608 pipeline_v1.py:471] Collected 2420000 samples, sample generation rate 58.60
+I0220 19:33:23.041559 140268321891904 pipeline_v2.py:146] Train step 157000, train sample rate 491.04
+I0220 19:33:46.436738 139735532085248 pipeline_v1.py:152] Self-play actor 6 played 10000 games
+I0220 19:34:08.456785 140432353648640 pipeline_v1.py:152] Self-play actor 3 played 10000 games
+I0220 19:35:41.744510 139731106177024 pipeline_v1.py:152] Self-play actor 9 played 10000 games
+I0220 19:36:41.931175 140268330284608 pipeline_v1.py:471] Collected 2440000 samples, sample generation rate 58.60
+I0220 19:37:43.724623 140268321891904 pipeline_v2.py:146] Train step 158000, train sample rate 491.04
+I0220 19:38:31.576065 139712674672640 pipeline_v1.py:152] Self-play actor 18 played 10000 games
+I0220 19:42:04.522589 140268321891904 pipeline_v2.py:146] Train step 159000, train sample rate 491.04
+I0220 19:42:17.092098 140268330284608 pipeline_v1.py:471] Collected 2460000 samples, sample generation rate 58.61
+I0220 19:43:39.663409 140208123510784 pipeline_v1.py:152] Self-play actor 2 played 10000 games
+I0220 19:44:11.513574 139747712106496 pipeline_v1.py:152] Self-play actor 10 played 10000 games
+I0220 19:46:25.404830 140268321891904 pipeline_v2.py:146] Train step 160000, train sample rate 491.04
+I0220 19:46:36.667036 139777440792576 pipeline_v1.py:152] Self-play actor 4 played 10000 games
+I0220 19:46:37.650981 140427953045504 pipeline_v1.py:152] Self-play actor 1 played 10000 games
+I0220 19:47:56.131254 140268330284608 pipeline_v1.py:471] Collected 2480000 samples, sample generation rate 58.62
+I0220 19:49:26.062367 139794084257792 pipeline_v1.py:152] Self-play actor 15 played 10000 games
+I0220 19:49:37.162472 139865135177728 pipeline_v1.py:152] Self-play actor 7 played 10000 games
+I0220 19:50:46.305278 140268321891904 pipeline_v2.py:146] Train step 161000, train sample rate 491.03
+I0220 19:51:08.625486 139649843744768 pipeline_v1.py:152] Self-play actor 8 played 10000 games
+I0220 19:51:28.661657 140575852011520 pipeline_v1.py:152] Self-play actor 14 played 10000 games
+I0220 19:52:25.130976 140014530310144 pipeline_v1.py:152] Self-play actor 19 played 10000 games
+I0220 19:52:45.746345 140520597942272 pipeline_v1.py:152] Self-play actor 13 played 10000 games
+I0220 19:52:57.366802 140494229368832 pipeline_v1.py:152] Self-play actor 5 played 10000 games
+I0220 19:53:02.104882 140083823620096 pipeline_v1.py:152] Self-play actor 12 played 10000 games
+I0220 19:53:34.964071 140268330284608 pipeline_v1.py:471] Collected 2500000 samples, sample generation rate 58.62
+I0220 19:55:07.284243 140268321891904 pipeline_v2.py:146] Train step 162000, train sample rate 491.03
+I0220 19:55:47.144328 140010991353856 pipeline_v1.py:152] Self-play actor 16 played 10000 games
+I0220 19:57:54.125026 139987337576448 pipeline_v1.py:152] Self-play actor 11 played 10000 games
+I0220 19:58:42.009224 140061254062080 pipeline_v1.py:152] Self-play actor 0 played 10000 games
+I0220 19:59:08.790468 140268330284608 pipeline_v1.py:471] Collected 2520000 samples, sample generation rate 58.63
+I0220 19:59:28.405293 140268321891904 pipeline_v2.py:146] Train step 163000, train sample rate 491.03
+I0220 20:02:41.815109 140456109408256 pipeline_v1.py:152] Self-play actor 17 played 10000 games
+I0220 20:03:49.338366 140268321891904 pipeline_v2.py:146] Train step 164000, train sample rate 491.02
+I0220 20:04:43.758492 140268330284608 pipeline_v1.py:471] Collected 2540000 samples, sample generation rate 58.64
+I0220 20:08:10.183545 140268321891904 pipeline_v2.py:146] Train step 165000, train sample rate 491.02
+I0220 20:10:18.839061 140268330284608 pipeline_v1.py:471] Collected 2560000 samples, sample generation rate 58.65
+I0220 20:12:30.856179 140268321891904 pipeline_v2.py:146] Train step 166000, train sample rate 491.02
+I0220 20:15:51.680841 140268330284608 pipeline_v1.py:471] Collected 2580000 samples, sample generation rate 58.66
+I0220 20:16:51.683350 140268321891904 pipeline_v2.py:146] Train step 167000, train sample rate 491.02
+I0220 20:21:12.552727 140268321891904 pipeline_v2.py:146] Train step 168000, train sample rate 491.02
+I0220 20:21:23.460794 140268330284608 pipeline_v1.py:471] Collected 2600000 samples, sample generation rate 58.67
+I0220 20:25:33.750057 140268321891904 pipeline_v2.py:146] Train step 169000, train sample rate 491.01
+I0220 20:27:00.951723 140268330284608 pipeline_v1.py:471] Collected 2620000 samples, sample generation rate 58.67
+I0220 20:27:08.034448 139987337576448 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:08.034569 140208123510784 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:08.034650 140010991353856 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:08.034701 139865135177728 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:08.034753 139747712106496 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:08.034847 140061254062080 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:08.034883 139731106177024 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:08.034885 140014530310144 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030216 139735532085248 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030209 140427953045504 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030209 140432353648640 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030224 140675103780864 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030257 140520597942272 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030293 140575852011520 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030305 140083823620096 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030415 139649843744768 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030421 140456109408256 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030420 139794084257792 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030431 139712674672640 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030442 139777440792576 pipeline_v1.py:537] Received signal 15: terminating process...
+I0220 20:27:38.030469 140494229368832 pipeline_v1.py:537] Received signal 15: terminating process...
+/usr/lib/python3.10/multiprocessing/resource_tracker.py:224: UserWarning: resource_tracker: There appear to be 7 leaked semaphore objects to clean up at shutdown
+  warnings.warn('resource_tracker: There appear to be %d '

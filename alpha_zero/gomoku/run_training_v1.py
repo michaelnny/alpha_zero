@@ -22,6 +22,9 @@ from absl import app
 from absl import flags
 from absl import logging
 import os
+
+os.environ['OMP_NUM_THREADS'] = '1'
+
 import copy
 import multiprocessing
 import threading
@@ -50,13 +53,13 @@ flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most r
 flags.DEFINE_integer('min_replay_size', 20000, 'Minimum replay size before learning starts.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
-flags.DEFINE_float('learning_rate', 0.002, 'Learning rate.')
+flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [200000, 600000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [20000, 100000, 500000], 'The number of steps at which the learning rate will decay.'
 )
 flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
-flags.DEFINE_bool('argument_data', False, 'Apply random rotation and mirror to batch samples during training, default off.')
+flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirror to batch samples during training, default on.')
 
 flags.DEFINE_integer('num_eval_games', 10, 'Number of games to play during evaluation to select best player.')
 
