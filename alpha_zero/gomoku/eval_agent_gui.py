@@ -37,14 +37,14 @@ flags.DEFINE_integer(
 
 flags.DEFINE_bool(
     'human_vs_ai',
-    False,
+    True,
     'Default plays in the Human vs. AlphaZero mode, if False, will play in AlphaZero vs. AlphaZero mode.',
 )
 
 flags.DEFINE_bool(
     'show_step',
     True,
-    'Show step number on stones, default off.',
+    'Show step number on stones, default on.',
 )
 
 flags.DEFINE_string(
