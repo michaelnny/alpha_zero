@@ -90,8 +90,6 @@ class BoardGameGui:
         self.game_loop = None
         self.delay_time = 500  # delays 0.5 seconds per move
 
-        self.col_labels = 'ABCDEFGHIJKLMNOPQRS'
-        self.row_labels = [str(i) for i in range(self.num_rows, -1, -1)]
         self.stone_colors = {self.env.white_player: Colors.WHITE, self.env.black_player: Colors.BLACK}
 
         # UI element sizes
@@ -231,7 +229,7 @@ class BoardGameGui:
             label = tk.Label(
                 self.canvas,
                 font=(self.font_family, self.font_size, 'bold'),
-                text=self.row_labels[j],
+                text=self.env.gtp_rows[j],
                 width=2,
                 background=Colors.BOARD_BG,
                 foreground=Colors.LABEL,
@@ -245,7 +243,7 @@ class BoardGameGui:
             label = tk.Label(
                 self.canvas,
                 font=(self.font_family, self.font_size, 'bold'),
-                text=self.col_labels[i],
+                text=self.env.gtp_columns[i],
                 width=2,
                 background=Colors.BOARD_BG,
                 foreground=Colors.LABEL,

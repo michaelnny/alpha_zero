@@ -85,6 +85,9 @@ class BoardGameEnv(Env):
         # History planes are FIFO queues, with the most recent state at index 0.
         self.feature_planes = self._get_empty_queue_dict()
 
+        self.gtp_columns = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'
+        self.gtp_rows = [str(i) for i in range(self.board_size, -1, -1)]
+
     def reset(self, **kwargs) -> np.ndarray:
         """Reset game to initial state."""
         super().reset(**kwargs)
@@ -171,9 +174,9 @@ class BoardGameEnv(Env):
         outfile.write('\n')
 
         # Each row
-        for r in range(0, self.board_size):
+        for r in range(self.board_size):
             # Add row label
-            outfile.write('{0:2} | '.format(r + 1))
+            outfile.write('{0:2} | '.format(self.gtp_rows[r]))
             # Each column
             for c in range(0, self.board_size):
                 # Single cell.
@@ -190,10 +193,9 @@ class BoardGameEnv(Env):
         # Add column label
         outfile.write('    ' + '_' * self.board_size * 3)
         outfile.write('\r\n')
-        col_labels = 'ABCDEFGHIJKLMNOPQRS'
         outfile.write('      ')
         for y in range(self.board_size):
-            outfile.write('{0:3}'.format(col_labels[y]))
+            outfile.write('{0:3}'.format(self.gtp_columns[y]))
 
         outfile.write('\n')
         return outfile
