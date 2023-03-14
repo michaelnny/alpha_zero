@@ -135,8 +135,8 @@ python3 -m alpha_zero.gomoku.eval_agent_gui --nohuman_vs_ai
 ![Training performance](/screenshots/gomoku_9x9_train_progress.png)
 
 * Evaluation
-![AlphaZero vs AlphaZero](/screenshots/ai_vs_ai_train_steps_167000.png)
-![Human vs AlphaZero](/screenshots/human_vs_ai_train_steps_167000.png)
+![AlphaZero vs AlphaZero](/screenshots/ai_vs_ai.png)
+![Human vs AlphaZero](/screenshots/human_vs_ai.png)
 
 # References
 

@@ -91,7 +91,7 @@ class BoardGameGui:
         self.delay_time = 500  # delays 0.5 seconds per move
 
         self.col_labels = 'ABCDEFGHIJKLMNOPQRS'
-        self.row_labels = [str(i) for i in range(1, self.num_rows + 1)]
+        self.row_labels = [str(i) for i in range(self.num_rows, -1, -1)]
         self.stone_colors = {self.env.white_player: Colors.WHITE, self.env.black_player: Colors.BLACK}
 
         # UI element sizes
