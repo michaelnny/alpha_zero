@@ -20,7 +20,7 @@ from alpha_zero.games.env import BoardGameEnv
 
 
 class GomokuEnv(BoardGameEnv):
-    """Free-style Gomoku Environment with openAI Gym api.
+    """Free-style Gomoku Environment with OpenAI Gym api.
 
     Free-style Gomoku has no restrictions on either player
     and allows a player to win by creating a line of 5 or more stones,

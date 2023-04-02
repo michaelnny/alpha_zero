@@ -25,6 +25,7 @@ import os
 import sys
 import signal
 import pickle
+import collections
 import time
 import timeit
 import queue
@@ -50,11 +51,9 @@ def run_self_play(
     data_queue: multiprocessing.Queue,
     c_puct_base: float,
     c_puct_init: float,
-    temp_begin_value: float,
-    temp_end_value: float,
-    temp_decay_steps: int,
+    warm_up_steps: int,
     num_simulations: int,
-    parallel_leaves: int,
+    num_parallel: int,
     stop_event: multiprocessing.Event,
 ) -> None:
     """Run self-play loop to generate training samples.
@@ -68,13 +67,10 @@ def run_self_play(
         env: a BoardGameEnv type environment.
         data_queue: a multiprocessing.Queue to send samples to training process.
         c_puct: a constant controls the level of exploration during MCTS search.
-        temp_begin_value: begin value of the temperature exploration rate
-            after MCTS search to generate play policy.
-        temp_end_value: end value of the temperature exploration rate
-            after MCTS search to generate play policy.
-        temp_decay_steps: number of environment steps to decay the temperature from begin_value to end_value
+        warm_up_steps: number of opening environment steps to
+            sample action according search policy instead of choosing most visited child.
         num_simulations: number of simulations for each MCTS search.
-        parallel_leaves: Number of parallel leaves for MCTS search.
+        num_parallel: Number of parallel leaves for MCTS search.
         stop_event: a multiprocessing.Event that will signal the end of training.
 
     Raises:
@@ -91,12 +87,12 @@ def run_self_play(
     network = network.to(device=device)
     network.eval()
 
-    game = 0
-    actor_player = create_mcts_player(
+    played_games = 0
+    mcts_player = create_mcts_player(
         network=network,
         device=device,
         num_simulations=num_simulations,
-        parallel_leaves=parallel_leaves,
+        num_parallel=num_parallel,
         root_noise=True,
         deterministic=False,
     )
@@ -105,51 +101,39 @@ def run_self_play(
         # For each new game.
         obs = env.reset()
         done = False
-        reward = 0.0
-        episode_trajectory: List[Transition] = []
+
+        episode_states = []
+        episode_search_pis = []
+        episode_values = []
+        player_ids = []
+
         root_node = None
-        temp = temp_begin_value
 
         # Play and record transitions.
         while not done:
-            if env.steps >= temp_decay_steps:
-                temp = temp_end_value
-            move, pi_prob, root_node = actor_player(env, root_node, c_puct_base, c_puct_init, temp)
+            temperature = 0.01 if env.steps >= warm_up_steps else 1.0
+            move, search_pi, root_node = mcts_player(env, root_node, c_puct_base, c_puct_init, temperature)
 
-            transition = Transition(
-                state=obs,
-                pi_prob=pi_prob,
-                value=0.0,
-                player_id=env.current_player,
-            )
-            episode_trajectory.append(transition)
+            episode_states.append(obs)
+            episode_search_pis.append(search_pi)
+            episode_values.append(0.0)
 
-            # Reward is for last player's move
+            player_ids.append(env.current_player)
+
             obs, reward, done, _ = env.step(move)
 
-            # Add final observation, using uniform policy probabilities.
-            if done:
-                uniform_pi_prob = np.ones(env.num_actions)
-                uniform_pi_prob /= np.sum(uniform_pi_prob)
+        if reward != 0:
+            for i, play_id in enumerate(player_ids):
+                if play_id == env.last_player:
+                    episode_values[i] = reward
+                else:
+                    episode_values[i] = -reward
 
-                transition = Transition(
-                    state=obs,
-                    pi_prob=uniform_pi_prob,
-                    value=0.0,
-                    player_id=env.current_player,
-                )
-                episode_trajectory.append(transition)
+        data_queue.put([
+            Transition(state=x, pi_prob=pi, value=v) for x, pi, v in zip(episode_states, episode_search_pis, episode_values)
+        ])
 
-        if reward != 0.0:
-            process_episode_trajectory(env.last_player, reward, episode_trajectory)
-
-        data_queue.put(episode_trajectory)
-
-        del episode_trajectory[:]
-
-        game += 1
-        if game % 1000 == 0:
-            logging.info(f'Self-play actor {rank} played {game} games')
+        played_games += 1
 
     logging.info(f'Stop self-play actor {rank}')
 
@@ -161,7 +145,6 @@ def run_training(
     device: torch.device,
     replay: UniformReplay,
     data_queue: multiprocessing.SimpleQueue,
-    min_replay_size: int,
     batch_size: int,
     num_train_steps: int,
     checkpoint_frequency: int,
@@ -172,6 +155,7 @@ def run_training(
     delay: float = 0.0,
     train_steps: int = 0,
     argument_data: bool = False,
+    log_interval: int = 1000,
 ):
     """Run the main training loop for N iterations, each iteration contains M updates.
 
@@ -182,7 +166,6 @@ def run_training(
         device: torch runtime device.
         replay: a simple uniform experience replay.
         data_queue: a multiprocessing.SimpleQueue instance, only used to signal data collector to stop.
-        min_replay_size: minimum replay size before start training.
         batch_size: sample batch size during training.
         num_train_steps: total number of training steps to run.
         checkpoint_frequency: the frequency to create new checkpoint.
@@ -193,6 +176,7 @@ def run_training(
         delay: wait time (in seconds) before start training on next batch samples, default 0.
         train_steps: already trained steps, used when resume training, default 0.
         argument_data: if true, apply random rotation and reflection during training, default off.
+        log_interval: how often to log training statistics, default 1000.
 
     Raises:
         ValueError:
@@ -200,8 +184,6 @@ def run_training(
             if `checkpoint_dir` is invalid.
     """
 
-    if min_replay_size < batch_size:
-        raise ValueError(f'Expect min_replay_size > batch_size, got {min_replay_size}, and {batch_size}')
     if not isinstance(checkpoint_dir, str) or checkpoint_dir == '':
         raise ValueError(f'Expect checkpoint_dir to be valid path, got {checkpoint_dir}')
 
@@ -230,7 +212,7 @@ def run_training(
         }
 
     while True:
-        if replay.size < min_replay_size:
+        if replay.num_games_added < 0.1 * replay.window_size:
             time.sleep(30)
             continue
 
@@ -242,34 +224,39 @@ def run_training(
             break
 
         transitions = replay.sample(batch_size)
+
+        if transitions is None:
+            continue
+
         optimizer.zero_grad()
-        loss = calc_loss(network, device, transitions, argument_data)
+        policy_loss, value_loss = calc_loss(network, device, transitions, argument_data)
+        loss = policy_loss + value_loss
         loss.backward()
         optimizer.step()
         lr_scheduler.step()
         train_steps += 1
 
-        if train_steps > 1 and train_steps % checkpoint_frequency == 0:
-            train_rate = ((train_steps - last_train_step) * batch_size) / (timeit.default_timer() - start)
-            logging.info(f'Train step {train_steps}, train sample rate {train_rate:.2f}')
-
+        if train_steps % checkpoint_frequency == 0:
             state_to_save = get_state_to_save()
             ckpt_file = ckpt_dir / f'train_steps_{train_steps}'
             create_checkpoint(state_to_save, ckpt_file)
-
             checkpoint_files.append(ckpt_file)
 
+            train_rate = ((train_steps - last_train_step) * batch_size) / (timeit.default_timer() - start)
+            logging.info(f'Train step {train_steps}, train sample rate {train_rate:.2f}')
+
+        if train_steps % log_interval == 0:
             log_output = [
                 ('timestamp', get_time_stamp(), '%1s'),
                 ('train_steps', train_steps, '%3d'),
-                ('checkpoint', ckpt_file, '%3s'),
-                ('loss', loss.detach().item(), '%.4f'),
+                ('policy_loss', policy_loss.detach().item(), '%.4f'),
+                ('value_loss', value_loss.detach().item(), '%.4f'),
                 ('learning_rate', lr_scheduler.get_last_lr()[0], '%.2f'),
             ]
             write_to_csv(writer, log_output)
 
         # Wait for sometime before start training on next batch.
-        if delay is not None and delay > 0 and train_steps > 1:
+        if delay > 0:
             time.sleep(delay)
 
     stop_event.set()
@@ -287,7 +274,7 @@ def run_evaluation(
     c_puct_init: float,
     temperature: float,
     num_simulations: int,
-    parallel_leaves: int,
+    num_parallel: int,
     checkpoint_files: List,
     csv_file: str,
     stop_event: multiprocessing.Event,
@@ -308,7 +295,7 @@ def run_evaluation(
         temperature: the temperature exploration rate after MCTS search
             to generate play policy.
         num_simulations: number of simulations for each MCTS search.
-        parallel_leaves: Number of parallel leaves for MCTS search.
+        num_parallel: Number of parallel leaves for MCTS search.
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint.
         csv_file: a csv file contains the statistics for the best checkpoint.
         stop_event: a multiprocessing.Event signaling to stop running pipeline.
@@ -339,7 +326,7 @@ def run_evaluation(
         network=new_network,
         device=device,
         num_simulations=num_simulations,
-        parallel_leaves=parallel_leaves,
+        num_parallel=num_parallel,
         root_noise=False,
         deterministic=True,
     )
@@ -348,7 +335,7 @@ def run_evaluation(
         network=best_network,
         device=device,
         num_simulations=num_simulations,
-        parallel_leaves=parallel_leaves,
+        num_parallel=num_parallel,
         root_noise=False,
         deterministic=True,
     )
@@ -381,13 +368,14 @@ def run_evaluation(
         for _ in range(num_games):
             env.reset()
             done = False
-            root_node = None
 
             while not done:
                 if env.current_player == env.black_player:
-                    action, _, root_node = black_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                    active_player = black_player
                 else:
-                    action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                    active_player = white_player
+
+                action, _, _ = active_player(env, None, c_puct_base, c_puct_init, temperature)
                 _, _, done, _ = env.step(action)
                 steps += 1
 
@@ -412,7 +400,7 @@ def run_evaluation(
         if won_games + loss_games > 0 and won_games / (won_games + loss_games) > win_ratio:
             is_new_best_player = True
 
-        # We treat one evaluation as a 'single' game, otherwise the elo ratings will explode.
+        # We treat one evaluation as a 'single' game, otherwise the elo ratings might become too large.
         if is_new_best_player:
             best_network.load_state_dict(loaded_state['network'])
             logging.info(f"New best player loaded from checkpoint '{ckpt_file}'")
@@ -427,7 +415,6 @@ def run_evaluation(
         log_output = [
             ('timestamp', get_time_stamp(), '%1s'),
             ('train_steps', train_steps, '%3d'),
-            ('checkpoint', ckpt_file, '%3s'),
             ('elo_rating', black_elo, '%1d'),
             ('episode_steps', steps / num_games, '%1d'),  # mean episode steps
             ('won_games', won_games, '%1d'),
@@ -440,7 +427,7 @@ def run_evaluation(
 def run_data_collector(
     data_queue: multiprocessing.SimpleQueue,
     replay: UniformReplay,
-    log_interval: int = 20000,
+    log_interval: int = 1000,  # every 1000 games
 ) -> None:
     """Collect samples from self-play,
     this runs on the same process as the training loop,
@@ -449,35 +436,36 @@ def run_data_collector(
     Args:
         data_queue: a multiprocessing.SimpleQueue to receive samples from self-play processes.
         replay: a simple uniform random experience replay.
-        log_interval: how often to log the statistic, measured in number of samples received.
+        log_interval: how often to log the statistic, measured in number of games received.
 
     """
     logging.info('Start data collector thread')
     start = timeit.default_timer()
-    count = 0
+
+    game_steps = collections.deque(maxlen=1000)
 
     while True:
         try:
             item = data_queue.get()
             if item == 'STOP':
                 break
+            
+            replay.add_game(item)
+            game_steps.append(len(item))
 
-            for sample in item:
-                count += 1
-                replay.add(sample)
+            if replay.num_games_added % log_interval == 0:
+                sample_gen_rate = replay.num_samples_added / (timeit.default_timer() - start)
+                logging.info(
+                    f'Collected {replay.num_games_added} self-play games, sample generation rate {sample_gen_rate:.2f}'
+                )
 
-                if count > 0 and count % log_interval == 0:
-                    gen_rate = count / (timeit.default_timer() - start)
-                    logging.info(f'Collected {count} samples, sample generation rate {gen_rate:.2f}')
+            if replay.num_games_added % replay.window_size == 0:
+                neww_avg_game_steps = int(np.mean(list(game_steps)))
 
-                # if count > 0 and count % 50000 == 0:
-                #     save_samples_dir = Path('./samples')
-                #     if not save_samples_dir.exists():
-                #         save_samples_dir.mkdir(parents=True, exist_ok=True)
-
-                #     save_file = save_samples_dir / f'replay_{replay.size}_{get_time_stamp(True)}'
-                #     save_to_file(replay.get_state(), save_file)
-                #     logging.info(f"Replay samples saved to '{save_file}'")
+                if neww_avg_game_steps != replay.avg_game_steps:
+                    old_capacity = replay.capacity
+                    new_capacity = replay.adjust_capacity(neww_avg_game_steps)
+                    logging.info(f'Replay buffer size changed from {old_capacity} to {new_capacity}')
 
         except queue.Empty:
             pass
@@ -485,14 +473,14 @@ def run_data_collector(
             pass
 
 
-def process_episode_trajectory(last_player: int, reward: float, episode_trajectory: List[Transition]) -> None:
+def process_episode_trajectory(winner: int, episode_trajectory: List[Transition]) -> None:
     """Update the reward for the transitions, note this operation is in-place."""
     for i in range(len(episode_trajectory)):
         transition = episode_trajectory[i]
-        if transition.player_id == last_player:
-            value = reward
+        if transition.player_id == winner:
+            value = 1.0
         else:
-            value = -reward
+            value = -1.0
         episode_trajectory[i] = transition._replace(value=value)
 
 
@@ -514,12 +502,12 @@ def calc_loss(
     network_out = network(state)
 
     # value MSE loss
-    value_loss = F.mse_loss(network_out.value, value.unsqueeze(1), reduction='mean')
+    value_loss = F.mse_loss(network_out.value.squeeze(1), value, reduction='mean')
 
     # policy cross-entropy loss
     policy_loss = F.cross_entropy(network_out.pi_logits, pi_prob, reduction='mean')
 
-    return policy_loss + value_loss
+    return policy_loss, value_loss
 
 
 def init_absl_logging():

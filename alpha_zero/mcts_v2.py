@@ -14,7 +14,7 @@
 # ==============================================================================
 """MCTS class.
 
-The positions are evaluated from the (to move) current player's perspective.
+The positions are evaluated from the current player (or to move) perspective.
 
         A           Black to move
 
@@ -35,27 +35,18 @@ the best child of 'A' max(0.8, 0.3) is 'B', however this is done from white play
 But node 'A' represents black's turn to move, so we need to select the best child from black player's perspective,
 which should be 'C' - the worst move for white, thus a best move for black.
 
-Solution 1:
-One way to resolve this issue is to always switching the signs of the child node's values when we select the best child.
+One way to resolve this issue is to always switching the signs of the child node's Q values when we select the best child.
+
 For example:
     ucb_scores = -node.child_Q() + node.child_U()
 
 In this case, a max(-0.8, -0.3) will give us the correct results for black player when we select the best child for node 'A'.
 But this solution may introduce some confusion as the negative sign is not very self-explanation, and it's not in the pseudocode.
 
-Solution 2:
-Another more straight forward way is to simply store the values of the children nodes NOT from the current 'to move' player's perspective,
-but from the their parent node's 'to move' player's perspective. So that when we select the best child,
-we're always selecting the best child for the desired player. For the same example shown above,
-if the evaluated scores (from white's perspective) for 'B' and 'C' are 0.8 and 0.3 respectively,
-we'd actually store these scores as -0.8, -0.3 for 'B' and 'C' respectively. Since for two-player, zero-sum game,
-one player's win is another player's loss, so we can simply switching the sign of the values.
-Similar logic also applies to the rest of the search tree.
-
-In this MCTS implementation, we chose to use the first one to show how it's done in code.
 """
 
 import copy
+import collections
 import math
 from typing import Callable, Tuple, Mapping, Union, Any
 import numpy as np
@@ -65,91 +56,114 @@ from alpha_zero.games.env import BoardGameEnv
 class Node:
     """Node in the MCTS search tree."""
 
-    def __init__(self, legal_actions: np.ndarray, move: int = None, parent: Any = None) -> None:
+    def __init__(self, to_play: int, num_actions: np.ndarray, move: int = None, parent: Any = None) -> None:
         """
         Args:
-            legal_actions: a 1D bool numpy.array mask for all actions,
-                where `True` represents legal move and `False` represents illegal move.
+            to_play: the id of the current player.
+            num_actions: number of total actions, including illegal move.
             prior: a prior probability of the node for a specific action, could be empty in case of root node.
             move: the action associated with the prior probability.
             parent: the parent node, could be `None` if this is the root node.
         """
+
+        self.to_play = to_play
         self.move = move
         self.parent = parent
-        self.legal_actions = legal_actions
+        self.num_actions = num_actions
         self.is_expanded = False
 
-        self.number_visits = 0  # number of visits
-        self.total_value = 0.0  # total action values
-        self.child_priors = np.zeros_like(self.legal_actions).astype(np.float32)
+        self.child_total_value = np.zeros(num_actions, dtype=np.float32)
+        self.child_number_visits = np.zeros(num_actions, dtype=np.float32)
+        self.child_priors = np.zeros(num_actions, dtype=np.float32)
 
         self.children: Mapping[int, Node] = {}
 
-        # number of virtual losses on this node, only used in 'parallel_uct_search'
+        # Number of virtual losses on this node, only used in 'parallel_uct_search'
         self.losses_applied = 0
 
     def child_U(self, c_puct_base: float, c_puct_init: float) -> np.ndarray:
         """Returns a 1D numpy.array contains prior score for all child."""
-        pb_c = math.log((1.0 + self.number_visits + c_puct_base) / c_puct_base) + c_puct_init
+        pb_c = math.log((1 + self.number_visits + c_puct_base) / c_puct_base) + c_puct_init
         return pb_c * self.child_priors * (math.sqrt(self.number_visits) / (1 + self.child_number_visits))
 
-    def child_Q(self) -> np.ndarray:
+    def child_Q(self):
         """Returns a 1D numpy.array contains mean action value for all child."""
-        child_q = np.zeros_like(self.legal_actions).astype(np.float32)
-        for a, child in self.children.items():
-            if child.number_visits > 0:
-                child_q[a] = child.total_value / child.number_visits
-
-        return child_q
+        return self.child_total_value / (1 + self.child_number_visits)
 
     @property
-    def child_number_visits(self) -> np.ndarray:
-        """Returns a 1D numpy.array contains visits count for all child."""
-        child_n = np.zeros_like(self.legal_actions).astype(np.float32)
-        for a, child in self.children.items():
-            if child.number_visits > 0:
-                child_n[a] = child.number_visits
-        return child_n
+    def number_visits(self):
+        """The number of visits for current node is stored at parent's level."""
+        return self.parent.child_number_visits[self.move]
+
+    @number_visits.setter
+    def number_visits(self, value):
+        self.parent.child_number_visits[self.move] = value
+
+    @property
+    def total_value(self):
+        """The total value for current node is stored at parent's level."""
+        return self.parent.child_total_value[self.move]
+
+    @total_value.setter
+    def total_value(self, value):
+        self.parent.child_total_value[self.move] = value
+
+    @property
+    def Q(self):
+        """Returns the mean action value Q(s, a)."""
+        return self.parent.child_total_value[self.move] / (1 + self.parent.child_total_value[self.move])
 
     @property
     def has_parent(self) -> bool:
         return isinstance(self.parent, Node)
 
 
-def best_child(node: Node, c_puct_base: float, c_puct_init: float) -> Node:
+class DummyNode(object):
+    """A place holder to make computation possible for the root node."""
+
+    def __init__(self):
+        self.parent = None
+        self.child_total_value = collections.defaultdict(float)
+        self.child_number_visits = collections.defaultdict(float)
+
+
+def best_child(node: Node, legal_actions: np.ndarray, c_puct_base: float, c_puct_init: float, child_to_play: int) -> Node:
     """Returns best child node with maximum action value Q plus an upper confidence bound U.
     And creates the selected best child node if not already exists.
 
     Args:
         node: the current node in the search tree.
+        legal_actions: a 1D bool numpy.array mask for all actions,
+                where `1` represents legal move and `0` represents illegal move.
         c_puct_base: a float constant determining the level of exploration.
         c_puct_init: a float constant determining the level of exploration.
+        child_to_play: the player id for children nodes.
 
     Returns:
-        The best child node.
+        The best child node corresponding to the UCT score.
 
     Raises:
         ValueError:
             if the node instance itself is a leaf node.
-            if input argument `legal_actions` is not a valid 1D bool numpy.array.
     """
     if not node.is_expanded:
         raise ValueError('Expand leaf node first.')
 
-    ucb_scores = node.child_Q() + node.child_U(c_puct_base, c_puct_init)
+    # The child Q value is evaluated from the opponent perspective.
+    # when we select the best child for node, we want to do so from node.to_play's perspective,
+    # so we always switch the sign for node.child_Q values, this is required since we're talking about two-player, zero-sum games.
+    ucb_scores = -node.child_Q() + node.child_U(c_puct_base, c_puct_init)
 
     # Exclude illegal actions, note in some cases, the max ucb_scores may be zero.
-    ucb_scores = np.where(node.legal_actions, ucb_scores, -1000)
+    ucb_scores = np.where(legal_actions, ucb_scores, -1000)
 
     # Break ties if we have multiple 'maximum' values.
     move = np.random.choice(np.where(ucb_scores == ucb_scores.max())[0])
 
-    assert node.legal_actions[move] == True
+    assert legal_actions[move]
 
     if move not in node.children:
-        child_legal_actions = node.legal_actions.copy()
-        child_legal_actions[move] = False
-        node.children[move] = Node(legal_actions=child_legal_actions, move=move, parent=node)
+        node.children[move] = Node(to_play=child_to_play, num_actions=node.num_actions, move=move, parent=node)
 
     return node.children[move]
 
@@ -194,25 +208,26 @@ def backup(node: Node, value: float) -> None:
     if not isinstance(value, float):
         raise ValueError(f'Expect `value` to be a float type, got {type(value)}')
 
-    while node is not None:
+    while node is not None and isinstance(node, Node):
         node.number_visits += 1
         node.total_value += value
         node = node.parent
         value = -value
 
 
-def add_dirichlet_noise(node: Node, eps: float = 0.25, alpha: float = 0.03) -> None:
+def add_dirichlet_noise(node: Node, legal_actions: np.ndarray, eps: float = 0.25, alpha: float = 0.03) -> None:
     """Add dirichlet noise to a given node.
 
     Args:
         node: the root node we want to add noise to.
+        legal_actions: a 1D bool numpy.array mask for all actions,
+            where `1` represents legal move and `0` represents illegal move.
         eps: epsilon constant to weight the priors vs. dirichlet noise.
         alpha: parameter of the dirichlet noise distribution.
 
     Raises:
         ValueError:
             if input argument `node` is not expanded.
-            if input argument `legal_actions` is not a valid 1D bool numpy.array.
             if input argument `eps` or `alpha` is not float type
                 or not in the range of [0.0, 1.0].
     """
@@ -224,21 +239,18 @@ def add_dirichlet_noise(node: Node, eps: float = 0.25, alpha: float = 0.03) -> N
     if not isinstance(alpha, float) or not 0.0 <= alpha <= 1.0:
         raise ValueError(f'Expect `alpha` to be a float in the range [0.0, 1.0], got {alpha}')
 
-    alphas = np.ones_like(node.legal_actions) * alpha
+    alphas = np.ones_like(legal_actions) * alpha
     noise = np.random.dirichlet(alphas)
-
-    # Set noise to zero for illegal actions
-    noise = np.where(node.legal_actions, noise, 0)
 
     node.child_priors = node.child_priors * (1 - eps) + noise * eps
 
 
-def generate_play_policy(node: Node, temperature: float) -> np.ndarray:
+def generate_search_policy(visit_counts: np.ndarray, temperature: float) -> np.ndarray:
     """Returns a policy action probabilities after MCTS search,
     proportional to its exponentialted visit count.
 
     Args:
-        node: the root node of the search tree.
+        visit_counts: the visit number of the children nodes from the root node of the search tree.
         temperature: a parameter controls the level of exploration.
 
     Returns:
@@ -246,28 +258,17 @@ def generate_play_policy(node: Node, temperature: float) -> np.ndarray:
 
     Raises:
         ValueError:
-            if node instance not expanded.
-            if input argument `legal_actions` is not a valid 1D bool numpy.array.
             if input argument `temperature` is not float type or not in range [0.0, 1.0].
     """
-    if not node.is_expanded:
-        raise ValueError('Node not expanded.')
     if not isinstance(temperature, float) or not 0 <= temperature <= 1.0:
         raise ValueError(f'Expect `temperature` to be float type in the range [0.0, 1.0], got {temperature}')
 
     if temperature > 0.0:
-        # exp = 1.0 / temperature
-        # To avoid overflow when doing power operation over large numbers
-        exp = max(1.0, min(10.0, 1.0 / temperature))
-        pi_logits = np.power(node.child_number_visits, exp)
-    else:
-        pi_logits = node.child_number_visits / np.sum(node.child_number_visits)
+        # Hack to avoid overflow when doing power operation over large numbers
+        exp = min(10.0, 1.0 / temperature)
+        visit_counts = np.power(visit_counts, exp)
 
-    # Mask out illegal actions
-    pi_logits = np.where(node.legal_actions == True, pi_logits, 0.0).astype(np.float32)
-    pi_probs = pi_logits / np.sum(pi_logits)
-
-    return pi_probs
+    return visit_counts / np.sum(visit_counts)
 
 
 def uct_search(
@@ -333,15 +334,14 @@ def uct_search(
 
     # Create root node
     if root_node is None:
-        root_node = Node(legal_actions=env.legal_actions, parent=None)
+        root_node = Node(to_play=env.current_player, num_actions=env.num_actions, parent=DummyNode())
         prior_prob, value = eval_func(env.observation(), False)
         expand(root_node, prior_prob)
-        # Switching the sign of the evaluated value so it's from the last player's perspective.
-        backup(root_node, -value)
+        backup(root_node, value)
 
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
-        add_dirichlet_noise(root_node)
+        add_dirichlet_noise(root_node, env.legal_actions)
 
     while root_node.number_visits < num_simulations:
         node = root_node
@@ -356,16 +356,20 @@ def uct_search(
         # - reach a leaf node.
         # - game is over.
         while node.is_expanded:
-            node = best_child(node, c_puct_base, c_puct_init)
+            # Select the best move and create the child node on demand
+            node = best_child(node, sim_env.legal_actions, c_puct_base, c_puct_init, sim_env.opponent_player)
             # Make move on the simulation environment.
             obs, reward, done, _ = sim_env.step(node.move)
+
             if done:
                 break
 
         # Special case - If game is over, using the actual reward from the game to update statistics
         if done:
             # The reward is for the last player who made the move won/loss the game.
-            backup(node, reward)
+            # So when backing up value from node represents current player, we add a minus sign
+            assert node.to_play != sim_env.last_player
+            backup(node, -reward)
             continue
 
         # Phase 2 - Expand and evaluation
@@ -373,25 +377,25 @@ def uct_search(
         expand(node, prior_prob)
 
         # Phase 3 - Backup statistics
-        # Switching the sign of the evaluated value so it's from the last player's perspective.
-        backup(node, -value)
+        backup(node, value)
 
     # Play - generate action probability from the root node.
-    pi_probs = generate_play_policy(root_node, temperature)
+    pi_probs = generate_search_policy(root_node.child_number_visits, temperature)
 
     move = None
     if deterministic:
         # Choose the action with most visit count.
-        move = np.argmax(pi_probs)
+        move = np.argmax(root_node.child_number_visits)
     else:
         # Sample an action.
-        move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
+        while move is None or not env.legal_actions[move]:
+            move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
     next_root_node = None
     if move in root_node.children:
         next_root_node = root_node.children[move]
-        next_root_node.parent = None
-    
+        next_root_node.parent = DummyNode()
+
     return (move, pi_probs, next_root_node)
 
 
@@ -404,7 +408,9 @@ def add_virtual_loss(node: Node) -> None:
     """
     # This is a loss for both players in the traversed path,
     # since we want to avoid multiple threads to select the same path.
-    vloss = -1
+    # However since we'll switching the sign for child_Q when selecting best child,
+    # here we use +1 instead of -1.
+    vloss = +1
     while node.parent is not None:
         node.losses_applied += 1
         node.total_value += vloss
@@ -418,7 +424,7 @@ def revert_virtual_loss(node: Node) -> None:
         node: current leaf node in the search tree.
     """
 
-    vloss = +1
+    vloss = -1
     while node.parent is not None:
         if node.losses_applied > 0:
             node.losses_applied -= 1
@@ -434,7 +440,7 @@ def parallel_uct_search(
     c_puct_init: float,
     temperature: float,
     num_simulations: int = 800,
-    parallel_leaves: int = 8,
+    num_parallel: int = 8,
     root_noise: bool = False,
     deterministic: bool = False,
 ) -> Tuple[int, np.ndarray, Node]:
@@ -466,7 +472,7 @@ def parallel_uct_search(
         temperature: a parameter controls the level of exploration
             when generate policy action probabilities after MCTS search.
         num_simulations: number of simulations to run, default 800.
-        parallel_leaves: Number of parallel leaves for MCTS search. This is also the batch size for neural network evaluation.
+        num_parallel: Number of parallel leaves for MCTS search. This is also the batch size for neural network evaluation.
         root_noise: whether add dirichlet noise to root node to encourage exploration,
             default off.
         deterministic: after the MCTS search, choose the child node with most visits number to play in the game,
@@ -494,21 +500,20 @@ def parallel_uct_search(
 
     # Create root node
     if root_node is None:
-        root_node = Node(legal_actions=env.legal_actions, parent=None)
+        root_node = Node(to_play=env.current_player, num_actions=env.num_actions, parent=DummyNode())
         prior_prob, value = eval_func(env.observation(), False)
         expand(root_node, prior_prob)
-        # Switching the sign of the evaluated value so it's from the last player's perspective.
-        backup(root_node, -value)
+        backup(root_node, value)
 
     # Add dirichlet noise to the prior probabilities to root node.
     if root_noise:
-        add_dirichlet_noise(root_node)
+        add_dirichlet_noise(root_node, env.legal_actions)
 
-    while root_node.number_visits < num_simulations:
+    while root_node.number_visits < num_simulations + num_parallel:
         leaves = []
         failsafe = 0
 
-        while len(leaves) < parallel_leaves and failsafe < parallel_leaves * 2:
+        while len(leaves) < num_parallel and failsafe < num_parallel * 2:
             # This is necessary as when a game is over no leaf is added to leaves,
             # as we use the actual game results to update statistic
             failsafe += 1
@@ -524,7 +529,8 @@ def parallel_uct_search(
             # - reach a leaf node.
             # - game is over.
             while node.is_expanded:
-                node = best_child(node, c_puct_base, c_puct_init)
+                # Select the best move and create the child node on demand
+                node = best_child(node, sim_env.legal_actions, c_puct_base, c_puct_init, sim_env.opponent_player)
                 # Make move on the simulation environment.
                 obs, reward, done, _ = sim_env.step(node.move)
                 if done:
@@ -533,7 +539,9 @@ def parallel_uct_search(
             # Special case - If game is over, using the actual reward from the game to update statistics.
             if done:
                 # The reward is for the last player who made the move won/loss the game.
-                backup(node, reward)
+                # So when backing up value from node represents current player, we add a minus sign
+                assert node.to_play != sim_env.last_player
+                backup(node, -reward)
                 continue
             else:
                 add_virtual_loss(node)
@@ -552,23 +560,23 @@ def parallel_uct_search(
                     continue
 
                 expand(leaf, prior_prob)
-                # Switching the sign of the evaluated value so it's from the last player's perspective.
-                backup(leaf, -value.item())
+                backup(leaf, value.item())
 
     # Play - generate action probability from the root node.
-    pi_probs = generate_play_policy(root_node, temperature)
+    pi_probs = generate_search_policy(root_node.child_number_visits, temperature)
 
     move = None
     if deterministic:
         # Choose the action with most visit count.
-        move = np.argmax(pi_probs)
+        move = np.argmax(root_node.child_number_visits)
     else:
         # Sample an action.
-        move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
+        while move is None or not env.legal_actions[move]:
+            move = np.random.choice(np.arange(pi_probs.shape[0]), p=pi_probs)
 
     next_root_node = None
     if move in root_node.children:
         next_root_node = root_node.children[move]
-        next_root_node.parent = None
-    
+        next_root_node.parent = DummyNode()
+
     return (move, pi_probs, next_root_node)

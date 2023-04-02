@@ -53,7 +53,6 @@ def run_training(
     actor_network: torch.nn.Module,
     replay: UniformReplay,
     data_queue: multiprocessing.SimpleQueue,
-    min_replay_size: int,
     batch_size: int,
     num_train_steps: int,
     checkpoint_frequency: int,
@@ -63,7 +62,7 @@ def run_training(
     stop_event: multiprocessing.Event,
     delay: float = 0.0,
     train_steps: int = 0,
-    argument_data: bool = False,
+    log_interval: int = 1000,
 ):
     """Run the main training loop for N iterations, each iteration contains M updates.
     This controls the 'pace' of the pipeline, including when should the other parties to stop.
@@ -76,7 +75,6 @@ def run_training(
         actor_network: the neural network actors running self-play, for the case AlphaZero pipeline without evaluation.
         replay: a simple uniform experience replay.
         data_queue: a multiprocessing.SimpleQueue instance, only used to signal data collector to stop.
-        min_replay_size: minimum replay size before start training.
         batch_size: sample batch size during training.
         num_train_steps: total number of training steps to run.
         checkpoint_frequency: the frequency to create new checkpoint.
@@ -86,7 +84,7 @@ def run_training(
         stop_event: a multiprocessing.Event signaling other parties to stop running pipeline.
         delay: wait time (in seconds) before start training on next batch samples, default 0.
         train_steps: already trained steps, used when resume training, default 0.
-        argument_data: if true, apply random rotation and reflection during training, default off.
+        log_interval: how often to log training statistics, default 1000.
 
     Raises:
         ValueError:
@@ -94,8 +92,6 @@ def run_training(
             if `checkpoint_dir` is invalid.
     """
 
-    if min_replay_size < batch_size:
-        raise ValueError(f'Expect min_replay_size > batch_size, got {min_replay_size}, and {batch_size}')
     if not isinstance(checkpoint_dir, str) or checkpoint_dir == '':
         raise ValueError(f'Expect checkpoint_dir to be valid path, got {checkpoint_dir}')
 
@@ -104,7 +100,7 @@ def run_training(
     start = None
     last_train_step = train_steps  # Store train step from last session incase resume training
     disable_auto_grad(actor_network)
-    
+
     network = network.to(device=device)
     network.train()
     actor_network.eval()
@@ -122,7 +118,7 @@ def run_training(
         }
 
     while True:
-        if replay.size < min_replay_size:
+        if replay.num_games_added < 0.1 * replay.window_size:
             time.sleep(30)
             continue
 
@@ -134,17 +130,19 @@ def run_training(
             break
 
         transitions = replay.sample(batch_size)
+
+        if transitions is None:
+            continue
+
         optimizer.zero_grad()
-        loss = calc_loss(network, device, transitions, argument_data)
+        policy_loss, value_loss = calc_loss(network, device, transitions, False)
+        loss = policy_loss + value_loss
         loss.backward()
         optimizer.step()
         lr_scheduler.step()
         train_steps += 1
 
-        if train_steps > 1 and train_steps % checkpoint_frequency == 0:
-            train_rate = ((train_steps - last_train_step) * batch_size) / (timeit.default_timer() - start)
-            logging.info(f'Train step {train_steps}, train sample rate {train_rate:.2f}')
-
+        if train_steps % checkpoint_frequency == 0:
             state_to_save = get_state_to_save()
             ckpt_file = ckpt_dir / f'train_steps_{train_steps}'
             create_checkpoint(state_to_save, ckpt_file)
@@ -153,17 +151,21 @@ def run_training(
             actor_network.load_state_dict(network.state_dict())
             actor_network.eval()
 
+            train_rate = ((train_steps - last_train_step) * batch_size) / (timeit.default_timer() - start)
+            logging.info(f'Train step {train_steps}, train sample rate {train_rate:.2f}')
+
+        if train_steps % log_interval == 0:
             log_output = [
                 ('timestamp', get_time_stamp(), '%1s'),
                 ('train_steps', train_steps, '%3d'),
-                ('checkpoint', ckpt_file, '%3s'),
-                ('loss', loss.detach().item(), '%.4f'),
+                ('policy_loss', policy_loss.detach().item(), '%.4f'),
+                ('value_loss', value_loss.detach().item(), '%.4f'),
                 ('learning_rate', lr_scheduler.get_last_lr()[0], '%.2f'),
             ]
             write_to_csv(writer, log_output)
 
         # Wait for sometime before start training on next batch.
-        if delay is not None and delay > 0 and train_steps > 1:
+        if delay > 0:
             time.sleep(delay)
 
     stop_event.set()
@@ -180,7 +182,7 @@ def run_evaluation(
     c_puct_init: float,
     temperature: float,
     num_simulations: int,
-    parallel_leaves: int,
+    num_parallel: int,
     checkpoint_files: List,
     csv_file: str,
     stop_event: multiprocessing.Event,
@@ -197,7 +199,7 @@ def run_evaluation(
         temperature: the temperature exploration rate after MCTS search
             to generate play policy.
         num_simulations: number of simulations for each MCTS search.
-        parallel_leaves: Number of parallel leaves for MCTS search.
+        num_parallel: Number of parallel leaves for MCTS search.
         checkpoint_files: a shared list contains the full path for the most recent new checkpoint.
         csv_file: a csv file contains the statistics for the best checkpoint.
         stop_event: a multiprocessing.Event signaling to stop running pipeline.
@@ -245,7 +247,7 @@ def run_evaluation(
             network=new_network,
             device=device,
             num_simulations=num_simulations,
-            parallel_leaves=parallel_leaves,
+            num_parallel=num_parallel,
             root_noise=False,
             deterministic=True,
         )
@@ -253,23 +255,22 @@ def run_evaluation(
             network=old_network,
             device=device,
             num_simulations=num_simulations,
-            parallel_leaves=parallel_leaves,
+            num_parallel=num_parallel,
             root_noise=False,
             deterministic=True,
         )
 
         env.reset()
         done = False
-        root_node = None
-        steps = 0
 
         while not done:
             if env.current_player == env.black_player:
-                action, _, root_node = black_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                active_player = black_player
             else:
-                action, _, root_node = white_player(env, root_node, c_puct_base, c_puct_init, temperature)
+                active_player = white_player
+
+            action, _, _ = active_player(env, None, c_puct_base, c_puct_init, temperature)
             _, _, done, _ = env.step(action)
-            steps += 1
 
         if env.winner == env.black_player:
             black_elo, _ = compute_elo_rating(0, black_elo, white_elo)
@@ -280,9 +281,8 @@ def run_evaluation(
         log_output = [
             ('timestamp', get_time_stamp(), '%1s'),
             ('train_steps', train_steps, '%3d'),
-            ('checkpoint', ckpt_file, '%3s'),
             ('elo_rating', black_elo, '%1d'),
-            ('episode_steps', steps, '%1d'),
+            ('episode_steps', env.steps, '%1d'),
         ]
         write_to_csv(writer, log_output)
 

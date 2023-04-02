@@ -21,12 +21,14 @@ In AlphaZero, we don't run evaluation to select 'best player' from new checkpoin
 Instead, we use a single network and the self-play actors always use the latest network weights to generate samples.
 
 """
-from absl import app
-from absl import flags
-from absl import logging
 import os
 
 os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+
+from absl import app
+from absl import flags
+from absl import logging
 
 import multiprocessing
 import threading
@@ -42,48 +44,46 @@ from alpha_zero.log import extract_args_from_flags_dict
 
 
 FLAGS = flags.FLAGS
-
-flags.DEFINE_integer('num_res_blocks', 3, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
-    'num_planes',
+    'num_filters',
     16,
-    'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
-)
-
-flags.DEFINE_integer('replay_capacity', 50000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 5000, 'Minimum replay size before learning starts.')
-flags.DEFINE_integer('batch_size', 64, 'Sample batch size when do learning.')
-
-flags.DEFINE_float('learning_rate', 0.001, 'Learning rate.')
-flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
-flags.DEFINE_multi_integer('lr_decay_milestones', [50000], 'The number of steps at which the learning rate will decay.')
-
-flags.DEFINE_integer('num_train_steps', 100000, 'Number of training steps (measured in network updates).')
-
-flags.DEFINE_integer('num_actors', 2, 'Number of self-play actor processes.')
-flags.DEFINE_integer(
-    'num_simulations', 24, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'Number of filters for the conv2d layers in the neural network.',
 )
 flags.DEFINE_integer(
-    'parallel_leaves',
+    'num_fc_units',
+    16,
+    'Number of hidden units in the linear layer of the neural network.',
+)
+
+flags.DEFINE_integer('window_size', 10000, 'Replay buffer stores number of most recent self-play games.')
+flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
+
+flags.DEFINE_float('learning_rate', 0.02, 'Learning rate.')
+flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
+flags.DEFINE_multi_integer('lr_decay_milestones', [20000], 'The number of steps at which the learning rate will decay.')
+flags.DEFINE_float('sgd_momentum', 0.9, 'The momentum parameter for SGD optimizer.')
+flags.DEFINE_float('l2_regularization', 1e-4, 'The L2 regularization parameter applied to weights.')
+
+flags.DEFINE_integer('num_train_steps', 50000, 'Number of training steps (measured in network updates).')
+
+flags.DEFINE_integer('num_actors', 16, 'Number of self-play actor processes.')
+flags.DEFINE_integer(
+    'num_simulations', 20, 'Number of iterations per MCTS search, this applies to both self-play and evaluation processes.'
+)
+flags.DEFINE_integer(
+    'num_parallel',
     4,
     'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.',
 )
 
-flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
-flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
+flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. search values.')
+flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. search values.')
 
-flags.DEFINE_float(
-    'temp_begin_value', 1.0, 'Begin value of the temperature exploration rate after MCTS search to generate play policy.'
-)
-flags.DEFINE_float(
-    'temp_end_value', 0.1, 'End (decayed) value of the temperature exploration rate after MCTS search to generate play policy.'
-)
 flags.DEFINE_integer(
-    'temp_decay_steps', 5, 'Number of environment steps to decay the temperature from begin_value to end_value.'
+    'warm_up_steps', 5, 'Number of opening environment steps to sample action according search policy instead of choosing most visited child.'
 )
 
-flags.DEFINE_float('train_delay', 0.0, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 0.1, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
@@ -115,10 +115,11 @@ def main(argv):
     num_actions = evaluation_env.action_space.n
 
     def network_builder():
-        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_planes)
+        return AlphaZeroNet(input_shape, num_actions, 3, FLAGS.num_filters, FLAGS.num_fc_units)
 
     network = network_builder()
-    optimizer = torch.optim.Adam(network.parameters(), lr=FLAGS.learning_rate)
+    optimizer = torch.optim.SGD(network.parameters(), lr=FLAGS.learning_rate, momentum=FLAGS.sgd_momentum, weight_decay=FLAGS.l2_regularization)
+    # optimizer = torch.optim.Adam(network.parameters(), lr=FLAGS.learning_rate, weight_decay=FLAGS.l2_regularization)
     lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_decay_milestones, gamma=FLAGS.lr_decay)
 
     actor_network = network_builder()
@@ -127,7 +128,7 @@ def main(argv):
     old_ckpt_network = network_builder()
     new_ckpt_network = network_builder()
 
-    replay = UniformReplay(FLAGS.replay_capacity, random_state)
+    replay = UniformReplay(FLAGS.window_size, random_state)
 
     # Use the stop_event to signaling actors to stop running.
     stop_event = multiprocessing.Event()
@@ -140,7 +141,7 @@ def main(argv):
     # Start to collect samples generated by self-play actors
     data_collector = threading.Thread(
         target=run_data_collector,
-        args=(data_queue, replay, 0, None),
+        args=(data_queue, replay),
     )
     data_collector.start()
 
@@ -155,7 +156,6 @@ def main(argv):
             actor_network,
             replay,
             data_queue,
-            FLAGS.min_replay_size,
             FLAGS.batch_size,
             FLAGS.num_train_steps,
             FLAGS.checkpoint_frequency,
@@ -164,7 +164,6 @@ def main(argv):
             FLAGS.train_csv_file,
             stop_event,
             FLAGS.train_delay,
-            False,
         ),
     )
     learner.start()
@@ -179,9 +178,9 @@ def main(argv):
             evaluation_env,
             FLAGS.c_puct_base,
             FLAGS.c_puct_init,
-            FLAGS.temp_end_value,
+            0.001,
             FLAGS.num_simulations,
-            FLAGS.parallel_leaves,
+            FLAGS.num_parallel,
             checkpoint_files,
             FLAGS.eval_csv_file,
             stop_event,
@@ -198,16 +197,14 @@ def main(argv):
             args=(
                 i,
                 actor_network,
-                runtime_device,
+                'cpu',
                 environment_builder(),
                 data_queue,
                 FLAGS.c_puct_base,
                 FLAGS.c_puct_init,
-                FLAGS.temp_begin_value,
-                FLAGS.temp_end_value,
-                FLAGS.temp_decay_steps,
+                FLAGS.warm_up_steps,
                 FLAGS.num_simulations,
-                FLAGS.parallel_leaves,
+                FLAGS.num_parallel,
                 stop_event,
             ),
         )

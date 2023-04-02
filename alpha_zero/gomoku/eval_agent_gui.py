@@ -28,11 +28,15 @@ from alpha_zero.mcts_player import create_mcts_player
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 6, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
-    'num_planes',
+    'num_filters',
+    32,
+    'Number of filters for the conv2d layers in the neural network.',
+)
+flags.DEFINE_integer(
+    'num_fc_units',
     64,
-    'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
+    'Number of hidden units in the linear layer of the neural network.',
 )
 
 flags.DEFINE_bool(
@@ -49,20 +53,20 @@ flags.DEFINE_bool(
 
 flags.DEFINE_string(
     'black_ckpt_file',
-    'checkpoints/gomoku_v2/train_steps_168000',
+    'checkpoints/gomoku_v2/train_steps_57000',
     'Load the checkpoint file for black player, will only load if human_vs_ai is False.',
 )
-flags.DEFINE_string('white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_168000', 'Load the checkpoint file for white player.')
+flags.DEFINE_string('white_ckpt_file', 'checkpoints/gomoku_v2/train_steps_57000', 'Load the checkpoint file for white player.')
 
-flags.DEFINE_integer('num_simulations', 240, 'Number of simulations per MCTS search.')
+flags.DEFINE_integer('num_simulations', 200, 'Number of iterations per MCTS search.')
 flags.DEFINE_integer(
-    'parallel_leaves',
+    'num_parallel',
     8,
     'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.',
 )
 
-flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
-flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
+flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. search values.')
+flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. search values.')
 
 flags.DEFINE_float(
     'temperature',
@@ -84,7 +88,7 @@ def main(argv):
     num_actions = eval_env.action_space.n
 
     def network_builder():
-        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_planes)
+        return AlphaZeroNet(input_shape, num_actions, FLAGS.board_size, FLAGS.num_filters, FLAGS.num_fc_units)
 
     def load_checkpoint_for_net(network, ckpt_file):
         if ckpt_file and os.path.isfile(ckpt_file):
@@ -96,7 +100,7 @@ def main(argv):
             network=network,
             device=runtime_device,
             num_simulations=FLAGS.num_simulations,
-            parallel_leaves=FLAGS.parallel_leaves,
+            num_parallel=FLAGS.num_parallel,
             root_noise=False,
             deterministic=True,
         )

@@ -23,12 +23,14 @@ from alpha_zero.games.env import BoardGameEnv
 
 from alpha_zero.mcts_v2 import Node, uct_search, parallel_uct_search
 
+# from alpha_zero.mcts_v3 import Node, uct_search, parallel_uct_search
+
 
 def create_mcts_player(
     network: torch.nn.Module,
     device: torch.device,
     num_simulations: int,
-    parallel_leaves: int,
+    num_parallel: int,
     root_noise: bool = False,
     deterministic: bool = False,
 ):
@@ -42,7 +44,7 @@ def create_mcts_player(
         if not batched:
             state_tensor = state_tensor[None, ...]
 
-        state = torch.from_numpy(state_tensor).to(device=device, dtype=torch.float32)
+        state = torch.from_numpy(state_tensor).to(device=device, dtype=torch.float32, non_blocking=True)
         output = network(state)
         pi_prob = torch.softmax(output.pi_logits, dim=-1).cpu().numpy()
         value = torch.detach(output.value).cpu().numpy()
@@ -64,7 +66,7 @@ def create_mcts_player(
         c_puct_init: float,
         temperature: float,
     ):
-        if parallel_leaves > 1:
+        if num_parallel > 1:
             return parallel_uct_search(
                 env=env,
                 eval_func=eval_func,
@@ -73,7 +75,7 @@ def create_mcts_player(
                 c_puct_init=c_puct_init,
                 temperature=temperature,
                 num_simulations=num_simulations,
-                parallel_leaves=parallel_leaves,
+                num_parallel=num_parallel,
                 root_noise=root_noise,
                 deterministic=deterministic,
             )

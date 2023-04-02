@@ -20,7 +20,7 @@ from alpha_zero.games.env import BoardGameEnv
 
 
 class TicTacToeEnv(BoardGameEnv):
-    """Tic-Tac-Toe Environment with openAI Gym api.
+    """Tic-Tac-Toe Environment with OpenAI Gym api.
 
     Two players play in a 3x3 grid, whoever first got three in a row wins.
 

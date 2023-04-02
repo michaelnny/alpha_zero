@@ -69,8 +69,8 @@ class BoardGameEnv(Env):
         self.num_actions = self.board_size**2
         self.action_space = Discrete(self.num_actions)
 
-        # Legal actions mask, where 'True' represents a legal action and 'False' represents a illegal action
-        self.legal_actions = np.ones(self.num_actions, dtype=np.bool8).flatten()
+        # Legal actions mask, where '1' represents a legal action and '0' represents a illegal action
+        self.legal_actions = np.ones(self.num_actions, dtype=np.int8).flatten()
 
         # The player to move at current time step, if game is over this is the player who made the last move and won/loss the game.
         self.current_player = self.black_player
@@ -82,8 +82,8 @@ class BoardGameEnv(Env):
         self.last_player = None
         self.last_action = None
 
-        # History planes are FIFO queues, with the most recent state at index 0.
-        self.feature_planes = self._get_empty_queue_dict()
+        # Save last N board, so we can stack history planes
+        self.board_deltas = self.get_empty_queue()
 
         self.gtp_columns = 'ABCDEFGHJKLMNOPQRSTUVWXYZ'
         self.gtp_rows = [str(i) for i in range(self.board_size, -1, -1)]
@@ -93,7 +93,7 @@ class BoardGameEnv(Env):
         super().reset(**kwargs)
 
         self.board = np.zeros_like(self.board)
-        self.legal_actions = np.ones_like(self.legal_actions, dtype=np.bool8).flatten()
+        self.legal_actions = np.ones_like(self.legal_actions, dtype=np.int8).flatten()
 
         self.current_player = self.black_player
 
@@ -104,7 +104,7 @@ class BoardGameEnv(Env):
         self.last_player = None
         self.last_action = None
 
-        self.feature_planes = self._get_empty_queue_dict()
+        self.board_deltas = self.get_empty_queue()
 
         return self.observation()
 
@@ -121,14 +121,15 @@ class BoardGameEnv(Env):
         reward = 0.0
 
         # Make sure the action is illegal from now on.
-        self.legal_actions[action] = False
+        self.legal_actions[action] = 0
         self.last_action = action
 
         # Update board state.
         row_index, col_index = self.action_to_coords(action)
         self.board[row_index, col_index] = self.current_player
 
-        self._update_feature_planes()
+        # Make sure the latest board position is always at index 0
+        self.board_deltas.appendleft(np.copy(self.board))
 
         if self.is_current_player_won():
             reward = 1.0
@@ -202,8 +203,7 @@ class BoardGameEnv(Env):
 
     def close(self):
         """Clean up deques"""
-        for q in self.feature_planes.values():
-            q.clear()
+        self.board_deltas.clear()
 
         return super().close()
 
@@ -238,15 +238,14 @@ class BoardGameEnv(Env):
         Returns a 3D tensor with the dimension [N, board_size, board_size],
             where N = 2 x stack_history + 1
         """
-        # Stack feature planes from t, t-1, t-2, ...
-        feature_planes = []
-        for t in range(self.stack_history):
-            current_t = self.feature_planes[self.current_player][t]
-            opponent_t = self.feature_planes[self.opponent_player][t]
-            feature_planes.append(current_t)
-            feature_planes.append(opponent_t)
+        # Create an empty array to hold the stacked planes, with shape (16, 19, 19)
+        features = np.zeros((self.stack_history * 2, self.board_size, self.board_size), dtype=np.int8)
 
-        feature_planes = np.array(feature_planes, dtype=np.int8)
+        deltas = np.array(self.board_deltas)
+
+        # Current player first, then the opponent
+        features[::2] = deltas == self.current_player
+        features[1::2] = deltas == self.opponent_player
 
         # Color to play is a plane with all zeros for white, ones for black.
         color_to_play = np.zeros((1, self.board_size, self.board_size), dtype=np.int8)
@@ -254,13 +253,17 @@ class BoardGameEnv(Env):
             color_to_play += 1
 
         # Using [C, H, W] channel first for PyTorch
-        stacked_obs = np.concatenate([feature_planes, color_to_play], axis=0)
+        stacked_obs = np.concatenate([features, color_to_play], axis=0)
 
         return stacked_obs
 
-    def hash_board(self) -> str:
-        """Returns a hash board state."""
-        return self.board.data.tobytes()
+    def is_current_player_won(self) -> bool:
+        """Checks if the current player just won the game during play."""
+        raise NotImplementedError()
+
+    def get_empty_queue(self) -> deque:
+        """Returns empty queue with stack_N * all zeros planes."""
+        return deque([np.zeros((self.board_size, self.board_size))] * self.stack_history, maxlen=self.stack_history)
 
     def is_action_valid(self, action: int) -> bool:
         """Returns bool state to indicate given action is valid or not."""
@@ -269,29 +272,7 @@ class BoardGameEnv(Env):
         if not 0 <= action <= self.action_space.n - 1:
             return False
 
-        return self.legal_actions[action]
-
-    def is_current_player_won(self) -> bool:
-        """Checks if the current player just won the game during play."""
-        return
-
-    def _update_feature_planes(self) -> None:
-        board = self.board.copy()
-        if self.current_player == self.black_player:
-            feature_plane = np.where(board == self.black_player, 1, 0)
-        else:
-            feature_plane = np.where(board == self.white_player, 1, 0)
-
-        # History planes is a FIFO queue, the most recent state is always at index 0.
-        self.feature_planes[self.current_player].appendleft(feature_plane)
-
-    def _get_empty_queue_dict(self):
-        """Returns empty queue with stack_history * all zeros planes."""
-        player_ids = [self.black_player, self.white_player]
-        return {
-            id: deque([np.zeros((self.board_size, self.board_size))] * self.stack_history, maxlen=self.stack_history)
-            for id in player_ids
-        }
+        return self.legal_actions[action] == 1
 
     @property
     def opponent_player(self) -> int:

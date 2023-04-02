@@ -25,24 +25,28 @@ from alpha_zero.pipeline_v1 import load_checkpoint
 from alpha_zero.mcts_player import create_mcts_player
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('num_res_blocks', 3, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
-    'num_planes',
+    'num_filters',
     16,
-    'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
+    'Number of filters for the conv2d layers in the neural network.',
+)
+flags.DEFINE_integer(
+    'num_fc_units',
+    16,
+    'Number of hidden units in the linear layer of the neural network.',
 )
 
 flags.DEFINE_string(
-    'black_ckpt_file', 'checkpoints/tictactoe_v2/train_steps_19000', 'Load the checkpoint file for black player.'
+    'black_ckpt_file', 'checkpoints/tictactoe_v2/train_steps_26000', 'Load the checkpoint file for black player.'
 )
 flags.DEFINE_string(
-    'white_ckpt_file', 'checkpoints/tictactoe_v2/train_steps_19000', 'Load the checkpoint file for white player.'
+    'white_ckpt_file', 'checkpoints/tictactoe_v2/train_steps_26000', 'Load the checkpoint file for white player.'
 )
 
-flags.DEFINE_integer('num_simulations', 24, 'Number of simulations per MCTS search.')
-flags.DEFINE_integer('parallel_leaves', 4, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
-flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
-flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
+flags.DEFINE_integer('num_simulations', 20, 'Number of iterations per MCTS search.')
+flags.DEFINE_integer('num_parallel', 4, 'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.')
+flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. search values.')
+flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. search values.')
 flags.DEFINE_float('temperature', 0.01, 'Value of the temperature exploration rate after MCTS search to generate play policy.')
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
@@ -56,7 +60,7 @@ def main(argv):
     num_actions = eval_env.action_space.n
 
     def network_builder():
-        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_planes)
+        return AlphaZeroNet(input_shape, num_actions, 3, FLAGS.num_filters, FLAGS.num_fc_units)
 
     black_network = network_builder().to(device=runtime_device)
     white_network = network_builder().to(device=runtime_device)
@@ -76,7 +80,7 @@ def main(argv):
             network=network,
             device=runtime_device,
             num_simulations=FLAGS.num_simulations,
-            parallel_leaves=FLAGS.parallel_leaves,
+            num_parallel=FLAGS.num_parallel,
             root_noise=False,
             deterministic=True,
         )

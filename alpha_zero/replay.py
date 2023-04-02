@@ -14,87 +14,103 @@
 # ==============================================================================
 """Replay components for training agents."""
 
-from typing import Any, Text, Mapping, NamedTuple, Generic, List, Optional, Sequence, Tuple, TypeVar
+from typing import Any, NamedTuple, Optional, Sequence
 import numpy as np
-
-CompressedArray = Tuple[bytes, Tuple, np.dtype]
-
-# Generic replay structure: Any flat named tuple.
-ReplayStructure = TypeVar('ReplayStructure', bound=Tuple[Any, ...])
+import collections
 
 
 class Transition(NamedTuple):
     state: Optional[np.ndarray]
     pi_prob: Optional[np.ndarray]
     value: Optional[float]
-    player_id: Optional[int]
 
 
-TransitionStructure = Transition(state=None, pi_prob=None, value=None, player_id=None)
+TransitionStructure = Transition(state=None, pi_prob=None, value=None)
 
 
-class UniformReplay(Generic[ReplayStructure]):
-    """Uniform replay, with circular buffer storage for flat named tuples."""
+class UniformReplay:
+    """Uniform replay, with window size to limit maximum number of games stored in buffer,
+    and periodically adjusting the buffer capacity based on the mean game length."""
 
     def __init__(
         self,
-        capacity: int,
+        window_size: int,
         random_state: np.random.RandomState,  # pylint: disable=no-member
-        structure: ReplayStructure = TransitionStructure,
+        min_game_step: int = 10,  # capacity = window_size x min_game_step, a small number to flush out initial random games quickly
     ):
-        if capacity <= 0:
-            raise ValueError(f'Expect capacity to be a positive integer, got {capacity}')
-        self.structure = structure
-        self._capacity = capacity
-        self._random_state = random_state
-        self._storage = [None] * capacity
-        self._num_added = 0
+        if window_size <= 0:
+            raise ValueError(f'Expect window_size to be a positive integer, got {window_size}')
+        self.structure = TransitionStructure
+        self.window_size = window_size
+        self.min_game_step = min_game_step
+        self.avg_game_steps = min_game_step
+        self.random_state = random_state
+        self.storage = []
 
-    def add(self, item: ReplayStructure) -> None:
+        self.game_steps = collections.deque(maxlen=1000)
+        self.num_games_added = 0
+        self.num_samples_added = 0
+
+    def add_game(self, game: Sequence[Any]) -> None:
+        """Adds entire game to replay."""
+
+        self.game_steps.append(len(game))
+
+        for item in game:
+            self.add(item)
+
+        self.num_games_added += 1
+
+    def add(self, item: Any) -> None:
         """Adds single item to replay."""
-        self._storage[self._num_added % self._capacity] = item
-        self._num_added += 1
 
-    def get(self, indices: Sequence[int]) -> List[ReplayStructure]:
+        if self.size > self.capacity:
+            self.storage.pop(0)
+
+        self.storage.append(item)
+        self.num_samples_added += 1
+
+    def get(self, indices: Sequence[int]) -> Sequence[Any]:
         """Retrieves items by indices."""
-        return [self._storage[i] for i in indices]
+        return [self.storage[i] for i in indices]
 
-    def sample(self, batch_size: int) -> ReplayStructure:
+    def sample(self, batch_size: int) -> Any:
         """Samples batch of items from replay uniformly, with replacement."""
         if self.size < batch_size:
-            raise RuntimeError(f'Replay only have {self.size} samples, got sample batch size {batch_size}')
+            return
 
-        indices = self._random_state.randint(self.size, size=batch_size)
+        indices = self.random_state.randint(self.size, size=batch_size)
         samples = self.get(indices)
 
         transposed = zip(*samples)
         stacked = [np.stack(xs, axis=0) for xs in transposed]  # Stack on batch dimension (0)
         return type(self.structure)(*stacked)
 
-    @property
-    def num_added(self) -> int:
-        """Number of items added into replay."""
-        return self._num_added
+    def adjust_capacity(self, new_avg_game_steps: int) -> int:
+        assert new_avg_game_steps > 0
+
+        self.avg_game_steps = new_avg_game_steps
+
+        deltas = self.capacity - self.size
+
+        if deltas < 0:
+            for _ in range(abs(deltas)):
+                self.storage.pop(0)
+
+        return self.capacity
+
+    def reset(self) -> None:
+        """Reset the state of replay."""
+        self.num_games_added = 0
+        self.num_samples_added = 0
+        self.avg_game_steps = self.min_game_step
+        del self.storage[:]
 
     @property
     def size(self) -> int:
         """Number of items currently contained in replay."""
-        return min(self._num_added, self._capacity)
+        return len(self.storage)
 
     @property
     def capacity(self) -> int:
-        """Total capacity of replay (max number of items stored at any one time)."""
-        return self._capacity
-
-    def reset(self) -> None:
-        """Reset the state of replay."""
-        self._num_added = 0
-
-    def get_state(self) -> Mapping[Text, Any]:
-        """Retrieves replay state as a dictionary (e.g. for serialization)."""
-        return {'num_added': self._num_added, 'storage': self._storage}
-
-    def set_state(self, state: Mapping[Text, Any]) -> None:
-        """Sets replay state from a (potentially de-serialized) dictionary."""
-        self._num_added = state['num_added']
-        self._storage = state['storage']
+        return self.window_size * self.avg_game_steps

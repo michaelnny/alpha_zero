@@ -18,12 +18,14 @@ From the paper "Mastering the game of Go without human knowledge"
 https://www.nature.com/articles/nature24270/
 
 """
-from absl import app
-from absl import flags
-from absl import logging
 import os
 
 os.environ['OMP_NUM_THREADS'] = '1'
+os.environ['MKL_NUM_THREADS'] = '1'
+
+from absl import app
+from absl import flags
+from absl import logging
 
 import copy
 import multiprocessing
@@ -42,52 +44,52 @@ from alpha_zero.log import extract_args_from_flags_dict
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 9, 'Board size for Gomoku.')
 flags.DEFINE_integer('stack_history', 4, 'Stack previous states, the state is an image of N x 2 + 1 binary planes.')
-flags.DEFINE_integer('num_res_blocks', 6, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer(
-    'num_planes',
+    'num_filters',
+    32,
+    'Number of filters for the conv2d layers in the neural network.',
+)
+flags.DEFINE_integer(
+    'num_fc_units',
     64,
-    'Number of filters for the conv2d layers, this is also the number of hidden units in the linear layer of the neural network.',
+    'Number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('replay_capacity', 100000, 'Maximum replay size, use most recent N positions for training.')
-flags.DEFINE_integer('min_replay_size', 20000, 'Minimum replay size before learning starts.')
+flags.DEFINE_integer('window_size', 20000, 'Replay buffer stores number of most recent self-play games.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
-flags.DEFINE_float('lr_decay', 0.1, 'Adam learning rate decay rate.')
+flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_decay_milestones', [20000, 100000, 500000], 'The number of steps at which the learning rate will decay.'
+    'lr_decay_milestones', [400000, 600000], 'The number of steps at which the learning rate will decay.'
 )
-flags.DEFINE_integer('num_train_steps', 1000000, 'Number of training steps (measured in network updates).')
+flags.DEFINE_float('sgd_momentum', 0.9, 'The momentum parameter for SGD optimizer.')
+flags.DEFINE_float('l2_regularization', 1e-4, 'The L2 regularization parameter applied to weights.')
+
+flags.DEFINE_integer('num_train_steps', 700000, 'Number of training steps (measured in network updates).')
 flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirror to batch samples during training, default on.')
 
 flags.DEFINE_integer('num_eval_games', 10, 'Number of games to play during evaluation to select best player.')
 
-flags.DEFINE_integer('num_actors', 4, 'Number of self-play actor processes.')
+flags.DEFINE_integer('num_actors', 16, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 240, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations', 200, 'Number of iterations per MCTS search, this applies to both self-play and evaluation processes.'
 )
 flags.DEFINE_integer(
-    'parallel_leaves',
+    'num_parallel',
     8,
     'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search, 1 means no parallel search.',
 )
 
-flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. value net output.')
-flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. value net output.')
+flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. search values.')
+flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. search values.')
 
-flags.DEFINE_float(
-    'temp_begin_value', 1.0, 'Begin value of the temperature exploration rate after MCTS search to generate play policy.'
-)
-flags.DEFINE_float(
-    'temp_end_value',
-    0.01,
-    'End (decayed) value of the temperature exploration rate after MCTS search to generate play policy.',
-)
 flags.DEFINE_integer(
-    'temp_decay_steps', 30, 'Number of environment steps to decay the temperature from begin_value to end_value.'
+    'warm_up_steps',
+    10,
+    'Number of opening environment steps to sample action according search policy instead of choosing most visited child.',
 )
-flags.DEFINE_float('train_delay', 0.6, 'Delay (in seconds) before training on next batch samples.')
+flags.DEFINE_float('train_delay', 1.2, 'Delay (in seconds) before training on next batch samples.')
 flags.DEFINE_float(
     'initial_elo', 0.0, 'Initial elo rating, when resume training, this should be the elo from the loaded checkpoint.'
 )
@@ -101,8 +103,8 @@ flags.DEFINE_string('eval_csv_file', 'logs/eval_gomoku_v1.csv', 'A csv file cont
 
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
+
 def main(argv):
-    
     torch.manual_seed(FLAGS.seed)
     random_state = np.random.RandomState(FLAGS.seed)  # pylint: disable=no-member
     runtime_device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -119,8 +121,8 @@ def main(argv):
     input_shape = evaluation_env.observation_space.shape
     num_actions = evaluation_env.action_space.n
 
-    network = AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_planes, FLAGS.num_planes)
-    optimizer = torch.optim.Adam(network.parameters(), lr=FLAGS.learning_rate)
+    network = AlphaZeroNet(input_shape, num_actions, FLAGS.board_size, FLAGS.num_filters, FLAGS.num_fc_units)
+    optimizer = torch.optim.SGD(network.parameters(), lr=FLAGS.learning_rate, momentum=FLAGS.sgd_momentum, weight_decay=FLAGS.l2_regularization)
     lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_decay_milestones, gamma=FLAGS.lr_decay)
 
     actor_network = copy.deepcopy(network)
@@ -128,7 +130,7 @@ def main(argv):
 
     new_ckpt_network = copy.deepcopy(network)
 
-    replay = UniformReplay(FLAGS.replay_capacity, random_state)
+    replay = UniformReplay(FLAGS.window_size, random_state)
 
     train_steps = 0
     # Load states from checkpoint to resume training.
@@ -171,7 +173,6 @@ def main(argv):
             runtime_device,
             replay,
             data_queue,
-            FLAGS.min_replay_size,
             FLAGS.batch_size,
             FLAGS.num_train_steps,
             FLAGS.checkpoint_frequency,
@@ -197,9 +198,9 @@ def main(argv):
             FLAGS.num_eval_games,
             FLAGS.c_puct_base,
             FLAGS.c_puct_init,
-            FLAGS.temp_end_value,
+            0.01,
             FLAGS.num_simulations,
-            FLAGS.parallel_leaves,
+            FLAGS.num_parallel,
             checkpoint_files,
             FLAGS.eval_csv_file,
             stop_event,
@@ -221,11 +222,9 @@ def main(argv):
                 data_queue,
                 FLAGS.c_puct_base,
                 FLAGS.c_puct_init,
-                FLAGS.temp_begin_value,
-                FLAGS.temp_end_value,
-                FLAGS.temp_decay_steps,
+                FLAGS.warm_up_steps,
                 FLAGS.num_simulations,
-                FLAGS.parallel_leaves,
+                FLAGS.num_parallel,
                 stop_event,
             ),
         )

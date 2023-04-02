@@ -40,33 +40,33 @@ class ResNetBlock(nn.Module):
 
     def __init__(
         self,
-        num_planes: int,
+        num_filters: int,
     ) -> None:
         super().__init__()
 
         self.conv_block1 = nn.Sequential(
             nn.Conv2d(
-                in_channels=num_planes,
-                out_channels=num_planes,
+                in_channels=num_filters,
+                out_channels=num_filters,
                 kernel_size=3,
                 stride=1,
                 padding=1,
                 bias=False,
             ),
-            nn.BatchNorm2d(num_features=num_planes),
+            nn.BatchNorm2d(num_features=num_filters),
             nn.ReLU(),
         )
 
         self.conv_block2 = nn.Sequential(
             nn.Conv2d(
-                in_channels=num_planes,
-                out_channels=num_planes,
+                in_channels=num_filters,
+                out_channels=num_filters,
                 kernel_size=3,
                 stride=1,
                 padding=1,
                 bias=False,
             ),
-            nn.BatchNorm2d(num_features=num_planes),
+            nn.BatchNorm2d(num_features=num_filters),
         )
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
@@ -85,8 +85,8 @@ class AlphaZeroNet(nn.Module):
         self,
         input_shape: Tuple,
         num_actions: int,
-        num_res_block: int = 10,
-        num_planes: int = 256,
+        num_res_block: int = 19,
+        num_filters: int = 256,
         num_fc_units: int = 256,
     ) -> None:
         super().__init__()
@@ -99,26 +99,25 @@ class AlphaZeroNet(nn.Module):
         self.conv_block = nn.Sequential(
             nn.Conv2d(
                 in_channels=c,
-                out_channels=num_planes,
+                out_channels=num_filters,
                 kernel_size=3,
                 stride=1,
                 padding=1,
                 bias=False,
             ),
-            nn.BatchNorm2d(num_features=num_planes),
+            nn.BatchNorm2d(num_features=num_filters),
             nn.ReLU(),
         )
 
         # Residual blocks
         res_blocks = []
         for _ in range(num_res_block):
-            res_block = ResNetBlock(num_planes)
-            res_blocks.append(res_block)
+            res_blocks.append(ResNetBlock(num_filters))
         self.res_blocks = nn.Sequential(*res_blocks)
 
         self.policy_head = nn.Sequential(
             nn.Conv2d(
-                in_channels=num_planes,
+                in_channels=num_filters,
                 out_channels=2,
                 kernel_size=1,
                 stride=1,
@@ -132,7 +131,7 @@ class AlphaZeroNet(nn.Module):
 
         self.value_head = nn.Sequential(
             nn.Conv2d(
-                in_channels=num_planes,
+                in_channels=num_filters,
                 out_channels=1,
                 kernel_size=1,
                 stride=1,
