@@ -55,7 +55,7 @@ flags.DEFINE_integer(
     'Number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('window_size', 10000, 'Replay buffer stores number of most recent self-play games.')
+flags.DEFINE_integer('capacity', 10000 * 7, 'Replay buffer stores number of most recent self-play games.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.02, 'Learning rate.')
@@ -80,7 +80,9 @@ flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. search values.')
 
 flags.DEFINE_integer(
-    'warm_up_steps', 5, 'Number of opening environment steps to sample action according search policy instead of choosing most visited child.'
+    'warm_up_steps',
+    5,
+    'Number of opening environment steps to sample action according search policy instead of choosing most visited child.',
 )
 
 flags.DEFINE_float('train_delay', 0.1, 'Delay (in seconds) before training on next batch samples.')
@@ -118,7 +120,9 @@ def main(argv):
         return AlphaZeroNet(input_shape, num_actions, 3, FLAGS.num_filters, FLAGS.num_fc_units)
 
     network = network_builder()
-    optimizer = torch.optim.SGD(network.parameters(), lr=FLAGS.learning_rate, momentum=FLAGS.sgd_momentum, weight_decay=FLAGS.l2_regularization)
+    optimizer = torch.optim.SGD(
+        network.parameters(), lr=FLAGS.learning_rate, momentum=FLAGS.sgd_momentum, weight_decay=FLAGS.l2_regularization
+    )
     # optimizer = torch.optim.Adam(network.parameters(), lr=FLAGS.learning_rate, weight_decay=FLAGS.l2_regularization)
     lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_decay_milestones, gamma=FLAGS.lr_decay)
 
@@ -128,7 +132,7 @@ def main(argv):
     old_ckpt_network = network_builder()
     new_ckpt_network = network_builder()
 
-    replay = UniformReplay(FLAGS.window_size, random_state)
+    replay = UniformReplay(FLAGS.capacity, random_state)
 
     # Use the stop_event to signaling actors to stop running.
     stop_event = multiprocessing.Event()

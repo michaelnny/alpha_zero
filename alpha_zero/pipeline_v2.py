@@ -118,7 +118,7 @@ def run_training(
         }
 
     while True:
-        if replay.num_games_added < 0.1 * replay.window_size:
+        if replay.num_games_added < 200:
             time.sleep(30)
             continue
 

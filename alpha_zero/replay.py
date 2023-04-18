@@ -29,32 +29,25 @@ TransitionStructure = Transition(state=None, pi_prob=None, value=None)
 
 
 class UniformReplay:
-    """Uniform replay, with window size to limit maximum number of games stored in buffer,
-    and periodically adjusting the buffer capacity based on the mean game length."""
+    """Uniform replay."""
 
     def __init__(
         self,
-        window_size: int,
+        capacity: int,
         random_state: np.random.RandomState,  # pylint: disable=no-member
-        min_game_step: int = 10,  # capacity = window_size x min_game_step, a small number to flush out initial random games quickly
     ):
-        if window_size <= 0:
-            raise ValueError(f'Expect window_size to be a positive integer, got {window_size}')
+        if capacity <= 0:
+            raise ValueError(f'Expect capacity to be a positive integer, got {capacity}')
         self.structure = TransitionStructure
-        self.window_size = window_size
-        self.min_game_step = min_game_step
-        self.avg_game_steps = min_game_step
+        self.capacity = capacity
         self.random_state = random_state
         self.storage = []
 
-        self.game_steps = collections.deque(maxlen=1000)
         self.num_games_added = 0
         self.num_samples_added = 0
 
     def add_game(self, game: Sequence[Any]) -> None:
         """Adds entire game to replay."""
-
-        self.game_steps.append(len(game))
 
         for item in game:
             self.add(item)
@@ -86,19 +79,6 @@ class UniformReplay:
         stacked = [np.stack(xs, axis=0) for xs in transposed]  # Stack on batch dimension (0)
         return type(self.structure)(*stacked)
 
-    def adjust_capacity(self, new_avg_game_steps: int) -> int:
-        assert new_avg_game_steps > 0
-
-        self.avg_game_steps = new_avg_game_steps
-
-        deltas = self.capacity - self.size
-
-        if deltas < 0:
-            for _ in range(abs(deltas)):
-                self.storage.pop(0)
-
-        return self.capacity
-
     def reset(self) -> None:
         """Reset the state of replay."""
         self.num_games_added = 0
@@ -110,7 +90,3 @@ class UniformReplay:
     def size(self) -> int:
         """Number of items currently contained in replay."""
         return len(self.storage)
-
-    @property
-    def capacity(self) -> int:
-        return self.window_size * self.avg_game_steps

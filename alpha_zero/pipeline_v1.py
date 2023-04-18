@@ -129,9 +129,9 @@ def run_self_play(
                 else:
                     episode_values[i] = -reward
 
-        data_queue.put([
-            Transition(state=x, pi_prob=pi, value=v) for x, pi, v in zip(episode_states, episode_search_pis, episode_values)
-        ])
+        data_queue.put(
+            [Transition(state=x, pi_prob=pi, value=v) for x, pi, v in zip(episode_states, episode_search_pis, episode_values)]
+        )
 
         played_games += 1
 
@@ -212,7 +212,7 @@ def run_training(
         }
 
     while True:
-        if replay.num_games_added < 0.1 * replay.window_size:
+        if replay.num_games_added < 200:
             time.sleep(30)
             continue
 
@@ -449,7 +449,7 @@ def run_data_collector(
             item = data_queue.get()
             if item == 'STOP':
                 break
-            
+
             replay.add_game(item)
             game_steps.append(len(item))
 
@@ -458,14 +458,6 @@ def run_data_collector(
                 logging.info(
                     f'Collected {replay.num_games_added} self-play games, sample generation rate {sample_gen_rate:.2f}'
                 )
-
-            if replay.num_games_added % replay.window_size == 0:
-                neww_avg_game_steps = int(np.mean(list(game_steps)))
-
-                if neww_avg_game_steps != replay.avg_game_steps:
-                    old_capacity = replay.capacity
-                    new_capacity = replay.adjust_capacity(neww_avg_game_steps)
-                    logging.info(f'Replay buffer size changed from {old_capacity} to {new_capacity}')
 
         except queue.Empty:
             pass

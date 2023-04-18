@@ -55,7 +55,7 @@ flags.DEFINE_integer(
     'Number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('window_size', 20000, 'Replay buffer stores number of most recent self-play games.')
+flags.DEFINE_integer('capacity', 20000 * 50, 'Replay buffer stores number of most recent self-play games.')
 flags.DEFINE_integer('batch_size', 128, 'Sample batch size when do learning.')
 
 flags.DEFINE_float('learning_rate', 0.01, 'Learning rate.')
@@ -122,7 +122,9 @@ def main(argv):
     num_actions = evaluation_env.action_space.n
 
     network = AlphaZeroNet(input_shape, num_actions, FLAGS.board_size, FLAGS.num_filters, FLAGS.num_fc_units)
-    optimizer = torch.optim.SGD(network.parameters(), lr=FLAGS.learning_rate, momentum=FLAGS.sgd_momentum, weight_decay=FLAGS.l2_regularization)
+    optimizer = torch.optim.SGD(
+        network.parameters(), lr=FLAGS.learning_rate, momentum=FLAGS.sgd_momentum, weight_decay=FLAGS.l2_regularization
+    )
     lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_decay_milestones, gamma=FLAGS.lr_decay)
 
     actor_network = copy.deepcopy(network)
@@ -130,7 +132,7 @@ def main(argv):
 
     new_ckpt_network = copy.deepcopy(network)
 
-    replay = UniformReplay(FLAGS.window_size, random_state)
+    replay = UniformReplay(FLAGS.capacity, random_state)
 
     train_steps = 0
     # Load states from checkpoint to resume training.
