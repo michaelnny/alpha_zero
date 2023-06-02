@@ -2,7 +2,7 @@ Alpha Zero
 ================================================================================================
 A PyTorch implementation of DeepMind's AlphaZero agent to play Free-style Gomoku board game
 
-THIS PROJECT IS UNDER GOING SOME MAJOR DEVELOPMENT AND WILL BE UPDATED SOON
+# THIS PROJECT IS UNDER GOING SOME MAJOR DEVELOPMENT AND WILL BE UPDATED SOON
 
 # Content
 - [Environment and Requirements](#environment-and-requirements)
