@@ -1,0 +1,128 @@
+INFO 2023-05-24 04:31:46 run_training_go.py:160] {'board_size': 9, 'komi': 7.5, 'num_stack': 8, 'num_res_blocks': 10, 'num_filters': 128, 'num_fc_units': 128, 'min_games': 20000, 'games_per_ckpt': 5000, 'replay_capacity': 12500000, 'batch_size': 1024, 'argument_data': True, 'compress_data': False, 'init_lr': 0.01, 'lr_decay': 0.1, 'lr_milestones': [200000, 400000], 'l2_regularization': 0.0001, 'sgd_momentum': 0.9, 'max_training_steps': 1000000, 'num_actors': 113, 'num_simulations': 200, 'num_parallel': 8, 'c_puct_base': 19652.0, 'c_puct_init': 1.25, 'warm_up_steps': 16, 'init_resign_threshold': -0.85, 'check_resign_after_steps': 30, 'target_fp_rate': 0.05, 'disable_resign_ratio': 0.1, 'reset_fp_interval': 100000, 'no_resign_games': 50000, 'default_rating': 0.0, 'ckpt_interval': 1000, 'log_interval': 200, 'ckpt_dir': './checkpoints/go/9x9', 'logs_dir': './logs/go/9x9', 'eval_games_dir': './pro_games/go/9x9', 'save_sgf_dir': './selfplay_games/go/9x9', 'save_sgf_interval': 500, 'save_replay_interval': 0, 'load_ckpt': '', 'load_replay': '', 'log_level': 'INFO', 'seed': 1}
+INFO 2023-05-24 04:31:50 eval_dataset.py:213] Building evaluation dataset...
+INFO 2023-05-24 04:31:57 pipeline.py:408] Training sample ratio (over one checkpoint) is 0.08
+INFO 2023-05-24 04:31:57 pipeline.py:419] Resignation is disabled for first 50000 self-play games
+INFO 2023-05-24 04:39:03 eval_dataset.py:244] Finished loading 620105 positions from 10268 games
+INFO 2023-05-24 05:40:46 pipeline.py:468] Collected total of 10000 self-play games, 994078 samples. Average game length is 99.6045. Average time per game (over 113 actors) is 0.4106
+INFO 2023-05-24 06:50:11 pipeline.py:468] Collected total of 20000 self-play games, 1996196 samples. Average game length is 100.8465. Average time per game (over 113 actors) is 0.413
+INFO 2023-05-24 08:18:31 pipeline.py:468] Collected total of 30000 self-play games, 3163347 samples. Average game length is 112.822. Average time per game (over 113 actors) is 0.4927
+INFO 2023-05-24 09:44:43 pipeline.py:468] Collected total of 40000 self-play games, 4288090 samples. Average game length is 114.002. Average time per game (over 113 actors) is 0.49
+INFO 2023-05-24 11:04:07 pipeline.py:468] Collected total of 50000 self-play games, 5415911 samples. Average game length is 114.167. Average time per game (over 113 actors) is 0.4543
+INFO 2023-05-24 11:04:07 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-24 12:09:09 pipeline.py:468] Collected total of 60000 self-play games, 6378423 samples. Average game length is 93.869. Average time per game (over 113 actors) is 0.3841
+INFO 2023-05-24 13:09:55 pipeline.py:468] Collected total of 70000 self-play games, 7331356 samples. Average game length is 92.9095. Average time per game (over 113 actors) is 0.3434
+INFO 2023-05-24 14:11:00 pipeline.py:468] Collected total of 80000 self-play games, 8276081 samples. Average game length is 99.3795. Average time per game (over 113 actors) is 0.3402
+INFO 2023-05-24 15:05:38 pipeline.py:468] Collected total of 90000 self-play games, 9170120 samples. Average game length is 89.9385. Average time per game (over 113 actors) is 0.3157
+INFO 2023-05-24 15:59:11 pipeline.py:468] Collected total of 100000 self-play games, 10044503 samples. Average game length is 84.6025. Average time per game (over 113 actors) is 0.3011
+INFO 2023-05-24 15:59:11 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-24 16:51:28 pipeline.py:468] Collected total of 110000 self-play games, 10914256 samples. Average game length is 86.876. Average time per game (over 113 actors) is 0.2908
+INFO 2023-05-24 17:41:00 pipeline.py:468] Collected total of 120000 self-play games, 11750289 samples. Average game length is 85.0625. Average time per game (over 113 actors) is 0.2768
+INFO 2023-05-24 18:31:12 pipeline.py:468] Collected total of 130000 self-play games, 12590748 samples. Average game length is 83.878. Average time per game (over 113 actors) is 0.2791
+INFO 2023-05-24 19:17:58 pipeline.py:468] Collected total of 140000 self-play games, 13395061 samples. Average game length is 83.2275. Average time per game (over 113 actors) is 0.2612
+INFO 2023-05-24 20:03:09 pipeline.py:468] Collected total of 150000 self-play games, 14188961 samples. Average game length is 78.5935. Average time per game (over 113 actors) is 0.2531
+INFO 2023-05-24 20:47:00 pipeline.py:468] Collected total of 160000 self-play games, 14964104 samples. Average game length is 78.566. Average time per game (over 113 actors) is 0.2425
+INFO 2023-05-24 21:28:22 pipeline.py:468] Collected total of 170000 self-play games, 15690978 samples. Average game length is 73.9275. Average time per game (over 113 actors) is 0.2302
+INFO 2023-05-24 22:08:21 pipeline.py:468] Collected total of 180000 self-play games, 16426618 samples. Average game length is 73.3535. Average time per game (over 113 actors) is 0.2212
+INFO 2023-05-24 22:49:38 pipeline.py:468] Collected total of 190000 self-play games, 17168306 samples. Average game length is 72.7675. Average time per game (over 113 actors) is 0.2263
+INFO 2023-05-24 23:27:22 pipeline.py:468] Collected total of 200000 self-play games, 17855200 samples. Average game length is 65.656. Average time per game (over 113 actors) is 0.2105
+INFO 2023-05-24 23:27:22 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-25 00:03:57 pipeline.py:468] Collected total of 210000 self-play games, 18523544 samples. Average game length is 67.5915. Average time per game (over 113 actors) is 0.1979
+INFO 2023-05-25 00:38:34 pipeline.py:468] Collected total of 220000 self-play games, 19169694 samples. Average game length is 61.408. Average time per game (over 113 actors) is 0.1917
+INFO 2023-05-25 01:12:20 pipeline.py:468] Collected total of 230000 self-play games, 19796629 samples. Average game length is 60.7855. Average time per game (over 113 actors) is 0.1826
+INFO 2023-05-25 01:44:00 pipeline.py:468] Collected total of 240000 self-play games, 20388742 samples. Average game length is 56.4385. Average time per game (over 113 actors) is 0.1724
+INFO 2023-05-25 02:15:59 pipeline.py:468] Collected total of 250000 self-play games, 20994320 samples. Average game length is 59.635. Average time per game (over 113 actors) is 0.171
+INFO 2023-05-25 02:47:11 pipeline.py:468] Collected total of 260000 self-play games, 21586199 samples. Average game length is 57.9945. Average time per game (over 113 actors) is 0.1689
+INFO 2023-05-25 03:18:15 pipeline.py:468] Collected total of 270000 self-play games, 22176996 samples. Average game length is 56.302. Average time per game (over 113 actors) is 0.1671
+INFO 2023-05-25 03:47:35 pipeline.py:468] Collected total of 280000 self-play games, 22744731 samples. Average game length is 57.4175. Average time per game (over 113 actors) is 0.1579
+INFO 2023-05-25 04:16:13 pipeline.py:468] Collected total of 290000 self-play games, 23299306 samples. Average game length is 57.25. Average time per game (over 113 actors) is 0.154
+INFO 2023-05-25 04:45:01 pipeline.py:468] Collected total of 300000 self-play games, 23861878 samples. Average game length is 55.446. Average time per game (over 113 actors) is 0.1555
+INFO 2023-05-25 04:45:01 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-25 05:13:44 pipeline.py:468] Collected total of 310000 self-play games, 24419678 samples. Average game length is 54.395. Average time per game (over 113 actors) is 0.1539
+INFO 2023-05-25 05:40:30 pipeline.py:468] Collected total of 320000 self-play games, 24945985 samples. Average game length is 51.118. Average time per game (over 113 actors) is 0.1441
+INFO 2023-05-25 06:06:29 pipeline.py:468] Collected total of 330000 self-play games, 25458068 samples. Average game length is 52.565. Average time per game (over 113 actors) is 0.1376
+INFO 2023-05-25 06:33:46 pipeline.py:468] Collected total of 340000 self-play games, 25994931 samples. Average game length is 51.7945. Average time per game (over 113 actors) is 0.1451
+INFO 2023-05-25 06:59:28 pipeline.py:468] Collected total of 350000 self-play games, 26503061 samples. Average game length is 51.013. Average time per game (over 113 actors) is 0.1365
+INFO 2023-05-25 07:24:14 pipeline.py:468] Collected total of 360000 self-play games, 26996177 samples. Average game length is 52.253. Average time per game (over 113 actors) is 0.1315
+INFO 2023-05-25 07:49:10 pipeline.py:468] Collected total of 370000 self-play games, 27493576 samples. Average game length is 53.4275. Average time per game (over 113 actors) is 0.1319
+INFO 2023-05-25 08:14:17 pipeline.py:468] Collected total of 380000 self-play games, 27997030 samples. Average game length is 52.717. Average time per game (over 113 actors) is 0.1338
+INFO 2023-05-25 08:37:47 pipeline.py:468] Collected total of 390000 self-play games, 28470710 samples. Average game length is 46.1015. Average time per game (over 113 actors) is 0.1265
+INFO 2023-05-25 09:01:00 pipeline.py:468] Collected total of 400000 self-play games, 28937983 samples. Average game length is 46.8175. Average time per game (over 113 actors) is 0.1213
+INFO 2023-05-25 09:01:00 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-25 09:25:00 pipeline.py:468] Collected total of 410000 self-play games, 29421640 samples. Average game length is 50.165. Average time per game (over 113 actors) is 0.1251
+INFO 2023-05-25 09:48:15 pipeline.py:468] Collected total of 420000 self-play games, 29892517 samples. Average game length is 47.591. Average time per game (over 113 actors) is 0.1236
+INFO 2023-05-25 10:10:36 pipeline.py:468] Collected total of 430000 self-play games, 30346173 samples. Average game length is 45.3215. Average time per game (over 113 actors) is 0.1174
+INFO 2023-05-25 10:33:07 pipeline.py:468] Collected total of 440000 self-play games, 30805991 samples. Average game length is 45.444. Average time per game (over 113 actors) is 0.1174
+INFO 2023-05-25 10:55:11 pipeline.py:468] Collected total of 450000 self-play games, 31256848 samples. Average game length is 44.149. Average time per game (over 113 actors) is 0.1155
+INFO 2023-05-25 11:17:45 pipeline.py:468] Collected total of 460000 self-play games, 31716670 samples. Average game length is 47.3695. Average time per game (over 113 actors) is 0.1165
+INFO 2023-05-25 11:40:08 pipeline.py:468] Collected total of 470000 self-play games, 32174621 samples. Average game length is 46.409. Average time per game (over 113 actors) is 0.1177
+INFO 2023-05-25 12:02:59 pipeline.py:468] Collected total of 480000 self-play games, 32642786 samples. Average game length is 47.983. Average time per game (over 113 actors) is 0.1186
+INFO 2023-05-25 12:25:02 pipeline.py:468] Collected total of 490000 self-play games, 33096072 samples. Average game length is 45.7335. Average time per game (over 113 actors) is 0.116
+INFO 2023-05-25 12:47:05 pipeline.py:468] Collected total of 500000 self-play games, 33547838 samples. Average game length is 46.58. Average time per game (over 113 actors) is 0.1146
+INFO 2023-05-25 12:47:05 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-25 13:08:59 pipeline.py:468] Collected total of 510000 self-play games, 33997263 samples. Average game length is 43.6815. Average time per game (over 113 actors) is 0.1153
+INFO 2023-05-25 13:31:06 pipeline.py:468] Collected total of 520000 self-play games, 34447700 samples. Average game length is 46.3045. Average time per game (over 113 actors) is 0.1141
+INFO 2023-05-25 13:52:00 pipeline.py:468] Collected total of 530000 self-play games, 34879448 samples. Average game length is 44.0395. Average time per game (over 113 actors) is 0.1095
+INFO 2023-05-25 14:13:20 pipeline.py:468] Collected total of 540000 self-play games, 35318965 samples. Average game length is 44.781. Average time per game (over 113 actors) is 0.1106
+INFO 2023-05-25 14:34:26 pipeline.py:468] Collected total of 550000 self-play games, 35751216 samples. Average game length is 43.654. Average time per game (over 113 actors) is 0.1097
+INFO 2023-05-25 14:55:45 pipeline.py:468] Collected total of 560000 self-play games, 36190711 samples. Average game length is 46.2055. Average time per game (over 113 actors) is 0.1104
+INFO 2023-05-25 15:17:02 pipeline.py:468] Collected total of 570000 self-play games, 36630554 samples. Average game length is 44.288. Average time per game (over 113 actors) is 0.1112
+INFO 2023-05-25 15:37:53 pipeline.py:468] Collected total of 580000 self-play games, 37057244 samples. Average game length is 42.4545. Average time per game (over 113 actors) is 0.1086
+INFO 2023-05-25 15:59:17 pipeline.py:468] Collected total of 590000 self-play games, 37495369 samples. Average game length is 42.503. Average time per game (over 113 actors) is 0.1107
+INFO 2023-05-25 16:20:05 pipeline.py:468] Collected total of 600000 self-play games, 37922024 samples. Average game length is 42.645. Average time per game (over 113 actors) is 0.1077
+INFO 2023-05-25 16:20:05 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-25 16:41:20 pipeline.py:468] Collected total of 610000 self-play games, 38360606 samples. Average game length is 44.7215. Average time per game (over 113 actors) is 0.1093
+INFO 2023-05-25 17:02:12 pipeline.py:468] Collected total of 620000 self-play games, 38796612 samples. Average game length is 43.3395. Average time per game (over 113 actors) is 0.1087
+INFO 2023-05-25 17:22:46 pipeline.py:468] Collected total of 630000 self-play games, 39220419 samples. Average game length is 42.379. Average time per game (over 113 actors) is 0.1065
+INFO 2023-05-25 17:43:46 pipeline.py:468] Collected total of 640000 self-play games, 39654240 samples. Average game length is 45.1305. Average time per game (over 113 actors) is 0.1078
+INFO 2023-05-25 18:04:55 pipeline.py:468] Collected total of 650000 self-play games, 40092631 samples. Average game length is 44.197. Average time per game (over 113 actors) is 0.1101
+INFO 2023-05-25 18:25:56 pipeline.py:468] Collected total of 660000 self-play games, 40526007 samples. Average game length is 43.727. Average time per game (over 113 actors) is 0.1087
+INFO 2023-05-25 18:46:59 pipeline.py:468] Collected total of 670000 self-play games, 40965075 samples. Average game length is 43.6695. Average time per game (over 113 actors) is 0.1093
+INFO 2023-05-25 19:07:53 pipeline.py:468] Collected total of 680000 self-play games, 41400437 samples. Average game length is 44.1995. Average time per game (over 113 actors) is 0.1078
+INFO 2023-05-25 19:28:37 pipeline.py:468] Collected total of 690000 self-play games, 41827822 samples. Average game length is 44.385. Average time per game (over 113 actors) is 0.1075
+INFO 2023-05-25 19:49:49 pipeline.py:468] Collected total of 700000 self-play games, 42264848 samples. Average game length is 44.053. Average time per game (over 113 actors) is 0.11
+INFO 2023-05-25 19:49:49 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-25 20:10:45 pipeline.py:468] Collected total of 710000 self-play games, 42702418 samples. Average game length is 45.034. Average time per game (over 113 actors) is 0.1085
+INFO 2023-05-25 20:31:37 pipeline.py:468] Collected total of 720000 self-play games, 43135896 samples. Average game length is 44.036. Average time per game (over 113 actors) is 0.1081
+INFO 2023-05-25 20:52:52 pipeline.py:468] Collected total of 730000 self-play games, 43577132 samples. Average game length is 44.581. Average time per game (over 113 actors) is 0.1099
+INFO 2023-05-25 21:14:25 pipeline.py:468] Collected total of 740000 self-play games, 44025318 samples. Average game length is 44.2505. Average time per game (over 113 actors) is 0.112
+INFO 2023-05-25 21:35:18 pipeline.py:468] Collected total of 750000 self-play games, 44457554 samples. Average game length is 43.1415. Average time per game (over 113 actors) is 0.1088
+INFO 2023-05-25 21:55:28 pipeline.py:468] Collected total of 760000 self-play games, 44874780 samples. Average game length is 43.37. Average time per game (over 113 actors) is 0.1045
+INFO 2023-05-25 22:16:37 pipeline.py:468] Collected total of 770000 self-play games, 45315172 samples. Average game length is 45.3305. Average time per game (over 113 actors) is 0.1086
+INFO 2023-05-25 22:36:49 pipeline.py:468] Collected total of 780000 self-play games, 45733529 samples. Average game length is 42.3985. Average time per game (over 113 actors) is 0.1056
+INFO 2023-05-25 22:57:01 pipeline.py:468] Collected total of 790000 self-play games, 46153285 samples. Average game length is 41.549. Average time per game (over 113 actors) is 0.1044
+INFO 2023-05-25 23:17:17 pipeline.py:468] Collected total of 800000 self-play games, 46572725 samples. Average game length is 43.001. Average time per game (over 113 actors) is 0.1041
+INFO 2023-05-25 23:17:17 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-25 23:37:27 pipeline.py:468] Collected total of 810000 self-play games, 46994368 samples. Average game length is 42.609. Average time per game (over 113 actors) is 0.1042
+INFO 2023-05-25 23:58:00 pipeline.py:468] Collected total of 820000 self-play games, 47423256 samples. Average game length is 43.453. Average time per game (over 113 actors) is 0.1062
+INFO 2023-05-26 00:18:29 pipeline.py:468] Collected total of 830000 self-play games, 47844496 samples. Average game length is 41.1635. Average time per game (over 113 actors) is 0.1061
+INFO 2023-05-26 00:39:08 pipeline.py:468] Collected total of 840000 self-play games, 48275596 samples. Average game length is 43.6615. Average time per game (over 113 actors) is 0.1059
+INFO 2023-05-26 00:59:42 pipeline.py:468] Collected total of 850000 self-play games, 48708398 samples. Average game length is 43.3115. Average time per game (over 113 actors) is 0.1071
+INFO 2023-05-26 01:19:23 pipeline.py:468] Collected total of 860000 self-play games, 49118665 samples. Average game length is 41.4045. Average time per game (over 113 actors) is 0.1022
+INFO 2023-05-26 01:39:25 pipeline.py:468] Collected total of 870000 self-play games, 49536287 samples. Average game length is 42.644. Average time per game (over 113 actors) is 0.1026
+INFO 2023-05-26 01:59:36 pipeline.py:468] Collected total of 880000 self-play games, 49960730 samples. Average game length is 42.356. Average time per game (over 113 actors) is 0.1044
+INFO 2023-05-26 02:19:56 pipeline.py:468] Collected total of 890000 self-play games, 50384293 samples. Average game length is 42.3115. Average time per game (over 113 actors) is 0.1045
+INFO 2023-05-26 02:39:57 pipeline.py:468] Collected total of 900000 self-play games, 50800649 samples. Average game length is 41.7095. Average time per game (over 113 actors) is 0.1034
+INFO 2023-05-26 02:39:57 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-26 03:00:20 pipeline.py:468] Collected total of 910000 self-play games, 51227062 samples. Average game length is 43.634. Average time per game (over 113 actors) is 0.1045
+INFO 2023-05-26 03:20:32 pipeline.py:468] Collected total of 920000 self-play games, 51649569 samples. Average game length is 42.9535. Average time per game (over 113 actors) is 0.1046
+INFO 2023-05-26 03:40:29 pipeline.py:468] Collected total of 930000 self-play games, 52069924 samples. Average game length is 41.5835. Average time per game (over 113 actors) is 0.1033
+INFO 2023-05-26 04:00:40 pipeline.py:468] Collected total of 940000 self-play games, 52488116 samples. Average game length is 41.362. Average time per game (over 113 actors) is 0.1033
+INFO 2023-05-26 04:20:12 pipeline.py:468] Collected total of 950000 self-play games, 52897535 samples. Average game length is 40.736. Average time per game (over 113 actors) is 0.1011
+INFO 2023-05-26 04:39:54 pipeline.py:468] Collected total of 960000 self-play games, 53309227 samples. Average game length is 41.526. Average time per game (over 113 actors) is 0.1008
+INFO 2023-05-26 04:59:56 pipeline.py:468] Collected total of 970000 self-play games, 53731104 samples. Average game length is 42.6065. Average time per game (over 113 actors) is 0.1028
+INFO 2023-05-26 05:19:29 pipeline.py:468] Collected total of 980000 self-play games, 54141356 samples. Average game length is 41.754. Average time per game (over 113 actors) is 0.1008
+INFO 2023-05-26 05:38:52 pipeline.py:468] Collected total of 990000 self-play games, 54546280 samples. Average game length is 39.957. Average time per game (over 113 actors) is 0.1002
+INFO 2023-05-26 05:58:55 pipeline.py:468] Collected total of 1000000 self-play games, 54965004 samples. Average game length is 41.2065. Average time per game (over 113 actors) is 0.1024
+INFO 2023-05-26 05:58:55 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-26 06:18:43 pipeline.py:468] Collected total of 1010000 self-play games, 55379749 samples. Average game length is 42.041. Average time per game (over 113 actors) is 0.1017
+INFO 2023-05-26 06:38:30 pipeline.py:468] Collected total of 1020000 self-play games, 55795157 samples. Average game length is 41.799. Average time per game (over 113 actors) is 0.1019
+INFO 2023-05-26 06:57:42 pipeline.py:468] Collected total of 1030000 self-play games, 56198714 samples. Average game length is 40.9695. Average time per game (over 113 actors) is 0.099
+INFO 2023-05-26 07:16:58 pipeline.py:468] Collected total of 1040000 self-play games, 56607463 samples. Average game length is 41.1535. Average time per game (over 113 actors) is 0.0989
+INFO 2023-05-26 07:36:12 pipeline.py:468] Collected total of 1050000 self-play games, 57017194 samples. Average game length is 40.9885. Average time per game (over 113 actors) is 0.0987
+INFO 2023-05-26 07:55:22 pipeline.py:468] Collected total of 1060000 self-play games, 57422234 samples. Average game length is 40.872. Average time per game (over 113 actors) is 0.098
+INFO 2023-05-26 08:14:26 pipeline.py:468] Collected total of 1070000 self-play games, 57824304 samples. Average game length is 40.2745. Average time per game (over 113 actors) is 0.0977
+INFO 2023-05-26 08:33:34 pipeline.py:468] Collected total of 1080000 self-play games, 58229578 samples. Average game length is 40.396. Average time per game (over 113 actors) is 0.0978
+INFO 2023-05-26 08:52:42 pipeline.py:468] Collected total of 1090000 self-play games, 58633558 samples. Average game length is 40.724. Average time per game (over 113 actors) is 0.0978
+INFO 2023-05-26 09:11:43 pipeline.py:468] Collected total of 1100000 self-play games, 59034617 samples. Average game length is 41.0345. Average time per game (over 113 actors) is 0.097
+INFO 2023-05-26 09:11:43 pipeline.py:491] Reset resignation threshold to -0.85
+INFO 2023-05-26 09:30:44 pipeline.py:468] Collected total of 1110000 self-play games, 59437442 samples. Average game length is 40.549. Average time per game (over 113 actors) is 0.0974

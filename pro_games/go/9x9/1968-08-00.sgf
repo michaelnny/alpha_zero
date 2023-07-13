@@ -1,0 +1,20 @@
+(;
+EV[9x9 game]
+PB[Miyamoto Naoki]
+BR[8d]
+PW[Go Seigen]
+WR[9d]
+KM[0]
+RE[B+4]
+DT[1968]
+DTX[Published 1968-08]
+SZ[9]
+
+;B[de];W[fe];B[ee];W[fd];B[ff];W[gf];B[gg];W[fg];B[ef];W[gh]
+;B[hg];W[hh];B[eg];W[fh];B[ge];W[hf];B[he];W[ig];B[fc];W[gd]
+;B[gc];W[hd];B[ed];W[be];B[hc];W[ie];B[bc];W[cg];B[cf];W[bf]
+;B[ch];W[cc];B[cb];W[dg];B[dh];W[bh];B[eh];W[dc];B[bd];W[ec]
+;B[cd];W[fb];B[gb];W[bb];B[eb];W[db];B[fa];W[ca];B[ea];W[da]
+;B[df];W[bg];B[bi];W[ab];B[ah];W[ci];B[di];W[ag];B[ae];W[ac]
+;B[ad];W[ha];B[hb];W[fi];B[ce];W[ai];B[ci];W[ei];B[ah];W[ic]
+;B[ib];W[ai];B[ba];W[aa];B[ah];W[ga];B[ia];W[ai];B[ga];W[id])

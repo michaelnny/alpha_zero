@@ -1,0 +1,17 @@
+(;
+GM[1]
+FF[4]
+CA[UTF-8]
+AP[Minigo_sgfgenerator]
+RU[Chinese]
+SZ[9]
+KM[7.5]
+PW[000060-boss-mouse]
+PB[000060-boss-mouse]
+RE[W+R]
+
+;B[hc];W[ef];B[fd];W[dd];B[ah];W[ee];B[eh];W[gf];B[dg];W[ec]
+;B[fc];W[fb];B[gb];W[eb];B[he];W[cf];B[df];W[de];B[hf];W[bg]
+;B[cg];W[bf];B[bh];W[gg];B[gh];W[hg];B[hh];W[ge];B[gd];W[ig]
+;B[ce];W[be];B[cd];W[cc];B[bd];W[bc];B[ad];W[ae];B[ag];W[ac]
+;B[fh];W[fe];B[fa];W[ea])

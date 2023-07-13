@@ -1,0 +1,23 @@
+(;
+CA[UTF-8]
+AP[AlphaZeroMini_sgfgenerator]
+RU[Chinese]
+PB[AlphaZeroMini]
+BR[]
+PW[AlphaZeroMini]
+WR[]
+KM[7.5]
+RE[W+4.5]
+DT[2023-05-26 18:40:01]
+SZ[9]
+
+;B[dg];W[gc];B[fd];W[gd];B[fe];W[ge];B[gf];W[ff];B[ef];W[fg]
+;B[gg];W[fh];B[fc];W[fb];B[eb];W[gb];B[gh];W[hf];B[hg];W[he]
+;B[eg];W[cc];B[cb];W[bb];B[db];W[bc];B[be];W[ce];B[cf];W[bf]
+;B[bg];W[bd];B[af];W[dd];B[ec];W[ee];B[de];W[ed];B[cd];W[dc]
+;B[ba];W[ea];B[ab];W[da];B[ca];W[fa];B[ad];W[aa];B[fe];W[]
+;B[fd];W[];B[ec];W[fc];B[fe];W[fd];B[eh];W[fe];B[fi];W[ac]
+;B[ae];W[];B[ce];W[];B[if];W[ie];B[ig];W[];B[id];W[ic]
+;B[hc];W[hd];B[hb];W[ib];B[ha];W[ga];B[ca];W[ia];B[hb];W[]
+;B[ha];W[hc];B[ha];W[];B[db];W[eb];B[cb];W[ba];B[cb];W[]
+;B[ca];W[];B[])

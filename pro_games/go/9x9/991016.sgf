@@ -1,0 +1,20 @@
+(;
+EV[Mini-Go]
+PB[Mitsunaga Junzo]
+BR[4p]
+PW[Kageyama Toshiyuki]
+WR[4p]
+KM[6.5]
+RE[W+0.5]
+DT[1999-10-16]
+SZ[9]
+
+;B[fg];W[dd];B[ed];W[ec];B[de];W[dc];B[ce];W[fd];B[ee];W[gg]
+;B[gf];W[fh];B[eg];W[hg];B[hf];W[eh];B[fc];W[fb];B[hh];W[gh]
+;B[ig];W[dg];B[gc];W[bg];B[gb];W[bd];B[bf];W[ea];B[cg];W[ch]
+;B[df];W[cf];B[cd];W[cc];B[cg];W[dh];B[bh];W[cf];B[bc];W[ff]
+;B[bb];W[fe];B[cg];W[ef];B[ag];W[hd];B[cb];W[hc];B[hb];W[ib]
+;B[gd];W[ge];B[db];W[ha];B[eb];W[bi];B[ga];W[he];B[ia];W[ic]
+;B[ah];W[ha];B[ci];W[di];B[ia];W[ec];B[dc];W[ha]
+C[W fills the half-point ko]
+)

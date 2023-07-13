@@ -1,0 +1,21 @@
+(;
+EV[Mini-Go]
+RO[CC #2]
+PB[Yanagawa Hiromasa]
+BR[5p]
+PW[Cho Chikun]
+WR[9p]
+KM[5.5]
+RE[W+3.5]
+DT[1993-11-06]
+SZ[9]
+SO[http://gobase.org/9x9/book4/]
+
+;B[ee];W[ge];B[ce];W[be];B[bf];W[cd];B[de];W[ec];B[dc];W[cc]
+;B[gf];W[hf];B[gg];W[hg];B[gd];W[fe];B[fd];W[hd];B[ff];W[he]
+;B[hh];W[db];B[ed];W[gb];B[eb];W[dd];B[fb];W[hb];B[fc];W[ae]
+;B[bb];W[bg];B[cf];W[af];B[bc];W[bd];B[cb];W[da];B[cg];W[dc]
+;B[bh];W[ac];B[ab];W[ba];B[ag];W[ca];B[ad];W[gh];B[fh];W[ac]
+;B[gc];W[hc];B[ad];W[ih];B[ea];W[ac];B[ig];W[aa];B[ii];W[if]
+;B[ga];W[ih];B[gi];W[hi];B[gh];W[ha];B[ii];W[ig];B[hi];W[fa]
+;B[];W[ga])

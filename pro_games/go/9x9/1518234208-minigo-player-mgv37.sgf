@@ -1,0 +1,17 @@
+(;
+GM[1]
+FF[4]
+CA[UTF-8]
+AP[Minigo_sgfgenerator]
+RU[Chinese]
+SZ[9]
+KM[7.5]
+PW[000064-well-seal]
+PB[000064-well-seal]
+RE[W+R]
+
+;B[ed];W[ef];B[gf];W[cc];B[de];W[df];B[cf];W[fe];B[fg];W[fd]
+;B[ec];W[fc];B[ce];W[eg];B[fb];W[eb];B[ee];W[ff];B[gb];W[db]
+;B[gc];W[gd];B[hd];W[he];B[ge];W[hc];B[dg];W[eh];B[fh];W[id]
+;B[dh];W[hf];B[gg];W[ei];B[fi];W[hg];B[di];W[hd];B[hh];W[hb]
+;B[cb];W[bb];B[dc];W[ca];B[bc];W[bd];B[cd];W[ac])
