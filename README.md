@@ -1,8 +1,7 @@
 Alpha Zero
 ================================================================================================
 A PyTorch implementation of DeepMind's AlphaZero agent to play Go and Free-style Gomoku board game.
-This project is part of my upcoming book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python"
-
+This project is part of my book [**The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python**](https://link.springer.com/book/10.1007/978-1-4842-9606-6)
 
 # Content
 - [Environment and Requirements](#environment-and-requirements)
@@ -12,7 +11,7 @@ This project is part of my upcoming book "The Art of Reinforcement Learning: Fun
 - [Train Agents](#train-agents)
 - [Evaluate Agents](#evaluate-agents)
 - [Limitations](#limitations)
-- [References](#references)
+- [References Code](#references-code)
 - [License](#license)
 - [Citing our work](#citing-our-work)
 
@@ -186,10 +185,9 @@ python3 -m eval_agent_gomoku_cmd --nohuman_vs_ai
 * The basic GUI client implemented in `envs.gui.py` may not have a nice looking UI, and may not offer a consistent UI across different OS platforms, especially on Windows. This is due to its limited ability to handle varying screen resolutions and scaling. However, the core features of the client should function properly.
 * The basic GUI client implemented in `envs.gui.py` may occasionally hang if you're playing against the agent and clicking too fast or making a large number of clicks in a short amount of time. In such cases, the only resolution is to start a new game or relaunch the GUI client.
 
-## Reference Code
+## References Code
 * [A Deep Dive into Monte Carlo Tree Search](https://www.moderndescartes.com/essays/deep_dive_mcts/)
 * [Minigo: A minimalist Go engine modeled after AlphaGo Zero](https://github.com/tensorflow/minigo)
-
 
 
 # License
@@ -199,9 +197,19 @@ This project is licensed under the MIT License, see the LICENSE file for details
 
 # Citing our work
 
-If you reference or use our project in your research, please cite:
+If you reference or use our project in your research, please cite our work:
 
+```bibtex
+@book{the_art_of_rl2023,
+  author    = {Michael Hu},
+  title     = {The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python},
+  year      = {2023},
+  publisher = {Apress},
+  url       = {https://link.springer.com/book/10.1007/978-1-4842-9606-6}
+}
 ```
+
+```bibtex
 @software{alpha_zero2022github,
   title = {{Alpha Zero}: A PyTorch implementation of DeepMind's AlphaZero agent},
   author = {Michael Hu},
