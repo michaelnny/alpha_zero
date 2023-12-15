@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Evaluate the AlphaZero agent on Go."""
 from absl import flags
 import os
@@ -9,17 +13,29 @@ import torch
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 9, 'Board size for Go.')
 flags.DEFINE_float('komi', 7.5, 'Komi rule for Go.')
-flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
+flags.DEFINE_integer(
+    'num_stack',
+    8,
+    'Stack N previous states, the state is an image of N x 2 + 1 binary planes.',
+)
 
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer('num_filters', 128, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer('num_fc_units', 128, 'Number of hidden units in the linear layer of the neural network.')
+flags.DEFINE_integer(
+    'num_fc_units',
+    128,
+    'Number of hidden units in the linear layer of the neural network.',
+)
 
 flags.DEFINE_string(
-    'black_ckpt', './checkpoints/go/9x9/training_steps_154000.ckpt', 'Load the checkpoint file for black player.'
+    'black_ckpt',
+    './checkpoints/go/9x9/training_steps_154000.ckpt',
+    'Load the checkpoint file for black player.',
 )
 flags.DEFINE_string(
-    'white_ckpt', './checkpoints/go/9x9/training_steps_154000.ckpt', 'Load the checkpoint file for white player.'
+    'white_ckpt',
+    './checkpoints/go/9x9/training_steps_154000.ckpt',
+    'Load the checkpoint file for white player.',
 )
 
 flags.DEFINE_integer('num_simulations', 400, 'Number of iterations per MCTS search.')
@@ -65,7 +81,13 @@ def main():
     num_actions = eval_env.action_space.n
 
     def network_builder():
-        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_filters, FLAGS.num_fc_units)
+        return AlphaZeroNet(
+            input_shape,
+            num_actions,
+            FLAGS.num_res_blocks,
+            FLAGS.num_filters,
+            FLAGS.num_fc_units,
+        )
 
     def load_checkpoint_for_net(network, ckpt_file, device):
         if ckpt_file and os.path.isfile(ckpt_file):
@@ -106,7 +128,12 @@ def main():
         black_player = mcts_player_builder(FLAGS.black_ckpt, runtime_device)
         black_player = wrap_player(black_player)
 
-    game_gui = BoardGameGui(eval_env, black_player=black_player, white_player=white_player, show_steps=FLAGS.show_steps)
+    game_gui = BoardGameGui(
+        eval_env,
+        black_player=black_player,
+        white_player=white_player,
+        show_steps=FLAGS.show_steps,
+    )
 
     game_gui.start()
 

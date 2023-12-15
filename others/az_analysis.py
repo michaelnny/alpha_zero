@@ -1,11 +1,23 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 import math
 
 from network import AlphaZeroNet
 
 
-def compute_nn_params(board_size, num_stack, resign, num_res_blocks, num_filters, num_fc_units, pad_3=False):
+def compute_nn_params(
+    board_size,
+    num_stack,
+    resign,
+    num_res_blocks,
+    num_filters,
+    num_fc_units,
+    pad_3=False,
+):
     input_shape = (num_stack * 2 + 1, board_size, board_size)
     num_actions = board_size * board_size + 1 if resign else board_size * board_size
 

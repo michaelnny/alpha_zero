@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Evaluate different model's performance on Go by playing some matches."""
 from absl import flags
 import os
@@ -14,17 +18,29 @@ import torch
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 9, 'Board size for Go.')
 flags.DEFINE_float('komi', 7.5, 'Komi rule for Go.')
-flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
+flags.DEFINE_integer(
+    'num_stack',
+    8,
+    'Stack N previous states, the state is an image of N x 2 + 1 binary planes.',
+)
 
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer('num_filters', 128, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer('num_fc_units', 128, 'Number of hidden units in the linear layer of the neural network.')
+flags.DEFINE_integer(
+    'num_fc_units',
+    128,
+    'Number of hidden units in the linear layer of the neural network.',
+)
 
 flags.DEFINE_string(
-    'black_ckpt', './checkpoints/go/9x9/training_steps_190000.ckpt', 'Load the checkpoint file for black player.'
+    'black_ckpt',
+    './checkpoints/go/9x9/training_steps_190000.ckpt',
+    'Load the checkpoint file for black player.',
 )
 flags.DEFINE_string(
-    'white_ckpt', './checkpoints/go/9x9/training_steps_139000.ckpt', 'Load the checkpoint file for white player.'
+    'white_ckpt',
+    './checkpoints/go/9x9/training_steps_139000.ckpt',
+    'Load the checkpoint file for white player.',
 )
 
 flags.DEFINE_integer('num_simulations', 200, 'Number of iterations per MCTS search.')
@@ -41,7 +57,11 @@ flags.DEFINE_integer('num_games', 20, '')
 
 flags.DEFINE_integer('num_processes', 16, 'Run the games using multiple child processes')
 
-flags.DEFINE_string('save_match_dir', './9x9_matches', 'Path to save statistics and game record in sgf format.')
+flags.DEFINE_string(
+    'save_match_dir',
+    './9x9_matches',
+    'Path to save statistics and game record in sgf format.',
+)
 
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
@@ -83,7 +103,18 @@ def mcts_player_builder(network, ckpt_file, device):
     )
 
 
-def play_one_match(id, sgf_dir, env, black_network, white_network, black_ckpt, white_ckpt, device, c_puct_base, c_puct_init):
+def play_one_match(
+    id,
+    sgf_dir,
+    env,
+    black_network,
+    white_network,
+    black_ckpt,
+    white_ckpt,
+    device,
+    c_puct_base,
+    c_puct_init,
+):
     black_player = mcts_player_builder(black_network, black_ckpt, device)
     white_player = mcts_player_builder(white_network, white_ckpt, device)
 
@@ -143,10 +174,18 @@ def main():
     num_actions = eval_env.action_space.n
 
     black_network = AlphaZeroNet(
-        input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_filters, FLAGS.num_fc_units
+        input_shape,
+        num_actions,
+        FLAGS.num_res_blocks,
+        FLAGS.num_filters,
+        FLAGS.num_fc_units,
     )
     white_network = AlphaZeroNet(
-        input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_filters, FLAGS.num_fc_units
+        input_shape,
+        num_actions,
+        FLAGS.num_res_blocks,
+        FLAGS.num_filters,
+        FLAGS.num_fc_units,
     )
 
     black_won = 0

@@ -1,3 +1,9 @@
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 # Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,10 +35,10 @@ from envs.coords import CoordsConvertor
 import envs.go_engine as go
 
 
-SGF_TEMPLATE = '''(;\nCA[UTF-8]\nAP[AlphaZeroMini_sgfgenerator]\nRU[{ruleset}]
+SGF_TEMPLATE = """(;\nCA[UTF-8]\nAP[AlphaZeroMini_sgfgenerator]\nRU[{ruleset}]
 PB[{black_name}]\nBR[{black_rank}]\nPW[{white_name}]\nWR[{white_rank}]
 KM[{komi}]\nRE[{result}]\nDT[{date}]\nSZ[{boardsize}]\n
-{game_moves})'''
+{game_moves})"""
 
 
 def translate_sgf_move(cc, player_move, comment):
@@ -44,7 +50,9 @@ def translate_sgf_move(cc, player_move, comment):
     else:
         comment_node = ''
     return ';{color}[{coords}]{comment_node}'.format(
-        color=player_move.color, coords=cc.to_sgf(cc.from_flat(player_move.move)), comment_node=comment_node
+        color=player_move.color,
+        coords=cc.to_sgf(cc.from_flat(player_move.move)),
+        comment_node=comment_node,
     )
 
 

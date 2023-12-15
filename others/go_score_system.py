@@ -1,3 +1,9 @@
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """
 This module demonstrate the problem of how dead stones,
 and with our current implement of the area scoring system,

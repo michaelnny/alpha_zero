@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Implements the core functions of training the AlphaZero agent."""
 import os
 from typing import Any, Text, Callable, Mapping, Iterable, Tuple
@@ -721,7 +725,13 @@ def run_evaluator_loop(
     dataloader = None
     if eval_games_dir is not None and eval_games_dir != '' and os.path.exists(eval_games_dir):
         eval_dataset = build_eval_dataset(eval_games_dir, env.num_stack, logger)
-        dataloader = DataLoader(eval_dataset, batch_size=1024, pin_memory=True, shuffle=False, drop_last=False)
+        dataloader = DataLoader(
+            eval_dataset,
+            batch_size=1024,
+            pin_memory=True,
+            shuffle=False,
+            drop_last=False,
+        )
 
     # Create MCTS players for both players, note black always uses the latest checkpoint,
     # and white always uses the previous checkpoint
@@ -760,7 +770,13 @@ def run_evaluator_loop(
         last_ckpt = ckpt_file
 
         selfplay_game_stats = eval_against_prev_ckpt(
-            env, black_player, white_player, black_elo, white_elo, c_puct_base, c_puct_init
+            env,
+            black_player,
+            white_player,
+            black_elo,
+            white_elo,
+            c_puct_base,
+            c_puct_init,
         )
 
         pro_game_stats = eval_on_pro_games(network, device, dataloader)
@@ -777,7 +793,10 @@ def run_evaluator_loop(
         # Save the game in sgf format
         if save_sgf_dir is not None and os.path.isdir(save_sgf_dir) and os.path.exists(save_sgf_dir):
             sgf_content = env.to_sgf()
-            sgf_file = os.path.join(save_sgf_dir, f'eval_training_steps_{training_steps}_vs_{last_ckpt_step}.sgf')
+            sgf_file = os.path.join(
+                save_sgf_dir,
+                f'eval_training_steps_{training_steps}_vs_{last_ckpt_step}.sgf',
+            )
             with open(sgf_file, 'w') as f:
                 f.write(sgf_content)
                 f.close()

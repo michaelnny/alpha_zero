@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Functions to plot statistics from csv log files."""
 from absl import app, flags
 import logging
@@ -41,12 +45,19 @@ def get_selfplay_dataframe(logs_dir):
 
     df['game_lt_60_step_count'] = df.apply(lambda row: 1 if row['game_length'] < 60 else 0, axis=1)
     df['game_60_to_100_step_count'] = df.apply(
-        lambda row: 1 if row['game_length'] >= 60 and row['game_length'] <= 100 else 0, axis=1
+        lambda row: 1 if row['game_length'] >= 60 and row['game_length'] <= 100 else 0,
+        axis=1,
     )
     df['game_gt_100_step_count'] = df.apply(lambda row: 1 if row['game_length'] > 100 else 0, axis=1)
 
-    df['black_won_count'] = df.apply(lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
-    df['white_won_count'] = df.apply(lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
+    df['black_won_count'] = df.apply(
+        lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0,
+        axis=1,
+    )
+    df['white_won_count'] = df.apply(
+        lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0,
+        axis=1,
+    )
 
     df['black_resign_count'] = df.apply(lambda row: 1 if row['game_result'] == 'W+R' else 0, axis=1)
     df['white_resign_count'] = df.apply(lambda row: 1 if row['game_result'] == 'B+R' else 0, axis=1)
@@ -54,7 +65,8 @@ def get_selfplay_dataframe(logs_dir):
 
     # Games marked for resign by a player, where resign move is never played since resignation is disabled
     df['marked_resign_count'] = df.apply(
-        lambda row: 1 if row['is_resign_disabled'] and row['is_marked_for_resign'] else 0, axis=1
+        lambda row: 1 if row['is_resign_disabled'] and row['is_marked_for_resign'] else 0,
+        axis=1,
     )
 
     # Games marked for resign but ended the marked resign player won, where resign move is never played since resignation is disabled
@@ -210,7 +222,11 @@ def main(argv):  # noqa: C901
 def plot_selfplay_games_precentage(df, ax):
     if df is not None:
         ax.plot(
-            df.training_steps, df.steps_lt_60_rate * 100, color='steelblue', linewidth=FLAGS.line_width, label='< 60 steps'
+            df.training_steps,
+            df.steps_lt_60_rate * 100,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='< 60 steps',
         )
         ax.plot(
             df.training_steps,
@@ -219,7 +235,13 @@ def plot_selfplay_games_precentage(df, ax):
             linewidth=FLAGS.line_width,
             label='60 - 100 steps',
         )
-        ax.plot(df.training_steps, df.steps_gt_100_rate * 100, color='orange', linewidth=FLAGS.line_width, label='> 100 steps')
+        ax.plot(
+            df.training_steps,
+            df.steps_gt_100_rate * 100,
+            color='orange',
+            linewidth=FLAGS.line_width,
+            label='> 100 steps',
+        )
         ax.legend()
 
     ax.set_ylabel('Game lengths \n (%)', fontsize='large')
@@ -227,8 +249,20 @@ def plot_selfplay_games_precentage(df, ax):
 
 def plot_selfplay_games_winrate(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.black_won_rate * 100, color='black', linewidth=FLAGS.line_width, label='Black won')
-        ax.plot(df.training_steps, df.white_won_rate * 100, color='gray', linewidth=FLAGS.line_width, label='White won')
+        ax.plot(
+            df.training_steps,
+            df.black_won_rate * 100,
+            color='black',
+            linewidth=FLAGS.line_width,
+            label='Black won',
+        )
+        ax.plot(
+            df.training_steps,
+            df.white_won_rate * 100,
+            color='gray',
+            linewidth=FLAGS.line_width,
+            label='White won',
+        )
 
         ax.plot(
             df.training_steps,
@@ -260,14 +294,27 @@ def plot_selfplay_resign_fp_ratio(df, ax):
             linewidth=FLAGS.line_width,
             label='False positive (estimated)',
         )
-        ax.hlines(y=0.05 * 100, xmin=0, xmax=max(df.training_steps), color='black', linewidth=FLAGS.line_width, linestyle='--')
+        ax.hlines(
+            y=0.05 * 100,
+            xmin=0,
+            xmax=max(df.training_steps),
+            color='black',
+            linewidth=FLAGS.line_width,
+            linestyle='--',
+        )
 
     ax.set_ylabel('Resignation \n false positive (%)', fontsize='large')
 
 
 def plot_selfplay_num_games(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.total_games, color='steelblue', linewidth=FLAGS.line_width, label='Total')
+        ax.plot(
+            df.training_steps,
+            df.total_games,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Total',
+        )
 
     ax.set_ylabel('Number of \n games', fontsize='large')
     ax.yaxis.set_major_formatter(FuncFormatter(shorten))
@@ -275,9 +322,19 @@ def plot_selfplay_num_games(df, ax):
 
 def plot_selfplay_game_length(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.avg_steps_per_game, color='steelblue', linewidth=FLAGS.line_width, label='Game length')
         ax.plot(
-            df.training_steps, df.avg_passes_per_game, color='orange', linewidth=FLAGS.line_width, label='Number of passes'
+            df.training_steps,
+            df.avg_steps_per_game,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Game length',
+        )
+        ax.plot(
+            df.training_steps,
+            df.avg_passes_per_game,
+            color='orange',
+            linewidth=FLAGS.line_width,
+            label='Number of passes',
         )
         ax.legend()
 
@@ -293,7 +350,13 @@ def plot_training_time(df, ax):
 
 def plot_training_samples(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.total_samples, color='steelblue', linewidth=FLAGS.line_width, label='Total samples')
+        ax.plot(
+            df.training_steps,
+            df.total_samples,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Total samples',
+        )
 
     ax.set_ylabel('Training samples \n (total)', fontsize='large')
     ax.yaxis.set_major_formatter(FuncFormatter(shorten))
@@ -301,35 +364,60 @@ def plot_training_samples(df, ax):
 
 def plot_training_lr(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.learning_rate, linewidth=FLAGS.line_width, color='steelblue')
+        ax.plot(
+            df.training_steps,
+            df.learning_rate,
+            linewidth=FLAGS.line_width,
+            color='steelblue',
+        )
 
     ax.set_ylabel('Learning rate', fontsize='large')
 
 
 def plot_training_value_loss(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.value_loss, linewidth=FLAGS.line_width, color='steelblue')
+        ax.plot(
+            df.training_steps,
+            df.value_loss,
+            linewidth=FLAGS.line_width,
+            color='steelblue',
+        )
 
     ax.set_ylabel('MSE loss', fontsize='large')
 
 
 def plot_training_policy_loss(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.policy_loss, linewidth=FLAGS.line_width, color='steelblue')
+        ax.plot(
+            df.training_steps,
+            df.policy_loss,
+            linewidth=FLAGS.line_width,
+            color='steelblue',
+        )
 
     ax.set_ylabel('Cross-entropy loss', fontsize='large')
 
 
 def plot_eval_policy_entropy(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.policy_entropy, linewidth=FLAGS.line_width, color='steelblue')
+        ax.plot(
+            df.training_steps,
+            df.policy_entropy,
+            linewidth=FLAGS.line_width,
+            color='steelblue',
+        )
 
     ax.set_ylabel('Policy entropy', fontsize='large')
 
 
 def plot_eval_mse_error(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.value_mse_error, linewidth=FLAGS.line_width, color='steelblue')
+        ax.plot(
+            df.training_steps,
+            df.value_mse_error,
+            linewidth=FLAGS.line_width,
+            color='steelblue',
+        )
         # scale by 1/4 to the range of 0-1
         # ax.plot(df.training_steps, df.value_mse_error * 0.25, linewidth=FLAGS.line_width, color='steelblue')
 
@@ -366,15 +454,34 @@ def plot_eval_policy_accuracy(df, ax):
 
 def plot_eval_elo_rating(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.black_elo_rating, color='steelblue', linewidth=FLAGS.line_width, label='Elo rating')
+        ax.plot(
+            df.training_steps,
+            df.black_elo_rating,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Elo rating',
+        )
 
     ax.set_ylabel('Elo ratings', fontsize='large')
 
 
 def plot_eval_game_length(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.game_length, color='steelblue', linewidth=FLAGS.line_width, label='Game length')
-        ax.plot(df.training_steps, df.num_passes, '--', color='orange', linewidth=FLAGS.line_width, label='Number of passes')
+        ax.plot(
+            df.training_steps,
+            df.game_length,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Game length',
+        )
+        ax.plot(
+            df.training_steps,
+            df.num_passes,
+            '--',
+            color='orange',
+            linewidth=FLAGS.line_width,
+            label='Number of passes',
+        )
         ax.legend()
 
     ax.set_ylabel('Evaluation \n game steps', fontsize='large')

@@ -1,3 +1,9 @@
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Tests for cleargo.py."""
 
 from absl.testing import absltest
@@ -20,7 +26,11 @@ class RunGoEnvTest(parameterized.TestCase):
         self.expected_board_size = BOARD_SIZE
         self.expected_action_dim = self.expected_board_size**2 + 1
         self.expected_board_shape = (self.expected_board_size, self.expected_board_size)
-        self.expected_state_shape = (STACK_HISTORY * 2 + 1, self.expected_board_size, self.expected_board_size)
+        self.expected_state_shape = (
+            STACK_HISTORY * 2 + 1,
+            self.expected_board_size,
+            self.expected_board_size,
+        )
 
         return super().setUp()
 
@@ -69,7 +79,27 @@ class RunGoEnvTest(parameterized.TestCase):
 
     @parameterized.named_parameters(
         ('action_B1', ('A3', 'A2', 'B2', 'A1', 'C1'), 'B1'),
-        ('action_F4', ('D3', 'A1', 'D4', 'A2', 'D5', 'A3', 'E3', 'A4', 'E5', 'A5', 'F3', 'A6', 'F5', 'E4', 'G4'), 'F4'),
+        (
+            'action_F4',
+            (
+                'D3',
+                'A1',
+                'D4',
+                'A2',
+                'D5',
+                'A3',
+                'E3',
+                'A4',
+                'E5',
+                'A5',
+                'F3',
+                'A6',
+                'F5',
+                'E4',
+                'G4',
+            ),
+            'F4',
+        ),
     )
     def test_illegal_move_suicidal(self, moves, illegal_move):
         env = GoEnv(num_stack=STACK_HISTORY)
@@ -144,7 +174,27 @@ class RunGoEnvTest(parameterized.TestCase):
 
     @parameterized.named_parameters(
         ('BLACK_won', ('C1', 'A1', 'B2', 'A2', 'A3', 'PASS', 'PASS'), go.BLACK, 1.0),
-        ('WHITE_won', ('A1', 'D2', 'A2', 'C3', 'A3', 'C4', 'B1', 'D5', 'D3', 'E4', 'D4', 'E3', 'PASS', 'PASS'), go.WHITE, 1.0),
+        (
+            'WHITE_won',
+            (
+                'A1',
+                'D2',
+                'A2',
+                'C3',
+                'A3',
+                'C4',
+                'B1',
+                'D5',
+                'D3',
+                'E4',
+                'D4',
+                'E3',
+                'PASS',
+                'PASS',
+            ),
+            go.WHITE,
+            1.0,
+        ),
     )
     def test_score_basic(self, moves, expected_winner, expected_reward):
         env = GoEnv(num_stack=STACK_HISTORY)
@@ -174,7 +224,10 @@ class RunGoEnvTest(parameterized.TestCase):
         env = GoEnv(num_stack=num_stack)
         obs = env.reset()
 
-        zero_planes = np.zeros((num_stack * 2, self.expected_board_size, self.expected_board_size), dtype=np.uint8)
+        zero_planes = np.zeros(
+            (num_stack * 2, self.expected_board_size, self.expected_board_size),
+            dtype=np.uint8,
+        )
         player_plane = np.ones((1, self.expected_board_size, self.expected_board_size), dtype=np.uint8)  # Black plays first.
 
         expected = np.concatenate([zero_planes, player_plane])

@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 from typing import Mapping, Text, Any
 import logging
 import sys
@@ -53,7 +57,8 @@ def extract_args_from_flags_dict(flags_dict: Mapping[Text, Any]) -> Mapping[Text
 def create_logger(level='INFO'):
     handler = logging.StreamHandler(stream=sys.stderr)
     formatter = logging.Formatter(
-        fmt='%(levelname)s %(asctime)s %(filename)s:%(lineno)d] %(message)s', datefmt='%Y-%m-%d %H:%M:%S'
+        fmt='%(levelname)s %(asctime)s %(filename)s:%(lineno)d] %(message)s',
+        datefmt='%Y-%m-%d %H:%M:%S',
     )
     handler.setFormatter(formatter)
     logger = logging.getLogger()

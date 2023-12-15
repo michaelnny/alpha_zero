@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Functions to plot statistics from csv log files."""
 from absl import app, flags
 import os
@@ -28,12 +32,19 @@ def get_selfplay_dataframe(logs_dir):
 
         df['game_lt_60_step_count'] = df.apply(lambda row: 1 if row['game_length'] < 60 else 0, axis=1)
         df['game_60_to_100_step_count'] = df.apply(
-            lambda row: 1 if row['game_length'] >= 60 and row['game_length'] <= 100 else 0, axis=1
+            lambda row: 1 if row['game_length'] >= 60 and row['game_length'] <= 100 else 0,
+            axis=1,
         )
         df['game_gt_100_step_count'] = df.apply(lambda row: 1 if row['game_length'] > 100 else 0, axis=1)
 
-        df['black_won_count'] = df.apply(lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
-        df['white_won_count'] = df.apply(lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
+        df['black_won_count'] = df.apply(
+            lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0,
+            axis=1,
+        )
+        df['white_won_count'] = df.apply(
+            lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0,
+            axis=1,
+        )
 
         df['black_resign_count'] = df.apply(lambda row: 1 if row['game_result'] == 'W+R' else 0, axis=1)
         df['white_resign_count'] = df.apply(lambda row: 1 if row['game_result'] == 'B+R' else 0, axis=1)
@@ -41,7 +52,8 @@ def get_selfplay_dataframe(logs_dir):
 
         # Games marked for resign by a player, where resign move is never played since resignation is disabled
         df['marked_resign_count'] = df.apply(
-            lambda row: 1 if row['is_resign_disabled'] and row['is_marked_for_resign'] else 0, axis=1
+            lambda row: 1 if row['is_resign_disabled'] and row['is_marked_for_resign'] else 0,
+            axis=1,
         )
 
         # Games marked for resign but ended the marked resign player won, where resign move is never played since resignation is disabled

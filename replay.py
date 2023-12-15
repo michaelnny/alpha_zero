@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Replay components for training agents."""
 
 from typing import Mapping, Text, Any, NamedTuple, Optional, Sequence
@@ -94,7 +98,11 @@ class UniformReplay:
 
     def get_state(self) -> Mapping[Text, Any]:
         """Retrieves replay state as a dictionary (e.g. for serialization)."""
-        return {'num_games_added': self.num_games_added, 'num_samples_added': self.num_samples_added, 'storage': self.storage}
+        return {
+            'num_games_added': self.num_games_added,
+            'num_samples_added': self.num_samples_added,
+            'storage': self.storage,
+        }
 
     def set_state(self, state: Mapping[Text, Any]) -> None:
         """Sets replay state from a (potentially de-serialized) dictionary."""

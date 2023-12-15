@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """A very basic GUI program for board games, note there's no plan to optimize this messy code."""
 from sys import platform
 import tkinter as tk
@@ -81,8 +85,14 @@ class BoardGameGui:
         self.game_loop = None
         self.delay_time = delay
 
-        self.stone_colors = {self.env.white_player: Colors.WHITE, self.env.black_player: Colors.BLACK}
-        self.inverted_colors = {self.env.white_player: Colors.BLACK, self.env.black_player: Colors.WHITE}
+        self.stone_colors = {
+            self.env.white_player: Colors.WHITE,
+            self.env.black_player: Colors.BLACK,
+        }
+        self.inverted_colors = {
+            self.env.white_player: Colors.BLACK,
+            self.env.black_player: Colors.WHITE,
+        }
 
         # UI element sizes
         self.cell_size = 46
@@ -177,11 +187,19 @@ class BoardGameGui:
 
     def initialize_board(self):
         def _row_lines():
-            for y in range(self.half_size, self.board_size - self.half_size + self.cell_size, self.cell_size):
+            for y in range(
+                self.half_size,
+                self.board_size - self.half_size + self.cell_size,
+                self.cell_size,
+            ):
                 yield (self.half_size, y), (self.board_size - self.half_size, y)
 
         def _col_lines():
-            for x in range(self.half_size, self.board_size - self.half_size + self.cell_size, self.cell_size):
+            for x in range(
+                self.half_size,
+                self.board_size - self.half_size + self.cell_size,
+                self.cell_size,
+            ):
                 yield (x, self.half_size), (x, self.board_size - self.half_size)
 
         def _guide_dots():
@@ -323,7 +341,9 @@ class BoardGameGui:
                 foreground=Colors.TEXT,
             )
             player_name.place(
-                x=offset_x + self.piece_size * 0.75, y=50 + self.padding + self.title_font_size * 0.25, anchor='nw'
+                x=offset_x + self.piece_size * 0.75,
+                y=50 + self.padding + self.title_font_size * 0.25,
+                anchor='nw',
             )
 
             player_last_move = tk.Label(
@@ -444,7 +464,17 @@ class BoardGameGui:
 
     def draw_open_circle(self, pos, color, size, tags='stone'):
         x0, y0, x1, y1 = self.get_circle_from_pos_and_size(pos, size)
-        self.board.create_oval(x0, y0, x1, y1, fill=None, width=2, outline=color, state=tk.DISABLED, tags=tags)
+        self.board.create_oval(
+            x0,
+            y0,
+            x1,
+            y1,
+            fill=None,
+            width=2,
+            outline=color,
+            state=tk.DISABLED,
+            tags=tags,
+        )
 
     def draw_stone(self, pos, color, invert_color, text, show_indicator=False, tags='stone'):
         self.draw_dot(pos, color, self.piece_size)
@@ -496,7 +526,8 @@ class BoardGameGui:
         try:
             sgf_content = self.env.to_sgf()
             file_name = asksaveasfilename(
-                title='Save game as sgf file', filetypes=(('sgf files', '*.sgf'), ('all files', '*.*'))
+                title='Save game as sgf file',
+                filetypes=(('sgf files', '*.sgf'), ('all files', '*.*')),
             )
             with open(file_name, 'w') as f:
                 f.write(sgf_content)

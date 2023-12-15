@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Trains the AlphaZero agent on a single machine for freestyle Gomoku."""
 import os
 
@@ -25,10 +29,18 @@ from torch.optim.lr_scheduler import MultiStepLR
 
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 13, 'Board size for freestyle Gomoku.')
-flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
+flags.DEFINE_integer(
+    'num_stack',
+    8,
+    'Stack N previous states, the state is an image of N x 2 + 1 binary planes.',
+)
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer('num_filters', 40, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer('num_fc_units', 80, 'Number of hidden units in the linear layer of the neural network.')
+flags.DEFINE_integer(
+    'num_fc_units',
+    80,
+    'Number of hidden units in the linear layer of the neural network.',
+)
 
 flags.DEFINE_integer('min_games', 5000, 'Collect number of self-play games before learning starts.')
 flags.DEFINE_integer(
@@ -53,7 +65,9 @@ flags.DEFINE_integer(
 flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate.')
 flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
 flags.DEFINE_multi_integer(
-    'lr_milestones', [100000, 200000], 'The number of training steps at which the learning rate will be decayed.'
+    'lr_milestones',
+    [100000, 200000],
+    'The number of training steps at which the learning rate will be decayed.',
 )
 flags.DEFINE_float('sgd_momentum', 0.9, '')
 flags.DEFINE_float('l2_regularization', 1e-4, 'The L2 regularization parameter applied to weights.')
@@ -64,12 +78,18 @@ flags.DEFINE_integer(
     'Number of training steps (measured in network parameter update, one batch is one training step).',
 )
 
-flags.DEFINE_bool('argument_data', True, 'Apply random rotation and mirroring to the training data, default on.')
+flags.DEFINE_bool(
+    'argument_data',
+    True,
+    'Apply random rotation and mirroring to the training data, default on.',
+)
 flags.DEFINE_bool('compress_data', False, 'Compress state when saving in replay buffer, default off.')
 
 flags.DEFINE_integer('num_actors', 32, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
-    'num_simulations', 380, 'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.'
+    'num_simulations',
+    380,
+    'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.',
 )
 flags.DEFINE_integer(
     'num_parallel',
@@ -77,15 +97,27 @@ flags.DEFINE_integer(
     'Number of leaves to collect before using the neural network to evaluate the positions during MCTS search,'
     '1 means no parallel search.',
 )
-flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors vs. search values. Original paper use 19652')
-flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. search values. Original paper use 1.25')
+flags.DEFINE_float(
+    'c_puct_base',
+    19652,
+    'Exploration constants balancing priors vs. search values. Original paper use 19652',
+)
+flags.DEFINE_float(
+    'c_puct_init',
+    1.25,
+    'Exploration constants balancing priors vs. search values. Original paper use 1.25',
+)
 
 flags.DEFINE_integer(
     'warm_up_steps',
     16,
     'Number of steps at the beginning of a self-play game where the search temperature is set to 1.',
 )
-flags.DEFINE_float('init_resign_threshold', -1, 'Not applicable, as there is no resign move for Gomoku.')
+flags.DEFINE_float(
+    'init_resign_threshold',
+    -1,
+    'Not applicable, as there is no resign move for Gomoku.',
+)
 flags.DEFINE_integer('check_resign_after_steps', 0, 'Not applicable.')
 flags.DEFINE_float('target_fp_rate', 0, 'Not applicable.')
 flags.DEFINE_float('disable_resign_ratio', 0, 'Not applicable.')
@@ -100,9 +132,17 @@ flags.DEFINE_float(
 flags.DEFINE_integer('ckpt_interval', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_integer('log_interval', 200, 'The frequency (in training step) to log training statistics.')
 flags.DEFINE_string('ckpt_dir', './checkpoints/gomoku/13x13', 'Path for checkpoint file.')
-flags.DEFINE_string('logs_dir', './logs/gomoku/13x13', 'Path to save statistics for self-play, training, and evaluation.')
+flags.DEFINE_string(
+    'logs_dir',
+    './logs/gomoku/13x13',
+    'Path to save statistics for self-play, training, and evaluation.',
+)
 flags.DEFINE_string('eval_games_dir', '', 'Path contains evaluation games in sgf format.')
-flags.DEFINE_string('save_sgf_dir', './selfplay_games/gomoku/13x13', 'Path to save selfplay games in sgf format.')
+flags.DEFINE_string(
+    'save_sgf_dir',
+    './selfplay_games/gomoku/13x13',
+    'Path to save selfplay games in sgf format.',
+)
 flags.DEFINE_integer('save_sgf_interval', 500, 'How often to save self-play games.')
 
 flags.DEFINE_integer(
@@ -122,7 +162,9 @@ flags.register_validator('num_simulations', lambda x: x > 1)
 flags.register_validator('init_resign_threshold', lambda x: x <= -1)
 flags.register_validator('log_level', lambda x: x in ['INFO', 'DEBUG'])
 flags.register_multi_flags_validator(
-    ['num_parallel', 'c_puct_base'], lambda flags: flags['c_puct_base'] >= 19652 * (flags['num_parallel'] / 800), ''
+    ['num_parallel', 'c_puct_base'],
+    lambda flags: flags['c_puct_base'] >= 19652 * (flags['num_parallel'] / 800),
+    '',
 )
 
 # Initialize flags
@@ -178,11 +220,21 @@ def main():
     num_actions = eval_env.action_space.n
 
     def network_builder():
-        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_filters, FLAGS.num_fc_units, True)
+        return AlphaZeroNet(
+            input_shape,
+            num_actions,
+            FLAGS.num_res_blocks,
+            FLAGS.num_filters,
+            FLAGS.num_fc_units,
+            True,
+        )
 
     network = network_builder()
     optimizer = torch.optim.SGD(
-        network.parameters(), lr=FLAGS.init_lr, momentum=FLAGS.sgd_momentum, weight_decay=FLAGS.l2_regularization
+        network.parameters(),
+        lr=FLAGS.init_lr,
+        momentum=FLAGS.sgd_momentum,
+        weight_decay=FLAGS.l2_regularization,
     )
     lr_scheduler = MultiStepLR(optimizer, milestones=FLAGS.lr_milestones, gamma=FLAGS.lr_decay)
 

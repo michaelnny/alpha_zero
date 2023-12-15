@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 from typing import Iterable, Tuple, Mapping, Text
 from collections import deque, namedtuple
 import os
@@ -52,7 +56,10 @@ class BoardGameEnv(gym.Env):
         self.white_player = white_player_id  # white player id as well as stone color on the board
 
         self.observation_space = Box(
-            low=0, high=1, shape=(self.num_stack * 2 + 1, self.board_size, self.board_size), dtype=np.int8
+            low=0,
+            high=1,
+            shape=(self.num_stack * 2 + 1, self.board_size, self.board_size),
+            dtype=np.int8,
         )
 
         self.has_pass_move = has_pass_move
@@ -253,7 +260,10 @@ class BoardGameEnv(gym.Env):
 
     def get_empty_queue(self) -> deque:
         """Returns empty queue with stack_N * all zeros planes."""
-        return deque([np.zeros((self.board_size, self.board_size))] * self.num_stack, maxlen=self.num_stack)
+        return deque(
+            [np.zeros((self.board_size, self.board_size))] * self.num_stack,
+            maxlen=self.num_stack,
+        )
 
     def is_board_full(self) -> bool:
         return np.all(self.board != 0)

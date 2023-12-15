@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Go env class."""
 from typing import Tuple, Mapping, Text
 import re
@@ -164,7 +168,10 @@ class GoEnv(BoardGameEnv):
 
     def get_captures(self) -> Mapping[Text, int]:
         """Number of captures for the players, this is only for game of Go."""
-        return {self.black_player: self.position.caps[0], self.white_player: self.position.caps[1]}
+        return {
+            self.black_player: self.position.caps[0],
+            self.white_player: self.position.caps[1],
+        }
 
     def is_game_over(self) -> bool:
         """

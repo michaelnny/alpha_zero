@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Functions to plot statistics from csv log files."""
 from absl import app, flags
 import os
@@ -58,11 +62,23 @@ def main(argv):  # noqa: C901
     # Derive new columns from existing data
     df['total_games'] = 1  # every single row is a game
 
-    df['black_id'] = df.apply(lambda row: extract_info_from_filename(row['black']) if row['black'] else None, axis=1)
-    df['white_id'] = df.apply(lambda row: extract_info_from_filename(row['white']) if row['white'] else None, axis=1)
+    df['black_id'] = df.apply(
+        lambda row: extract_info_from_filename(row['black']) if row['black'] else None,
+        axis=1,
+    )
+    df['white_id'] = df.apply(
+        lambda row: extract_info_from_filename(row['white']) if row['white'] else None,
+        axis=1,
+    )
 
-    df['black_won_games'] = df.apply(lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
-    df['white_won_games'] = df.apply(lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
+    df['black_won_games'] = df.apply(
+        lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0,
+        axis=1,
+    )
+    df['white_won_games'] = df.apply(
+        lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0,
+        axis=1,
+    )
 
     # Group data by training steps
     grouped_df = df.groupby(['black_id', 'white_id']).sum(numeric_only=True)
@@ -72,7 +88,13 @@ def main(argv):  # noqa: C901
     # grouped_df = grouped_df.drop('game', axis=1)
 
     # Keep only specific columns
-    columns_to_keep = ['black_id', 'white_id', 'total_games', 'black_won_games', 'white_won_games']
+    columns_to_keep = [
+        'black_id',
+        'white_id',
+        'total_games',
+        'black_won_games',
+        'white_won_games',
+    ]
     grouped_df = grouped_df.loc[:, columns_to_keep]
 
     print(grouped_df.sort_values(['white_won_games', 'white_id'], ascending=False).head(20))

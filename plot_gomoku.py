@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Functions to plot statistics from csv log files."""
 from absl import app, flags
 import logging
@@ -41,12 +45,19 @@ def get_selfplay_dataframe(logs_dir):
 
     df['game_lt_15_step_count'] = df.apply(lambda row: 1 if row['game_length'] < 15 else 0, axis=1)
     df['game_15_to_30_step_count'] = df.apply(
-        lambda row: 1 if row['game_length'] >= 15 and row['game_length'] <= 30 else 0, axis=1
+        lambda row: 1 if row['game_length'] >= 15 and row['game_length'] <= 30 else 0,
+        axis=1,
     )
     df['game_gt_30_step_count'] = df.apply(lambda row: 1 if row['game_length'] > 30 else 0, axis=1)
 
-    df['black_won_count'] = df.apply(lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
-    df['white_won_count'] = df.apply(lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0, axis=1)
+    df['black_won_count'] = df.apply(
+        lambda row: 1 if re.match(r'B\+', row['game_result'], re.IGNORECASE) else 0,
+        axis=1,
+    )
+    df['white_won_count'] = df.apply(
+        lambda row: 1 if re.match(r'W\+', row['game_result'], re.IGNORECASE) else 0,
+        axis=1,
+    )
 
     # Group data by hours
     # df['datetime'] = pd.to_datetime(df['datetime'])  # if not already as datetime object
@@ -171,12 +182,26 @@ def main(argv):  # noqa: C901
 def plot_selfplay_games_precentage(df, ax):
     if df is not None:
         ax.plot(
-            df.training_steps, df.steps_lt_15_rate * 100, color='steelblue', linewidth=FLAGS.line_width, label='< 15 steps'
+            df.training_steps,
+            df.steps_lt_15_rate * 100,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='< 15 steps',
         )
         ax.plot(
-            df.training_steps, df.steps_15_to_30_rate * 100, color='purple', linewidth=FLAGS.line_width, label='15 - 30 steps'
+            df.training_steps,
+            df.steps_15_to_30_rate * 100,
+            color='purple',
+            linewidth=FLAGS.line_width,
+            label='15 - 30 steps',
         )
-        ax.plot(df.training_steps, df.steps_gt_30_rate * 100, color='orange', linewidth=FLAGS.line_width, label='> 30 steps')
+        ax.plot(
+            df.training_steps,
+            df.steps_gt_30_rate * 100,
+            color='orange',
+            linewidth=FLAGS.line_width,
+            label='> 30 steps',
+        )
         ax.legend()
 
     ax.set_ylabel('Game lengths \n (%)', fontsize='large')
@@ -184,8 +209,20 @@ def plot_selfplay_games_precentage(df, ax):
 
 def plot_selfplay_games_winrate(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.black_won_rate * 100, color='black', linewidth=FLAGS.line_width, label='Black won')
-        ax.plot(df.training_steps, df.white_won_rate * 100, color='gray', linewidth=FLAGS.line_width, label='White won')
+        ax.plot(
+            df.training_steps,
+            df.black_won_rate * 100,
+            color='black',
+            linewidth=FLAGS.line_width,
+            label='Black won',
+        )
+        ax.plot(
+            df.training_steps,
+            df.white_won_rate * 100,
+            color='gray',
+            linewidth=FLAGS.line_width,
+            label='White won',
+        )
         ax.legend()
 
     ax.set_ylabel('Win rate (%)', fontsize='large')
@@ -193,7 +230,13 @@ def plot_selfplay_games_winrate(df, ax):
 
 def plot_selfplay_num_games(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.total_games, color='steelblue', linewidth=FLAGS.line_width, label='Total')
+        ax.plot(
+            df.training_steps,
+            df.total_games,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Total',
+        )
 
     ax.set_ylabel('Number of \n games', fontsize='large')
     ax.yaxis.set_major_formatter(FuncFormatter(shorten))
@@ -225,7 +268,13 @@ def plot_training_time(df, ax):
 
 def plot_training_samples(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.total_samples, color='steelblue', linewidth=FLAGS.line_width, label='Total samples')
+        ax.plot(
+            df.training_steps,
+            df.total_samples,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Total samples',
+        )
 
     ax.set_ylabel('Training samples \n (total)', fontsize='large')
     ax.yaxis.set_major_formatter(FuncFormatter(shorten))
@@ -269,7 +318,13 @@ def plot_training_policy_loss(df, ax):
 
 def plot_eval_elo_rating(df, ax):
     if df is not None:
-        ax.plot(df.training_steps, df.black_elo_rating, color='steelblue', linewidth=FLAGS.line_width, label='Elo rating')
+        ax.plot(
+            df.training_steps,
+            df.black_elo_rating,
+            color='steelblue',
+            linewidth=FLAGS.line_width,
+            label='Elo rating',
+        )
 
     ax.set_ylabel('Elo ratings', fontsize='large')
 

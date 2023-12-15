@@ -1,3 +1,9 @@
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 # Copyright 2018 Google LLC
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,7 +55,12 @@ def _check_bounds(c):
 
 NEIGHBORS = {(x, y): list(filter(_check_bounds, [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)])) for x, y in ALL_COORDS}
 DIAGONALS = {
-    (x, y): list(filter(_check_bounds, [(x + 1, y + 1), (x + 1, y - 1), (x - 1, y + 1), (x - 1, y - 1)]))
+    (x, y): list(
+        filter(
+            _check_bounds,
+            [(x + 1, y + 1), (x + 1, y - 1), (x - 1, y + 1), (x - 1, y - 1)],
+        )
+    )
     for x, y in ALL_COORDS
 }
 
@@ -202,7 +213,12 @@ class LibertyTracker:
         new_lib_cache = np.copy(self.liberty_cache)
         # shallow copy
         new_groups = copy.copy(self.groups)
-        return LibertyTracker(new_group_index, new_groups, liberty_cache=new_lib_cache, max_group_id=self.max_group_id)
+        return LibertyTracker(
+            new_group_index,
+            new_groups,
+            liberty_cache=new_lib_cache,
+            max_group_id=self.max_group_id,
+        )
 
     def add_stone(self, color, c):
         assert self.group_index[c] == MISSING_GROUP_ID
@@ -323,7 +339,16 @@ class Position:
     def __deepcopy__(self, memodict={}):
         new_board = np.copy(self.board)
         new_lib_tracker = copy.deepcopy(self.lib_tracker)
-        return Position(new_board, self.n, self.komi, self.caps, new_lib_tracker, self.ko, self.recent, self.to_play)
+        return Position(
+            new_board,
+            self.n,
+            self.komi,
+            self.caps,
+            new_lib_tracker,
+            self.ko,
+            self.recent,
+            self.to_play,
+        )
 
     def __str__(self, colors=True):
         if colors:

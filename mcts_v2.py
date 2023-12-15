@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """A much faster MCTS implementation for AlphaZero.
 Where we use Numpy arrays to store node statistics,
 and create child node on demand.
@@ -61,7 +65,13 @@ class DummyNode(object):
 class Node:
     """Node in the MCTS search tree."""
 
-    def __init__(self, to_play: int, num_actions: np.ndarray, move: int = None, parent: Any = None) -> None:
+    def __init__(
+        self,
+        to_play: int,
+        num_actions: np.ndarray,
+        move: int = None,
+        parent: Any = None,
+    ) -> None:
         """
         Args:
             to_play: the id of the current player.
@@ -129,7 +139,13 @@ class Node:
         return isinstance(self.parent, Node)
 
 
-def best_child(node: Node, legal_actions: np.ndarray, c_puct_base: float, c_puct_init: float, child_to_play: int) -> Node:
+def best_child(
+    node: Node,
+    legal_actions: np.ndarray,
+    c_puct_base: float,
+    c_puct_init: float,
+    child_to_play: int,
+) -> Node:
     """Returns best child node with maximum action value Q plus an upper confidence bound U.
     And creates the selected best child node if not already exists.
 
@@ -373,7 +389,13 @@ def uct_search(
         # - game is over.
         while node.is_expanded:
             # Select the best move and create the child node on demand
-            node = best_child(node, sim_env.legal_actions, c_puct_base, c_puct_init, sim_env.opponent_player)
+            node = best_child(
+                node,
+                sim_env.legal_actions,
+                c_puct_base,
+                c_puct_init,
+                sim_env.opponent_player,
+            )
             # Make move on the simulation environment.
             obs, reward, done, _ = sim_env.step(node.move)
             if done:
@@ -564,7 +586,13 @@ def parallel_uct_search(
             # - game is over.
             while node.is_expanded:
                 # Select the best move and create the child node on demand
-                node = best_child(node, sim_env.legal_actions, c_puct_base, c_puct_init, sim_env.opponent_player)
+                node = best_child(
+                    node,
+                    sim_env.legal_actions,
+                    c_puct_base,
+                    c_puct_init,
+                    sim_env.opponent_player,
+                )
                 # Make move on the simulation environment.
                 obs, reward, done, _ = sim_env.step(node.move)
                 if done:

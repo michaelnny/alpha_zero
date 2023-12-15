@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Gomoku env class."""
 from typing import Tuple
 import numpy as np
@@ -29,7 +33,11 @@ class GomokuEnv(BoardGameEnv):
 
         # Gomoku has no pass move and resign move
         super().__init__(
-            id='Freestyle Gomoku', board_size=board_size, num_stack=num_stack, has_pass_move=False, has_resign_move=False
+            id='Freestyle Gomoku',
+            board_size=board_size,
+            num_stack=num_stack,
+            has_pass_move=False,
+            has_resign_move=False,
         )
 
         self.num_to_win = num_to_win

@@ -1,30 +1,41 @@
+# Top-level exclude applies to all hooks
+exclude: |
+  (?x)^(
+      ^logs/|
+      ^ideas/|
+      ^checkpoints/|
+      ^unit_tests/|
+      ^.vscode/|
+      .*\.(tex|sty|bib|csv|log|sgf|json)
+  )$
+
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
     hooks:
-    -   id: trailing-whitespace
-    -   id: end-of-file-fixer
-    -   id: check-docstring-first
-    -   id: check-json
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-docstring-first
+      - id: check-json
         exclude: ^(.vscode)
-    -   id: check-yaml
-    -   id: debug-statements
-    -   id: name-tests-test
-    -   id: double-quote-string-fixer
-    -   id: check-merge-conflict
--   repo: https://github.com/psf/black
-    rev: 23.1.0
+      - id: check-yaml
+      - id: debug-statements
+      - id: name-tests-test
+      - id: double-quote-string-fixer
+      - id: check-merge-conflict
+  - repo: https://github.com/psf/black
+    rev: 23.12.0
     hooks:
-    -   id: black
--   repo: https://github.com/pycqa/flake8
-    rev: 6.0.0
+      - id: black
+  - repo: https://github.com/pycqa/flake8
+    rev: 6.1.0
     hooks:
-    -   id: flake8
+      - id: flake8
         additional_dependencies:
           - flake8-black
--   repo: local
+  - repo: local
     hooks:
-    -   id: run-unit-tests
+      - id: run-unit-tests
         name: run unit tests script
         entry: ./run_unit_tests.sh
         language: script

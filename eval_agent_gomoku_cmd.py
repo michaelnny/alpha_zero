@@ -1,5 +1,9 @@
-# Copyright (c) 2023 Michael Hu
-# All rights reserved.
+# Copyright (c) 2023 Michael Hu.
+# This code is part of the book "The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python.".
+# This project is released under the MIT License.
+# See the accompanying LICENSE file for details.
+
+
 """Evaluate the AlphaZero agent on freestyle Gomoku game."""
 from absl import flags
 import timeit
@@ -9,16 +13,28 @@ import torch
 
 FLAGS = flags.FLAGS
 flags.DEFINE_integer('board_size', 13, 'Board size for freestyle Gomoku.')
-flags.DEFINE_integer('num_stack', 8, 'Stack N previous states, the state is an image of N x 2 + 1 binary planes.')
+flags.DEFINE_integer(
+    'num_stack',
+    8,
+    'Stack N previous states, the state is an image of N x 2 + 1 binary planes.',
+)
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
 flags.DEFINE_integer('num_filters', 40, 'Number of filters for the conv2d layers in the neural network.')
-flags.DEFINE_integer('num_fc_units', 80, 'Number of hidden units in the linear layer of the neural network.')
+flags.DEFINE_integer(
+    'num_fc_units',
+    80,
+    'Number of hidden units in the linear layer of the neural network.',
+)
 
 flags.DEFINE_string(
-    'black_ckpt', './checkpoints/gomoku/13x13/training_steps_170000.ckpt', 'Load the checkpoint file for black player.'
+    'black_ckpt',
+    './checkpoints/gomoku/13x13/training_steps_170000.ckpt',
+    'Load the checkpoint file for black player.',
 )
 flags.DEFINE_string(
-    'white_ckpt', './checkpoints/gomoku/13x13/training_steps_200000.ckpt', 'Load the checkpoint file for white player.'
+    'white_ckpt',
+    './checkpoints/gomoku/13x13/training_steps_200000.ckpt',
+    'Load the checkpoint file for white player.',
 )
 
 flags.DEFINE_integer('num_simulations', 400, 'Number of iterations per MCTS search.')
@@ -60,7 +76,14 @@ def main():
     num_actions = eval_env.action_space.n
 
     def network_builder():
-        return AlphaZeroNet(input_shape, num_actions, FLAGS.num_res_blocks, FLAGS.num_filters, FLAGS.num_fc_units, True)
+        return AlphaZeroNet(
+            input_shape,
+            num_actions,
+            FLAGS.num_res_blocks,
+            FLAGS.num_filters,
+            FLAGS.num_fc_units,
+            True,
+        )
 
     def load_checkpoint_for_net(network, ckpt_file, device):
         if ckpt_file and os.path.isfile(ckpt_file):
