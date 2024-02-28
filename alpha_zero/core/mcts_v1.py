@@ -41,7 +41,7 @@ import math
 from typing import Callable, Tuple, Mapping, Iterable, Any
 import numpy as np
 
-from envs.base import BoardGameEnv
+from alpha_zero.envs.base import BoardGameEnv
 
 
 class Node:

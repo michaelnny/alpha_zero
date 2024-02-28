@@ -9,7 +9,7 @@ from absl.testing import absltest
 from absl.testing import parameterized
 import numpy as np
 
-from envs.gomoku import GomokuEnv
+from alpha_zero.envs.gomoku import GomokuEnv
 
 
 class GomokuEnvTest(parameterized.TestCase):

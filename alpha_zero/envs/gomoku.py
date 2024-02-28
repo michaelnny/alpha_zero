@@ -9,9 +9,9 @@ from typing import Tuple
 import numpy as np
 from copy import copy
 
-from envs.base import BoardGameEnv
-import sgf_wrapper
-from util import get_time_stamp
+from alpha_zero.envs.base import BoardGameEnv
+from alpha_zero.utils import sgf_wrapper
+from alpha_zero.utils.util import get_time_stamp
 
 
 class GomokuEnv(BoardGameEnv):

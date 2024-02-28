@@ -4,15 +4,7 @@
 # See the accompanying LICENSE file for details.
 
 
-"""
-Trains the AlphaZero agent on a single machine for the game of Go.
-
-IMPORTANT NOTE:
-
-You should make sure you have the computation resource before running this module,
-as this uses some of the hyper-parameters used by the original AlphaZero agent.
-"""
-
+"""Trains the AlphaZero agent on a single machine for freestyle Gomoku."""
 import os
 
 # This forces OpenMP to use 1 single thread, which is needed to
@@ -36,33 +28,55 @@ import torch
 from torch.optim.lr_scheduler import MultiStepLR
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 19, 'Board size for Go.')
-flags.DEFINE_float('komi', 7.5, 'Komi rule for Go.')
+flags.DEFINE_integer('board_size', 13, 'Board size for freestyle Gomoku.')
 flags.DEFINE_integer(
     'num_stack',
     8,
     'Stack N previous states, the state is an image of N x 2 + 1 binary planes.',
 )
-flags.DEFINE_integer('num_res_blocks', 19, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_filters', 256, 'Number of filters for the conv2d layers in the neural network.')
+flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
+flags.DEFINE_integer('num_filters', 40, 'Number of filters for the conv2d layers in the neural network.')
 flags.DEFINE_integer(
     'num_fc_units',
-    256,
+    80,
     'Number of hidden units in the linear layer of the neural network.',
 )
 
-flags.DEFINE_integer('min_games', 50000, 'Collect number of self-play games before learning starts.')
+flags.DEFINE_integer('min_games', 5000, 'Collect number of self-play games before learning starts.')
 flags.DEFINE_integer(
     'games_per_ckpt',
-    25000,
+    5000,
     'Collect minimum number of self-play games using the last checkpoint before creating the next checkpoint.',
 )
 flags.DEFINE_integer(
     'replay_capacity',
-    500000 * 100,
-    'Replay buffer capacity is number of game * average game length. ',
+    150000 * 10,
+    'Replay buffer capacity is number of game * average game length. '
+    'Note for Gomoku, the game often ends around 9-15 steps.',
 )
-flags.DEFINE_integer('batch_size', 2048, '')
+
+flags.DEFINE_integer(
+    'batch_size',
+    256,
+    'To avoid overfitting, we want to make sure the agent only sees ~10% of samples in the replay over one checkpoint.'
+    'That is, batch_size * ckpt_interval <= replay_capacity * 0.1',
+)
+
+flags.DEFINE_float('init_lr', 0.01, 'Initial learning rate.')
+flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
+flags.DEFINE_multi_integer(
+    'lr_milestones',
+    [100000, 200000],
+    'The number of training steps at which the learning rate will be decayed.',
+)
+flags.DEFINE_float('sgd_momentum', 0.9, '')
+flags.DEFINE_float('l2_regularization', 1e-4, 'The L2 regularization parameter applied to weights.')
+
+flags.DEFINE_integer(
+    'max_training_steps',
+    int(3e5),
+    'Number of training steps (measured in network parameter update, one batch is one training step).',
+)
 
 flags.DEFINE_bool(
     'argument_data',
@@ -71,25 +85,10 @@ flags.DEFINE_bool(
 )
 flags.DEFINE_bool('compress_data', False, 'Compress state when saving in replay buffer, default off.')
 
-flags.DEFINE_float('init_lr', 0.2, 'Initial learning rate.')
-flags.DEFINE_float('lr_decay', 0.1, 'Learning rate decay rate.')
-flags.DEFINE_multi_integer(
-    'lr_milestones',
-    [200000, 400000, 600000],
-    'The number of training steps at which the learning rate will be decayed.',
-)
-flags.DEFINE_float('l2_regularization', 1e-4, 'The L2 regularization parameter applied to weights.')
-flags.DEFINE_float('sgd_momentum', 0.9, '')
-
-flags.DEFINE_integer(
-    'max_training_steps',
-    int(7e5),
-    'Number of training steps (measured in network parameter update, one batch is one training step).',
-)
-flags.DEFINE_integer('num_actors', 2000, 'Number of self-play actor processes.')
+flags.DEFINE_integer('num_actors', 32, 'Number of self-play actor processes.')
 flags.DEFINE_integer(
     'num_simulations',
-    800,
+    380,
     'Number of simulations per MCTS search, this applies to both self-play and evaluation processes.',
 )
 flags.DEFINE_integer(
@@ -111,43 +110,19 @@ flags.DEFINE_float(
 
 flags.DEFINE_integer(
     'warm_up_steps',
-    30,
+    16,
     'Number of steps at the beginning of a self-play game where the search temperature is set to 1.',
 )
 flags.DEFINE_float(
     'init_resign_threshold',
-    -0.88,
-    'The self-play game is resigned if MCTS search values are lesser than this threshold.'
-    'This value is also dynamically adjusted (decreased) during training to keep the false positive below the target level.'
-    '-1 means no resign and it disables all the features related to resignations during self-play.',
+    -1,
+    'Not applicable, as there is no resign move for Gomoku.',
 )
-flags.DEFINE_integer(
-    'check_resign_after_steps',
-    80,
-    'Number steps into the self-play game before checking for resign.',
-)
-flags.DEFINE_float(
-    'target_fp_rate',
-    0.05,
-    'Target resignation false positives rate, the resignation threshold is dynamically adjusted to keep the false positives rate below this value.',
-)
-flags.DEFINE_float(
-    'disable_resign_ratio',
-    0.1,
-    'Disable resign for proportion of self-play games so we can measure resignation false positives.',
-)
-flags.DEFINE_integer(
-    'reset_fp_interval',
-    500000,
-    'The frequency (measured in number of self-play games) to reset resignation threshold,'
-    'so statistics from old games do not influence current play.',
-)
-flags.DEFINE_integer(
-    'no_resign_games',
-    200000,
-    'Initial games played with resignation disable. '
-    'This makes sense as when starting out, the prediction from the neural network is not accurate.',
-)
+flags.DEFINE_integer('check_resign_after_steps', 0, 'Not applicable.')
+flags.DEFINE_float('target_fp_rate', 0, 'Not applicable.')
+flags.DEFINE_float('disable_resign_ratio', 0, 'Not applicable.')
+flags.DEFINE_integer('reset_fp_interval', 0, 'Not applicable.')
+flags.DEFINE_integer('no_resign_games', 0, 'Not applicable.')
 
 flags.DEFINE_float(
     'default_rating',
@@ -156,30 +131,26 @@ flags.DEFINE_float(
 )
 flags.DEFINE_integer('ckpt_interval', 1000, 'The frequency (in training step) to create new checkpoint.')
 flags.DEFINE_integer('log_interval', 200, 'The frequency (in training step) to log training statistics.')
-flags.DEFINE_string('ckpt_dir', './checkpoints/go/19x19', 'Path for checkpoint file.')
+flags.DEFINE_string('ckpt_dir', './checkpoints/gomoku/13x13', 'Path for checkpoint file.')
 flags.DEFINE_string(
     'logs_dir',
-    './logs/go/19x19',
+    './logs/gomoku/13x13',
     'Path to save statistics for self-play, training, and evaluation.',
 )
-flags.DEFINE_string(
-    'eval_games_dir',
-    './pro_games/go/19x19',
-    'Path contains evaluation games in sgf format.',
-)
+flags.DEFINE_string('eval_games_dir', '', 'Path contains evaluation games in sgf format.')
 flags.DEFINE_string(
     'save_sgf_dir',
-    './selfplay_games/go/19x19',
-    'Path to selfplay and evaluation games in sgf format.',
+    './games/selfplay_games/gomoku/13x13',
+    'Path to save selfplay games in sgf format.',
 )
 flags.DEFINE_integer('save_sgf_interval', 500, 'How often to save self-play games.')
 
 flags.DEFINE_integer(
     'save_replay_interval',
-    0,
+    50000,
     'The frequency (in number of self-play games) to save the replay buffer state.'
     'So we can resume training without staring from zero. 0 means do not save replay state.'
-    'If you set this to a non-zero value, you should make sure the path specified by "FLAGS.ckpt_dir" have at least 300GB of free space.',
+    'If you set this to a non-zero value, you should make sure the path specified by "FLAGS.ckpt_dir" have at least 100GB of free space.',
 )
 flags.DEFINE_string('load_ckpt', '', 'Resume training by starting from last checkpoint.')
 flags.DEFINE_string('load_replay', '', 'Resume training by loading saved replay buffer state.')
@@ -188,6 +159,7 @@ flags.DEFINE_string('log_level', 'INFO', '')
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 flags.register_validator('num_simulations', lambda x: x > 1)
+flags.register_validator('init_resign_threshold', lambda x: x <= -1)
 flags.register_validator('log_level', lambda x: x in ['INFO', 'DEBUG'])
 flags.register_multi_flags_validator(
     ['num_parallel', 'c_puct_base'],
@@ -195,23 +167,20 @@ flags.register_multi_flags_validator(
     '',
 )
 
-
 # Initialize flags
 FLAGS(sys.argv)
 
-os.environ['BOARD_SIZE'] = str(FLAGS.board_size)
-
-from envs.go import GoEnv
-from pipeline import (
+from alpha_zero.envs.gomoku import GomokuEnv
+from alpha_zero.core.pipeline import (
     run_learner_loop,
     run_evaluator_loop,
     run_selfplay_actor_loop,
     set_seed,
     maybe_create_dir,
 )
-from network import AlphaZeroNet
-from replay import UniformReplay
-from util import extract_args_from_flags_dict, create_logger
+from alpha_zero.core.network import AlphaZeroNet
+from alpha_zero.core.replay import UniformReplay
+from alpha_zero.utils.util import extract_args_from_flags_dict, create_logger
 
 
 def main():
@@ -243,7 +212,7 @@ def main():
         actor_devices = [torch.device(f'cuda:{i % num_gpus}') for i in range(FLAGS.num_actors)]
 
     def env_builder():
-        return GoEnv(komi=FLAGS.komi, num_stack=FLAGS.num_stack)
+        return GomokuEnv(board_size=FLAGS.board_size, num_stack=FLAGS.num_stack)
 
     eval_env = env_builder()
 
@@ -257,6 +226,7 @@ def main():
             FLAGS.num_res_blocks,
             FLAGS.num_filters,
             FLAGS.num_fc_units,
+            True,
         )
 
     network = network_builder()

@@ -168,12 +168,12 @@ flags.DEFINE_string(
 )
 flags.DEFINE_string(
     'eval_games_dir',
-    './pro_games/go/9x9',
+    './games/pro_games/go/9x9',
     'Path contains evaluation games in sgf format.',
 )
 flags.DEFINE_string(
     'save_sgf_dir',
-    './selfplay_games/go/9x9',
+    './games/selfplay_games/go/9x9',
     'Path to selfplay and evaluation games in sgf format.',
 )
 flags.DEFINE_integer('save_sgf_interval', 500, 'How often to save self-play games.')
@@ -205,17 +205,17 @@ FLAGS(sys.argv)
 
 os.environ['BOARD_SIZE'] = str(FLAGS.board_size)
 
-from envs.go import GoEnv
-from pipeline import (
+from alpha_zero.envs.go import GoEnv
+from alpha_zero.core.pipeline import (
     run_learner_loop,
     run_evaluator_loop,
     run_selfplay_actor_loop,
     set_seed,
     maybe_create_dir,
 )
-from network import AlphaZeroNet
-from replay import UniformReplay
-from util import extract_args_from_flags_dict, create_logger
+from alpha_zero.core.network import AlphaZeroNet
+from alpha_zero.core.replay import UniformReplay
+from alpha_zero.utils.util import extract_args_from_flags_dict, create_logger
 
 
 def main():

@@ -11,9 +11,9 @@ import numpy as np
 import torch
 from torch.utils.data import TensorDataset
 
-from envs.go import GoEnv
-import sgf_wrapper
-from util import create_logger
+from alpha_zero.envs.go import GoEnv
+from alpha_zero.utils import sgf_wrapper
+from alpha_zero.utils.util import create_logger
 
 # keep a history of player names so we can avoid adding duplicates
 GAME_COUNTS = {}

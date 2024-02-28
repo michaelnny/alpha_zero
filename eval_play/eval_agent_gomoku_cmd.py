@@ -4,7 +4,7 @@
 # See the accompanying LICENSE file for details.
 
 
-"""Evaluate the AlphaZero agent on Go."""
+"""Evaluate the AlphaZero agent on freestyle Gomoku game."""
 from absl import flags
 import timeit
 import os
@@ -12,30 +12,28 @@ import sys
 import torch
 
 FLAGS = flags.FLAGS
-flags.DEFINE_integer('board_size', 9, 'Board size for Go.')
-flags.DEFINE_float('komi', 7.5, 'Komi rule for Go.')
+flags.DEFINE_integer('board_size', 13, 'Board size for freestyle Gomoku.')
 flags.DEFINE_integer(
     'num_stack',
     8,
     'Stack N previous states, the state is an image of N x 2 + 1 binary planes.',
 )
-
 flags.DEFINE_integer('num_res_blocks', 10, 'Number of residual blocks in the neural network.')
-flags.DEFINE_integer('num_filters', 128, 'Number of filters for the conv2d layers in the neural network.')
+flags.DEFINE_integer('num_filters', 40, 'Number of filters for the conv2d layers in the neural network.')
 flags.DEFINE_integer(
     'num_fc_units',
-    128,
+    80,
     'Number of hidden units in the linear layer of the neural network.',
 )
 
 flags.DEFINE_string(
     'black_ckpt',
-    './checkpoints/go/9x9/training_steps_154000.ckpt',
+    './checkpoints/gomoku/13x13/training_steps_170000.ckpt',
     'Load the checkpoint file for black player.',
 )
 flags.DEFINE_string(
     'white_ckpt',
-    './checkpoints/go/9x9/training_steps_154000.ckpt',
+    './checkpoints/gomoku/13x13/training_steps_200000.ckpt',
     'Load the checkpoint file for white player.',
 )
 
@@ -56,12 +54,10 @@ flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 # Initialize flags
 FLAGS(sys.argv)
 
-os.environ['BOARD_SIZE'] = str(FLAGS.board_size)
-
-from envs.go import GoEnv
-from network import AlphaZeroNet
-from pipeline import create_mcts_player, set_seed, disable_auto_grad
-from util import create_logger
+from alpha_zero.envs.gomoku import GomokuEnv
+from alpha_zero.core.network import AlphaZeroNet
+from alpha_zero.core.pipeline import create_mcts_player, set_seed, disable_auto_grad
+from alpha_zero.utils.util import create_logger
 
 
 def main():
@@ -74,7 +70,7 @@ def main():
     elif torch.backends.mps.is_available():
         runtime_device = 'mps'
 
-    eval_env = GoEnv(komi=FLAGS.komi, num_stack=FLAGS.num_stack)
+    eval_env = GomokuEnv(board_size=FLAGS.board_size, num_stack=FLAGS.num_stack)
 
     input_shape = eval_env.observation_space.shape
     num_actions = eval_env.action_space.n
@@ -86,6 +82,7 @@ def main():
             FLAGS.num_res_blocks,
             FLAGS.num_filters,
             FLAGS.num_fc_units,
+            True,
         )
 
     def load_checkpoint_for_net(network, ckpt_file, device):
@@ -107,7 +104,7 @@ def main():
             num_simulations=FLAGS.num_simulations,
             num_parallel=FLAGS.num_parallel,
             root_noise=False,
-            deterministic=True,
+            deterministic=False,
         )
 
     white_player = mcts_player_builder(FLAGS.white_ckpt, runtime_device)
@@ -141,6 +138,13 @@ def main():
             break
 
     duration = timeit.default_timer() - start
+
+    sgf_content = eval_env.to_sgf()
+    sgf_file = os.path.join('/Users/michael/Desktop', 'eval_gomoku_test.sgf')
+    with open(sgf_file, 'w') as f:
+        f.write(sgf_content)
+        f.close()
+
     eval_env.close()
     mean_search_time = duration / eval_env.steps
     print(f'Avg time per step: {mean_search_time:.2f}')

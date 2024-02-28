@@ -14,7 +14,7 @@ from typing import Callable, Any
 import numpy as np
 from copy import deepcopy
 
-from envs.base import BoardGameEnv
+from alpha_zero.envs.base import BoardGameEnv
 
 
 class Colors:
@@ -30,7 +30,6 @@ class Colors:
 
 
 class BoardGameGui:
-
     """A simple GUI for board game like Gomoku or Go.
     This does not implement any game rules or scoring function.
 
@@ -109,12 +108,15 @@ class BoardGameGui:
         self.is_os_linux = platform == 'linux'
 
         if self.is_os_linux:
-            scale = 1.8
-            self.cell_size = int(self.cell_size * scale)
-            self.piece_size = int(self.piece_size * scale)
-            self.panel_w = int(self.panel_w * scale)
-            self.dot_size = int(self.dot_size * scale)
-            self.padding = int(self.padding * scale)
+            self.scale = 2.0
+        else:
+            self.scale = 1.0
+
+        self.cell_size = int(self.cell_size * self.scale)
+        self.piece_size = int(self.piece_size * self.scale)
+        self.panel_w = int(self.panel_w * self.scale)
+        self.dot_size = int(self.dot_size * self.scale)
+        self.padding = int(self.padding * self.scale)
 
         self.half_size = self.cell_size // 2
         self.board_size = self.env.board_size * self.cell_size
@@ -325,6 +327,7 @@ class BoardGameGui:
             [self.black_to_move_var, self.white_to_move_var],
             [self.black_info_var, self.white_info_var],
         ):
+
             if i == 0:
                 offset_x = self.padding
             else:
@@ -353,7 +356,7 @@ class BoardGameGui:
                 background=Colors.PANEL_BG,
                 foreground=Colors.TEXT,
             )
-            player_last_move.place(x=offset_x, y=self.padding + 120, anchor='nw')
+            player_last_move.place(x=offset_x, y=self.padding + 120 * self.scale, anchor='nw')
 
             info = tk.Label(
                 top_block,
@@ -362,7 +365,7 @@ class BoardGameGui:
                 background=Colors.PANEL_BG,
                 foreground=Colors.TEXT,
             )
-            info.place(x=offset_x, y=self.padding + 145, anchor='nw')
+            info.place(x=offset_x, y=self.padding + 145 * self.scale, anchor='nw')
 
             to_move = tk.Label(
                 top_block,
@@ -371,7 +374,7 @@ class BoardGameGui:
                 background=Colors.PANEL_BG,
                 foreground=Colors.INFO,
             )
-            to_move.place(x=offset_x, y=self.padding + 170, anchor='nw')
+            to_move.place(x=offset_x, y=self.padding + 170 * self.scale, anchor='nw')
 
         # Action buttons
         action_block = tk.Canvas(

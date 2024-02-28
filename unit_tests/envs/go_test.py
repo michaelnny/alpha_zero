@@ -17,8 +17,8 @@ STACK_HISTORY = 8
 os.environ['BOARD_SIZE'] = str(BOARD_SIZE)
 
 
-from envs.go import GoEnv
-import envs.go_engine as go
+from alpha_zero.envs.go import GoEnv
+import alpha_zero.envs.go_engine as go
 
 
 class RunGoEnvTest(parameterized.TestCase):

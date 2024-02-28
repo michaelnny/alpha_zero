@@ -6,7 +6,7 @@
 
 from absl.testing import absltest
 import torch
-from transformation import (
+from alpha_zero.utils.transformation import (
     apply_horizontal_flip,
     apply_vertical_flip,
     apply_rotation,

@@ -14,7 +14,7 @@ import numpy as np
 import gym
 from gym.spaces import Box, Discrete
 
-from envs.coords import CoordsConvertor
+from alpha_zero.envs.coords import CoordsConvertor
 
 
 class PlayerMove(namedtuple('PlayerMove', ['color', 'move'])):

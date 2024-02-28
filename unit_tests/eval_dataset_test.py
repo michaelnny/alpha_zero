@@ -7,8 +7,8 @@
 import os
 
 os.environ['BOARD_SIZE'] = str(9)
-from eval_dataset import build_eval_dataset
-from util import create_logger
+from alpha_zero.core.eval_dataset import build_eval_dataset
+from alpha_zero.utils.util import create_logger
 
 if __name__ == '__main__':
     logger = create_logger('DEBUG')

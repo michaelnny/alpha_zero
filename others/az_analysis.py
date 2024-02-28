@@ -6,7 +6,7 @@
 
 import math
 
-from network import AlphaZeroNet
+from alpha_zero.core.network import AlphaZeroNet
 
 
 def compute_nn_params(

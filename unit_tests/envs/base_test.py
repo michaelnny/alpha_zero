@@ -23,7 +23,7 @@ from absl.testing import absltest
 from absl.testing import parameterized
 import numpy as np
 
-from envs.base import BoardGameEnv
+from alpha_zero.envs.base import BoardGameEnv
 
 
 class BoardGameEnvTest(parameterized.TestCase):

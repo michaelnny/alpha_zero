@@ -10,10 +10,10 @@ import re
 from copy import copy
 import numpy as np
 
-from envs.base import BoardGameEnv
-import envs.go_engine as go
-import sgf_wrapper
-from util import get_time_stamp
+from alpha_zero.envs.base import BoardGameEnv
+from alpha_zero.envs import go_engine as go
+from alpha_zero.utils import sgf_wrapper
+from alpha_zero.utils.util import get_time_stamp
 
 
 class GoEnv(BoardGameEnv):

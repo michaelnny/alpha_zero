@@ -7,7 +7,7 @@ set -u -e  # Check for uninitialized variables and exit if any command fails.
 # black_model=137000
 # for (( white_model=130000; white_model<=160000; white_model+=1000 ))
 # do
-#     python3 -m eval_agent_go_mass_matches --num_games=50 \
+#     python3 -m alpha_zero.play.eval_agent_go_mass_matches --num_games=50 \
 #         --num_simulations=200 \
 #         --num_res_blocks=10 \
 #         --num_filters=128 \
@@ -22,7 +22,7 @@ black_model=154000
 white_models=( 151000 152000 153000 145000 160000 159000 149000 146000 150000 147000)
 for white_model in "${white_models[@]}"
 do
-    python3 -m eval_agent_go_mass_matches --num_games=50 \
+    python3 -m alpha_zero.play.eval_agent_go_mass_matches --num_games=50 \
         --num_simulations=200 \
         --num_res_blocks=10 \
         --num_filters=128 \

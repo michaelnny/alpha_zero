@@ -25,17 +25,17 @@ torch.autograd.set_detect_anomaly(True)
 import numpy as np
 from copy import copy, deepcopy
 
-# from mcts_v1 import Node, parallel_uct_search, uct_search
+# from alpha_zero.core.mcts_v1 import Node, parallel_uct_search, uct_search
 
-from mcts_v2 import Node, parallel_uct_search, uct_search
+from alpha_zero.core.mcts_v2 import Node, parallel_uct_search, uct_search
 
-from envs.base import BoardGameEnv
-from eval_dataset import build_eval_dataset
-from rating import EloRating
-from csv_writer import CsvWriter
-from replay import UniformReplay, Transition
-from transformation import apply_random_transformation
-from util import Timer, create_logger, get_time_stamp
+from alpha_zero.envs.base import BoardGameEnv
+from alpha_zero.core.eval_dataset import build_eval_dataset
+from alpha_zero.core.rating import EloRating
+from alpha_zero.core.replay import UniformReplay, Transition
+from alpha_zero.utils.csv_writer import CsvWriter
+from alpha_zero.utils.transformation import apply_random_transformation
+from alpha_zero.utils.util import Timer, create_logger, get_time_stamp
 
 
 # =================================================================
@@ -421,11 +421,11 @@ def run_learner_loop(  # noqa: C901
     lock=threading.Lock(),
 ) -> None:
     """Update the neural network, dynamically adjust resignation threshold if required."""
-    assert min_games >= 1000
+    assert min_games >= 100
     assert init_resign_threshold < -0.5
     assert target_fp_rate <= 0.05
-    assert games_per_ckpt >= 1000
-    assert ckpt_interval >= 500
+    assert games_per_ckpt >= 100
+    assert ckpt_interval >= 100
     assert log_interval >= 100
     assert save_replay_interval >= 0
     assert max_training_steps > 0
@@ -444,7 +444,7 @@ def run_learner_loop(  # noqa: C901
         logger.warning(f'Training sample ratio {training_sample_ratio:.2f} might be too high')
 
     if save_replay_interval > 0:
-        logger.warning(f'Saving replay state has been enabled, make you have at least 100GB of free space at "{ckpt_dir}"')
+        logger.warning(f'Saving replay state has been enabled, ensure you have at least 100GB of free space at "{ckpt_dir}"')
 
     if init_resign_threshold <= -1:
         with lock:

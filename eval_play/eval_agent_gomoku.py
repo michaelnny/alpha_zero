@@ -6,7 +6,6 @@
 
 """Evaluate the AlphaZero agent on freestyle Gomoku game."""
 from absl import flags
-import timeit
 import os
 import sys
 import torch
@@ -48,16 +47,18 @@ flags.DEFINE_float('c_puct_base', 19652, 'Exploration constants balancing priors
 flags.DEFINE_float('c_puct_init', 1.25, 'Exploration constants balancing priors vs. search values.')
 
 flags.DEFINE_bool('human_vs_ai', True, 'Black player is human, default on.')
+flags.DEFINE_bool('show_steps', False, 'Show step number on stones, default off.')
 
 flags.DEFINE_integer('seed', 1, 'Seed the runtime.')
 
 # Initialize flags
 FLAGS(sys.argv)
 
-from envs.gomoku import GomokuEnv
-from network import AlphaZeroNet
-from pipeline import create_mcts_player, set_seed, disable_auto_grad
-from util import create_logger
+from alpha_zero.envs.gomoku import GomokuEnv
+from alpha_zero.envs.gui import BoardGameGui
+from alpha_zero.core.network import AlphaZeroNet
+from alpha_zero.core.pipeline import create_mcts_player, set_seed, disable_auto_grad
+from alpha_zero.utils.util import create_logger
 
 
 def main():
@@ -107,47 +108,31 @@ def main():
             deterministic=False,
         )
 
+    # Wrap MCTS player for the GUI program
+    def wrap_player(mcts_player) -> int:
+        def act(env):
+            action, *_ = mcts_player(env, None, FLAGS.c_puct_base, FLAGS.c_puct_init)
+            return action
+
+        return act
+
     white_player = mcts_player_builder(FLAGS.white_ckpt, runtime_device)
+    white_player = wrap_player(white_player)
 
     if FLAGS.human_vs_ai:
         black_player = 'human'
     else:
         black_player = mcts_player_builder(FLAGS.black_ckpt, runtime_device)
+        black_player = wrap_player(black_player)
 
-    # Start to play game
-    _ = eval_env.reset()
+    game_gui = BoardGameGui(
+        eval_env,
+        black_player=black_player,
+        white_player=white_player,
+        show_steps=FLAGS.show_steps,
+    )
 
-    start = timeit.default_timer()
-    while True:
-        if eval_env.to_play == eval_env.black_player:
-            if black_player == 'human':
-                eval_env.render('human')
-                move = None
-                while move is None:
-                    gtp_move = input('Enter move (e.g. "D4"): ')
-                    move = eval_env.gtp_to_action(gtp_move)
-            else:
-                move, *_ = black_player(eval_env, None, FLAGS.c_puct_base, FLAGS.c_puct_init)
-        else:
-            move, *_ = white_player(eval_env, None, FLAGS.c_puct_base, FLAGS.c_puct_init)
-
-        _, _, done, _ = eval_env.step(move)
-        eval_env.render('human')
-
-        if done:
-            break
-
-    duration = timeit.default_timer() - start
-
-    sgf_content = eval_env.to_sgf()
-    sgf_file = os.path.join('/Users/michael/Desktop', 'eval_gomoku_test.sgf')
-    with open(sgf_file, 'w') as f:
-        f.write(sgf_content)
-        f.close()
-
-    eval_env.close()
-    mean_search_time = duration / eval_env.steps
-    print(f'Avg time per step: {mean_search_time:.2f}')
+    game_gui.start()
 
 
 if __name__ == '__main__':

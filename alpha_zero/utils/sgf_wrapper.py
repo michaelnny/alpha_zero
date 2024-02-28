@@ -31,8 +31,8 @@ import itertools
 import re
 import sgf
 
-from envs.coords import CoordsConvertor
-import envs.go_engine as go
+from alpha_zero.envs.coords import CoordsConvertor
+from alpha_zero.envs import go_engine as go
 
 
 SGF_TEMPLATE = """(;\nCA[UTF-8]\nAP[AlphaZeroMini_sgfgenerator]\nRU[{ruleset}]

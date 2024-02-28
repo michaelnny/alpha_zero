@@ -58,11 +58,11 @@ FLAGS(sys.argv)
 
 os.environ['BOARD_SIZE'] = str(FLAGS.board_size)
 
-from envs.go import GoEnv
-from envs.gui import BoardGameGui
-from network import AlphaZeroNet
-from pipeline import create_mcts_player, set_seed, disable_auto_grad
-from util import create_logger
+from alpha_zero.envs.go import GoEnv
+from alpha_zero.envs.gui import BoardGameGui
+from alpha_zero.core.network import AlphaZeroNet
+from alpha_zero.core.pipeline import create_mcts_player, set_seed, disable_auto_grad
+from alpha_zero.utils.util import create_logger
 
 
 def main():
