@@ -1,6 +1,7 @@
 # Alpha Zero
 
 A PyTorch implementation of DeepMind's AlphaZero agent to play Go and Free-style Gomoku board game.
+
 This project is part of my book [**The Art of Reinforcement Learning: Fundamentals, Mathematics, and Implementation with Python**](https://link.springer.com/book/10.1007/978-1-4842-9606-6)
 
 # Content
@@ -101,8 +102,6 @@ If you are utilizing Nvidia GPUs, it is highly recommended to install PyTorch wi
 
 ## Training AlphaZero on a 9x9 Go board
 
-It is crucial to acknowledge that training an AlphaZero agent can often be a time-consuming process, requiring weeks or even months on a 19x19 Go board. In the original paper published by DeepMind, they mentioned that the original AlphaZero agent was trained over thousands of servers and TPUs. Even with such enormous computational power, it took 72 hours to train the 20 blocks version of AlphaZero, and 40 days for the 40 blocks version. Unfortunately, we do not have access to the same level of computational resources and budget to conduct similar experiments, and our goal is not to build the strongest agent capable of defeating the world champion. Instead, we have made adjustments such as using scaled-down settings (e.g., a smaller neural network, a simpler game with a 9x9 board size, fewer self-play actors, and fewer games played) to train the AlphaZero agent.
-
 For our training, we utilized a single server equipped with 128 CPUs and 8 RTX 3090 GPUs to train the AlphaZero agent to play the game of Go on a 9x9 board. Upon trying different neural network architectures, we ended up chose one which consists of 11 blocks: 1 initial convolutional block + 10 residual blocks, each using 128 filters, and we use 128 unites for fully connected layer inside the value head. The training process took approximately 40 hours (corresponding to 150,000 training steps) to achieve a strong level of play. We trained the agent using over 1 million self-play games and evaluated its performance using 10,000 human-played games, total of 620,000 positions collected from the internet (mostly from CGOS). Additionally, we evaluated the agent by setting it play against the previous model from the last checkpoint. However, these evaluation games were not used for training, and we did not introduce noise to the root node of the Monte Carlo Tree Search (MCTS) search tree.
 
 It is evident that the agent reached a strong level of play around 140,000 training steps, as indicated by the highest Elo rating achieved. However, beyond that point, the agent's performance starts to decline significantly, resulting in a sharp decrease in Elo rating. This decline could be attributed to various factors, such as the learning rate not being reduced quickly enough or the neural network being too powerful for the 9x9 board size. Unfortunately, due to budget constraints, we are unable to rerun the training process from scratch.
@@ -115,7 +114,7 @@ However, in the spirit of experimentation, we decided to set our best model (154
 
 By default, the driver program attempts to distribute the self-play actors across all available GPUs in the machine. However, it is crucial to select an appropriate size for the number of actors.
 
-Our findings indicate that a single RTX 3090 GPU, equipped with 24GB of vRAM, can accommodate approximately 30 actors, depending on the complexity of the neural network and the batch size used for training. Going beyond this number may result in the CUDA OUT OF RAM error.
+Our findings indicate that a single RTX 3090 GPU, equipped with 24GB of vRAM, can accommodate approximately 20 actors, depending on the complexity of the neural network and the batch size used for training. Going beyond this number may result in the CUDA OUT OF RAM error.
 
 There fore, it's recommended to start a trial run (like the example below) and let it run for a while to generate a few checkpoints. Ensure that everything runs smoothly, such as monitoring vRAM usage and GPU utilization, which should be around 90-95%.
 
